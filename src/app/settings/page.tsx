@@ -1,7 +1,8 @@
-
-export default function SettingsPage() {
-
+import ProfilePage from "@/app/settings/profile";
+import TodoPage from "@/app/settings/todo";
+export default function Settings() {
   return (
-    <div>Settings</div>
+    // <ProfilePage/>
+    <TodoPage/>
   );
 }

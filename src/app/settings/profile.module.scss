@@ -1,0 +1,240 @@
+.profile-wrapper {
+  flex: 1;
+  //   height: 100px;
+  gap: 48px;
+  position: relative;
+  background: #f8fafc;
+  .profile-background {
+    position: relative;
+    height: 70px;
+    width: 100%;
+    padding: 16px 16px 172px 1072px;
+    background: var(
+      --Gradient-Mesh-6,
+      url("../../../public/gradient-mesh-6.png") lightgray 50% / cover no-repeat
+    );
+  }
+  .profile-container {
+    position: absolute;
+    top: 15%;
+    padding: 0 32px;
+    width: 100%;
+    .profile-avatar-wrapper {
+      .profile-avatar {
+        border-radius: 246px;
+        background: var(
+          --Avatar-1,
+          url("../../../public/avatar.jpg") lightgray 50% / cover no-repeat
+        );
+      }
+    }
+    .profile-infor-wrapper {
+      display: flex;
+      justify-content: space-between;
+      .profile-infor {
+        display: flex;
+        flex-direction: column;
+        .profile-name-tier {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          .profile-name {
+            color: var(--Gray-80, #1e293b);
+            font-size: 30px;
+            font-style: normal;
+            font-weight: 800;
+            line-height: 38px; /* 126.667% */
+            letter-spacing: -0.39px;
+          }
+          .profile-tier {
+            display: flex;
+            padding: 6px 12px;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            border-radius: 1234px;
+            border: 1px solid #a5b4fc;
+            background: #eef2ff;
+          }
+        }
+        .profile-email {
+          color: var(--Gray-60, #475569);
+          font-size: 18px;
+          font-style: normal;
+          font-weight: 500;
+          line-height: 24px; /* 133.333% */
+          letter-spacing: -0.144px;
+        }
+      }
+      .button-infor {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        .share-btn {
+          display: flex;
+          padding: 10px 16px;
+          justify-content: center;
+          align-items: center;
+          gap: 8px;
+          border-radius: 1234px;
+          background: #1e293b;
+          .share-text {
+            color: #fff;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 20px; /* 142.857% */
+            letter-spacing: -0.084px;
+          }
+        }
+        .view-btn {
+          display: flex;
+          padding: 10px 16px;
+          justify-content: center;
+          align-items: center;
+          gap: 8px;
+          border-radius: 1234px;
+          background: #4f46e5;
+          .view-text {
+            color: var(--gray-0-white, #fff);
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 20px; /* 142.857% */
+            letter-spacing: -0.084px;
+          }
+        }
+      }
+    }
+  }
+  .profile-info-wrapper {
+    position: absolute;
+    margin-top: 15%;
+    padding: 0 32px;
+    display: flex;
+    // justify-content: space-between;
+    gap: 32px;
+    width: 100%;
+    .profile-info-container {
+      width: 20%;
+      .profile-info__title {
+        color: #1e293b;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: 22px; /* 137.5% */
+        letter-spacing: -0.112px;
+      }
+      .profile-info__content {
+        color: #475569;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 160%; /* 22.4px */
+      }
+    }
+    .profile-input-container {
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      flex: 1;
+      border-radius: 32px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      gap: 24px;
+      .profile-input-content {
+        display: flex;
+        gap: 24px;
+        .profile-input-wrapper {
+          display: flex;
+          flex-direction: column;
+          width: 50%;
+          gap: 8px;
+          .input-text {
+            color: #1e293b;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: 20px; /* 142.857% */
+            letter-spacing: -0.084px;
+          }
+          .input-box {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 123px;
+            border: 1px solid #cbd5e1;
+            gap: 12px;
+            background: #fff;
+            .input-field {
+              outline: none;
+              width: 100%;
+              color: #475569;
+              font-size: 16px;
+              font-style: normal;
+              font-weight: 500;
+              line-height: 22px;
+              letter-spacing: -0.112px;
+            }
+          }
+          .change-avatar-section {
+            display: flex;
+            gap: 32px;
+            .avatar-upload-box {
+              display: flex;
+              flex-direction: column;
+              padding: 24px;
+              border-radius: 32px;
+              border: 1px dashed #cbd5e1;
+              background: #fff;
+              justify-content: center;
+              align-items: center;
+              .avatar-upload-icon {
+                display: flex;
+                width: 48px;
+                height: 48px;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+                border-radius: 123px;
+                background: #eef2ff;
+                margin-bottom: 24px;
+              }
+              .avatar-upload-text-wrapper {
+                display: flex;
+                gap: 4px;
+                .avatar-upload-text-click {
+                  color: #4f46e5;
+                  font-size: 16px;
+                  font-style: normal;
+                  font-weight: 700;
+                  line-height: 22px; /* 137.5% */
+                  letter-spacing: -0.112px;
+                }
+                .avatar-upload-text {
+                  color: #475569;
+                  text-align: center;
+                  font-size: 16px;
+                  font-style: normal;
+                  font-weight: 500;
+                  line-height: 22px; /* 137.5% */
+                  letter-spacing: -0.112px;
+                  margin-bottom: 8px;
+                }
+              }
+              .avatar-upload-format {
+                color:  #94a3b8;
+                text-align: center;
+                font-size: 14px;
+                font-style: normal;
+                font-weight: 500;
+                line-height: 20px; /* 142.857% */
+                letter-spacing: -0.084px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
