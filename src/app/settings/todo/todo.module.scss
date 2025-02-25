@@ -1,5 +1,6 @@
 .todo-wrapper {
-  width: 100%;
+  // width: 100%;
+  flex: 1;
   .todo-container {
     width: 100%;
     .todo-navgation-invite {
@@ -147,7 +148,7 @@
           justify-content: space-between;
           align-items: center;
           .todo-header-view-wrapper {
-            width: 42%;
+            width: 43%;
             .todo-header-view {
               border-radius: 9999px;
               background: #f1f5f9;

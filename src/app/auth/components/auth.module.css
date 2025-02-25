@@ -121,6 +121,12 @@
   border-radius: 0.5rem;
 }
 
+.login__create .error-message,
+.login__registre .error-message{
+  color: red;
+  text-align: left;
+}
+
 .login__icon {
   font-size: 1.5rem;
   color: var(--first-color);

@@ -1,15 +1,14 @@
 import Image from "next/image";
-import styles from "./home.module.scss";
+import styles from "../../home.module.scss";
 import classNames from "classnames/bind";
-import { Import, Video } from "lucide-react";
-import Sidebar from "@/app/(home)/sidebar";
 const cx = classNames.bind(styles);
-export default function Home() {
+import Sidebar from "@/app/(home)/sidebar";
+export default function Popularage() {
   return (
     <div className={cx("home-wrapper")}>
       <div className={cx("container")}>
         <div className={cx("home-content")}>
-          <Sidebar/>
+          <Sidebar />
           <div className={cx("middle-content")}>
             <div className={cx("post")}>
               <div className={cx("post-header")}>
@@ -375,7 +374,6 @@ export default function Home() {
                   A man goes out drinking with his friends{" "}
                 </h4>
                 <p className={cx("post-content")}>
-                  <Video></Video>
                 </p>
                 <div className={cx("post-interact")}>
                   <div className={cx("post-interact-item")}>

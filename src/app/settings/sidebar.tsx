@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HomeIcon } from "@/app/settings/icons/HomeIcon";
+import { ProfileIcon } from "@/app/settings/icons/ProfileIcon";
 import { TaskIcon } from "@/app/settings/icons/TaskIcon";
 import { MessageIcon } from "@/app/settings/icons/MessageIcon";
 import { UserIcon } from "@/app/settings/icons/UserIcon";
@@ -15,7 +15,7 @@ const cx = classNames.bind(styles);
 export default function Sidebar() {
   const pathname = usePathname();
   const navItems = [
-    { name: "Home", path: "/settings/profile", icon: <HomeIcon />, noti: 5 },
+    { name: "Profile", path: "/settings/profile", icon: <ProfileIcon />, noti: 5 },
     { name: "Tasks", path: "/settings/todo", icon: <TaskIcon /> },
     {
       name: "Messages",
@@ -36,14 +36,16 @@ export default function Sidebar() {
     <div className={cx("sidebar")}>
       <div className={cx("up-content")}>
         <div className={cx("logo")}>
-          <Image
-            aria-hidden
-            src="/logo.svg"
-            alt="File icon"
-            width={32}
-            height={32}
-            className="logo"
-          />
+          <Link href={"/"}>
+            <Image
+              aria-hidden
+              src="/logo.svg"
+              alt="File icon"
+              width={32}
+              height={32}
+              className="logo"
+            />
+          </Link>
           <span className={cx("logo-text")}>UIT</span>
         </div>
         <div className={cx("search-wrapper")}>

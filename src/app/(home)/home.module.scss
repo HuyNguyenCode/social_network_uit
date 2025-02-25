@@ -13,12 +13,15 @@
         padding: 24px;
         width: 25%;
         .navigation {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
           .nav-item {
             display: flex;
             justify-content: left;
             align-items: center;
             gap: 12px;
-            padding: 12px 0px;
+            padding: 12px 12px;
             .nav-text {
               color: #1e293b;
               font-size: 20px;
@@ -27,6 +30,18 @@
               line-height: 28px; /* 140% */
               letter-spacing: -0.2px;
             }
+          }
+          .nav-item:hover {
+            background-color: rgba(229, 235, 238, 0.6); /* Nhẹ hơn active */
+            box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1); /* Hiệu ứng nổi */
+            // transform: translateY(-2px); /* Đẩy tab lên nhẹ */
+          }
+          .nav-item.active {
+            background-color: #e5ebee;
+            border-radius: 20px;
+            outline-offset: -1px;
+            padding: 12px 12px;
+            
           }
         }
         .recent,
@@ -156,24 +171,24 @@
             flex-direction: column;
             gap: 8px;
             .post-container-with-img {
-                display: flex;
-                flex-direction: row;
-                .post-left-content {
-                    .post-content {
-                        display: -webkit-box;
-                        -webkit-box-orient: vertical;
-                        -webkit-line-clamp: 1;
-                        overflow: hidden;
-                        color: #475569;
-                        text-overflow: ellipsis;
-                        font-size: 14px;
-                        font-style: normal;
-                        font-weight: 400;
-                        line-height: 160%; /* 22.4px */
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                    }
+              display: flex;
+              flex-direction: row;
+              .post-left-content {
+                .post-content {
+                  display: -webkit-box;
+                  -webkit-box-orient: vertical;
+                  -webkit-line-clamp: 1;
+                  overflow: hidden;
+                  color: #475569;
+                  text-overflow: ellipsis;
+                  font-size: 14px;
+                  font-style: normal;
+                  font-weight: 400;
+                  line-height: 160%; /* 22.4px */
+                  overflow: hidden;
+                  text-overflow: ellipsis;
                 }
+              }
             }
             .post-title {
               color: #1e293b;
