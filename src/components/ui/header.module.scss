@@ -1,5 +1,4 @@
 .header-wrapper {
-  
     width: 100%;
     padding: 13px 24px;
     border-bottom: 1px solid #CBD5E1;
@@ -30,6 +29,9 @@
                 font-weight: 800;
                 line-height: 38px; /* 126.667% */
                 letter-spacing: -0.39px;
+                p{
+                    margin-bottom: 0px;
+                }
               
             }
             .middle-content {
@@ -62,10 +64,11 @@
             }
             .right-content {
                 display: flex;
-                 padding: 0px 24px;
+                padding: 0px 0;
                 align-items: center;
-                gap: 8px;
+                gap: 10px;
                 justify-content: flex-end;
+                position: relative;
                 .create-button {
                     display: flex;
                     padding: 10px 16px;
@@ -101,6 +104,12 @@
                 .avatar{
                     border: none;
                     cursor: pointer;
+                }
+                .submenu {
+                    position: absolute;
+                }
+                a{
+                    text-decoration: none;
                 }
             }
         }

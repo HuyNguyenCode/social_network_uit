@@ -72,6 +72,17 @@
                 }
               }
             }
+            .nav-item:hover {
+              background-color: rgba(229, 235, 238, 0.6); /* Nhẹ hơn active */
+              box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1); /* Hiệu ứng nổi */
+              border-radius: 20px;
+              // transform: translateY(-2px); /* Đẩy tab lên nhẹ */
+            }
+            .nav-item.active {
+              background-color: #e5ebee;
+              border-radius: 20px;
+              outline-offset: -1px;
+            }
             .nav-noti {
               display: flex;
               padding: 4px 10px;

@@ -1,8 +1,122 @@
+"use client";
 import classNames from "classnames/bind";
 import styles from "./chat.module.scss";
 import Image from "next/image";
+import { useState } from "react";
 const cx = classNames.bind(styles);
 export default function ChatPage() {
+  const chatList = [
+    {
+      id: 1,
+      name: "X-AE-A-13b",
+      avatar: "/avatar.jpg",
+      status: "active",
+      time: "12:25",
+      message:
+        " Etiam ac aliquam neque. Mauris ac auctor velit. Ut et odio lacus. Duis et convallis velit. Aenean risus ipsum, eleifendac justo at, venenatis ultricies dolor. Cras id neque egeterat sodales malesuada eget in sapien",
+    },
+    {
+      id: 2,
+      name: "Jerome White",
+      avatar: "/avatar_2.jpg",
+      status: "inactive",
+      time: "12:25",
+      message:
+        " Etiam ac aliquam neque. Mauris ac auctor velit. Ut et odio lacus. Duis et convallis velit. Aenean risus ipsum, eleifendac justo at, venenatis ultricies dolor. Cras id neque egeterat sodales malesuada eget in sapien",
+    },
+    {
+      id: 3,
+      name: "Madagascar Silver",
+      avatar: "/avatar_3.jpg",
+      status: "active",
+      time: "12:25",
+      message:
+        " Etiam ac aliquam neque. Mauris ac auctor velit. Ut et odio lacus. Duis et convallis velit. Aenean risus ipsum, eleifendac justo at, venenatis ultricies dolor. Cras id neque egeterat sodales malesuada eget in sapien",
+    },
+    {
+      id: 4,
+      name: "Pippins McGray",
+      avatar: "/avatar_4.jpg",
+      status: "active",
+      time: "12:25",
+      message:
+        " Etiam ac aliquam neque. Mauris ac auctor velit. Ut et odio lacus. Duis et convallis velit. Aenean risus ipsum, eleifendac justo at, venenatis ultricies dolor. Cras id neque egeterat sodales malesuada eget in sapien",
+    },
+    {
+      id: 5,
+      name: "Dorian F. Gray",
+      avatar: "/avatar_5.jpg",
+      status: "active",
+      time: "12:25",
+      message:
+        " Etiam ac aliquam neque. Mauris ac auctor velit. Ut et odio lacus. Duis et convallis velit. Aenean risus ipsum, eleifendac justo at, venenatis ultricies dolor. Cras id neque egeterat sodales malesuada eget in sapien",
+    },
+    {
+      id: 6,
+      name: "Saylor Twift",
+      avatar: "/avatar_6.jpg",
+      status: "active",
+      time: "12:25",
+      message:
+        " Etiam ac aliquam neque. Mauris ac auctor velit. Ut et odio lacus. Duis et convallis velit. Aenean risus ipsum, eleifendac justo at, venenatis ultricies dolor. Cras id neque egeterat sodales malesuada eget in sapien",
+    },
+  ];
+  const [selectedChat, setSelectedChat] = useState(chatList[0].id); // Mặc định chọn chat đầu tiên
+
+  const conversation = [
+    {
+      chatId: 1,
+      message: [
+        {
+          messageId: 1,
+          dateSent: "25 April",
+          messsageContent: [
+            {
+              isSent: true,
+              time: "10:25",
+              status: "sent",
+              content:
+                "Hello my dear sir, I’m here do deliver the design requirement document for our next projects.",
+            },
+            {
+              isSent: true,
+              time: "10:25",
+              status: "sent",
+              content:
+                "Hello my dear sir, I’m here do deliver the design requirement document for our next projects.",
+            },
+            {
+              isSent: false,
+              time: "10:25",
+              status: "sent",
+              content:
+                "Hello my dear sir, I’m here do deliver the design requirement document for our next projects.",
+            },
+          ],
+        },
+        {
+          messageId: 2,
+          dateSent: "Today",
+          messsageContent: [
+            {
+              isSent: true,
+              time: "10:25",
+              status: "sent",
+              content:
+                "Hello my dear sir, I’m here do deliver the design requirement document for our next projects.",
+            },
+            {
+              isSent: false,
+              time: "10:25",
+              status: "sent",
+              content:
+                "Hello my dear sir, I’m here do deliver the design requirement document for our next projects.",
+            },
+          ],
+        },
+      ],
+    },
+  ];
   return (
     <div className={cx("chat-wrapper")}>
       <div className={cx("chat-container")}>
@@ -59,157 +173,39 @@ export default function ChatPage() {
             </div>
           </div>
           <div className={cx("middle-content")}>
-            <div className={cx("chat-item")}>
-              <div className={cx("chat-avatar")}>
-                <Image
-                  aria-hidden
-                  src="/avatar.jpg"
-                  alt="File icon"
-                  width={48}
-                  height={48}
-                  className={cx("chat-avatar")}
-                />
-                <div className={cx("active-status")}></div>
-              </div>
-              <div className={cx("chat-wrapper")}>
-                <div className={cx("chat-user-box")}>
-                  <h4 className={cx("chat-username")}>X-AE-A-13b</h4>
-                  <span className={cx("chat-time")}>12:25</span>
+            {chatList.map((chat) => (
+              <div
+                key={chat.id}
+                className={cx("chat-item", {
+                  active: selectedChat === chat.id,
+                })}
+                onClick={() => setSelectedChat(chat.id)}
+              >
+                <div className={cx("chat-avatar")}>
+                  <Image
+                    src={chat.avatar}
+                    alt="Avatar"
+                    width={48}
+                    height={48}
+                    className={cx("chat-avatar")}
+                  />
+                  <div
+                    className={cx(
+                      chat.status === "active"
+                        ? "active-status"
+                        : "inactive-status"
+                    )}
+                  ></div>
                 </div>
-                <p className={cx("chat-des")}>
-                  Etiam ac aliquam neque. Mauris ac auctor velit. Ut et odio
-                  lacus. Duis et convallis velit. Aenean risus ipsum, eleifend
-                  ac justo at, venenatis ultricies dolor. Cras id neque eget
-                  erat sodales malesuada eget in sapien
-                </p>
-              </div>
-            </div>
-            <div className={cx("chat-item")}>
-              <div className={cx("chat-avatar")}>
-                <Image
-                  aria-hidden
-                  src="/avatar_2.jpg"
-                  alt="File icon"
-                  width={48}
-                  height={48}
-                  className={cx("chat-avatar")}
-                />
-                <div className={cx("inactive-status")}></div>
-              </div>
-              <div className={cx("chat-wrapper")}>
-                <div className={cx("chat-user-box")}>
-                  <h4 className={cx("chat-username")}>Jerome White</h4>
-                  <span className={cx("chat-time")}>12:25</span>
+                <div className={cx("chat-wrapper")}>
+                  <div className={cx("chat-user-box")}>
+                    <h4 className={cx("chat-username")}>{chat.name}</h4>
+                    <span className={cx("chat-time")}>{chat.time}</span>
+                  </div>
+                  <p className={cx("chat-des")}>{chat.message}</p>
                 </div>
-                <p className={cx("chat-des")}>
-                  Etiam ac aliquam neque. Mauris ac auctor velit. Ut et odio
-                  lacus. Duis et convallis velit. Aenean risus ipsum, eleifend
-                  ac justo at, venenatis ultricies dolor. Cras id neque eget
-                  erat sodales malesuada eget in sapien
-                </p>
               </div>
-            </div>
-            <div className={cx("chat-item", "active")}>
-              <div className={cx("chat-avatar")}>
-                <Image
-                  aria-hidden
-                  src="/avatar_3.jpg"
-                  alt="File icon"
-                  width={48}
-                  height={48}
-                  className={cx("chat-avatar")}
-                />
-                <div className={cx("active-status")}></div>
-              </div>
-              <div className={cx("chat-wrapper")}>
-                <div className={cx("chat-user-box")}>
-                  <h4 className={cx("chat-username")}>Madagascar Silver</h4>
-                  <span className={cx("chat-time")}>12:25</span>
-                </div>
-                <p className={cx("chat-des")}>
-                  Etiam ac aliquam neque. Mauris ac auctor velit. Ut et odio
-                  lacus. Duis et convallis velit. Aenean risus ipsum, eleifend
-                  ac justo at, venenatis ultricies dolor. Cras id neque eget
-                  erat sodales malesuada eget in sapien
-                </p>
-              </div>
-            </div>
-
-            <div className={cx("chat-item")}>
-              <div className={cx("chat-avatar")}>
-                <Image
-                  aria-hidden
-                  src="/avatar_5.jpg"
-                  alt="File icon"
-                  width={48}
-                  height={48}
-                  className={cx("chat-avatar")}
-                />
-                <div className={cx("active-status")}></div>
-              </div>
-              <div className={cx("chat-wrapper")}>
-                <div className={cx("chat-user-box")}>
-                  <h4 className={cx("chat-username")}>Pippins McGray</h4>
-                  <span className={cx("chat-time")}>12:25</span>
-                </div>
-                <p className={cx("chat-des")}>
-                  Etiam ac aliquam neque. Mauris ac auctor velit. Ut et odio
-                  lacus. Duis et convallis velit. Aenean risus ipsum, eleifend
-                  ac justo at, venenatis ultricies dolor. Cras id neque eget
-                  erat sodales malesuada eget in sapien
-                </p>
-              </div>
-            </div>
-            <div className={cx("chat-item")}>
-              <div className={cx("chat-avatar")}>
-                <Image
-                  aria-hidden
-                  src="/avatar_6.jpg"
-                  alt="File icon"
-                  width={48}
-                  height={48}
-                  className={cx("chat-avatar")}
-                />
-                <div className={cx("active-status")}></div>
-              </div>
-              <div className={cx("chat-wrapper")}>
-                <div className={cx("chat-user-box")}>
-                  <h4 className={cx("chat-username")}>Dorian F. Gray</h4>
-                  <span className={cx("chat-time")}>12:25</span>
-                </div>
-                <p className={cx("chat-des")}>
-                  Etiam ac aliquam neque. Mauris ac auctor velit. Ut et odio
-                  lacus. Duis et convallis velit. Aenean risus ipsum, eleifend
-                  ac justo at, venenatis ultricies dolor. Cras id neque eget
-                  erat sodales malesuada eget in sapien
-                </p>
-              </div>
-            </div>
-            <div className={cx("chat-item")}>
-              <div className={cx("chat-avatar-wrapper")}>
-                <Image
-                  aria-hidden
-                  src="/avatar_7.jpg"
-                  alt="File icon"
-                  width={48}
-                  height={48}
-                  className={cx("chat-avatar")}
-                />
-                <div className={cx("inactive-status")}></div>
-              </div>
-              <div className={cx("chat-wrapper")}>
-                <div className={cx("chat-user-box")}>
-                  <h4 className={cx("chat-username")}>Saylor Twift</h4>
-                  <span className={cx("chat-time")}>12:25</span>
-                </div>
-                <p className={cx("chat-des")}>
-                  Etiam ac aliquam neque. Mauris ac auctor velit. Ut et odio
-                  lacus. Duis et convallis velit. Aenean risus ipsum, eleifend
-                  ac justo at, venenatis ultricies dolor. Cras id neque eget
-                  erat sodales malesuada eget in sapien
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
           <div className={cx("down-content")}>
             <button className={cx("add-new-button")}>
@@ -295,6 +291,17 @@ export default function ChatPage() {
             </div>
           </div>
           <div className={cx("message-body")}>
+            {conversation.map(
+              (chat) =>
+                selectedChat === chat.chatId && (
+                  <div key={chat.chatId} className={cx("conversation")}>
+                    {/* <h2>{chat.name}</h2>
+                    <p>{chat.message}</p> */}
+                    
+                  </div>
+                )
+                
+            )}
             <span className={cx("message-time")}>25 April</span>
             <div className={cx("message-wrapper")}>
               <div className={cx("message-item-receiver")}>
@@ -487,7 +494,11 @@ export default function ChatPage() {
                   </svg>
                 </div>
                 <div className={cx("message-input")}>
-                  <textarea rows={1} placeholder="Write your message" className={cx("message-input-field")} />
+                  <textarea
+                    rows={1}
+                    placeholder="Write your message"
+                    className={cx("message-input-field")}
+                  />
                 </div>
               </div>
               <div className={cx("message-sent-icon")}>

@@ -69,6 +69,7 @@ export default function Sidebar() {
         </div>
         <div className={cx("navigation")}>
           {navItems.map((item) => (
+            
             <Link
               key={item.path}
               href={item.path}

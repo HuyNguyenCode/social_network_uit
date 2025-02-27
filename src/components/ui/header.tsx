@@ -1,8 +1,9 @@
-import { ModeToggle } from "@/components/mode-toggle";
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "./header.module.scss";
 import classNames from "classnames/bind";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 const cx = classNames.bind(styles);
 export default function Header() {
   return (
@@ -108,26 +109,35 @@ export default function Header() {
                 />
               </svg>
             </button>
-            <Image
-              className={cx("avatar")}
-              aria-hidden
-              src="/avatar.jpg"
-              alt="File icon"
-              width={30}
-              height={30}
-            />
+            <DropdownMenu.Root>
+              {/* Avatar */}
+              <DropdownMenu.Trigger asChild>
+                <Image
+                  className="rounded-full cursor-pointer"
+                  src="/avatar.jpg"
+                  alt="User Avatar"
+                  width={30}
+                  height={30}
+                />
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Content className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-2">
+                <Link href={"/settings/profile"}>
+                  <DropdownMenu.Item className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                    <span>View Profile </span>
+                  </DropdownMenu.Item>
+                </Link>
+                <DropdownMenu.Item className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  <Link href={"/settings/settings"}></Link>
+                  <span>Settings </span>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer">
+                  <span>Logout </span>
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
           </div>
         </div>
       </div>
-      {/* <ul>
-                <li>
-                    <Link href={'/login'}>Đăng nhập</Link>
-                </li>
-                <li>
-                    <Link href={'/register'}>Đăng ký</Link>
-                </li>
-            </ul>    */}
-      {/* <ModeToggle/> */}
     </div>
   );
 }
