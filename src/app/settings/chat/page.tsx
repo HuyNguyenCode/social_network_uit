@@ -291,17 +291,6 @@ export default function ChatPage() {
             </div>
           </div>
           <div className={cx("message-body")}>
-            {conversation.map(
-              (chat) =>
-                selectedChat === chat.chatId && (
-                  <div key={chat.chatId} className={cx("conversation")}>
-                    {/* <h2>{chat.name}</h2>
-                    <p>{chat.message}</p> */}
-                    
-                  </div>
-                )
-                
-            )}
             <span className={cx("message-time")}>25 April</span>
             <div className={cx("message-wrapper")}>
               <div className={cx("message-item-receiver")}>

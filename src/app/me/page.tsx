@@ -5,18 +5,18 @@ export default async function MeProfile() {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("sessionToken");
 
-  const response = await fetch("http://localhost:4000/account/me", {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${sessionToken?.value}`,
-    },
-  });
+  // const response = await fetch("http://localhost:4000/account/me", {
+  //   method: "GET",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //     Authorization: `Bearer ${sessionToken?.value}`,
+  //   },
+  // });
 
-  console.log(response);
   return (
     <div>
-      Me profile <LogoutButton></LogoutButton>
+      Me profile
+      {/* <LogoutButton></LogoutButton> */}
       <ProfilePage></ProfilePage>
     </div>
   );
