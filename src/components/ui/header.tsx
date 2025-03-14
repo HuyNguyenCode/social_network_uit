@@ -3,10 +3,11 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "./header.module.scss";
 import classNames from "classnames/bind";
+
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 const cx = classNames.bind(styles);
 export default function Header() {
-  return (
+return (
     <div className={cx("header-wrapper")}>
       <div className={cx("container")}>
         <div className={cx("header-content")}>
@@ -131,7 +132,6 @@ export default function Header() {
                   <span>Settings </span>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer">
-                  <span>Logout </span>
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Root>

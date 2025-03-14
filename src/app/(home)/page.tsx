@@ -1,15 +1,33 @@
+"use client";
 import Image from "next/image";
 import styles from "./home.module.scss";
 import classNames from "classnames/bind";
 import { Import, Video } from "lucide-react";
 import Sidebar from "@/app/(home)/sidebar";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
 const cx = classNames.bind(styles);
 export default function Home() {
+  const router = useRouter();
+
+  const { user } = useSelector((state: RootState) => state.auth as { user: any });
+
+  useEffect(() => {
+    if (!user) {
+      router.push("/auth"); // Chuyển hướng nếu chưa đăng nhập
+    }
+  }, [user, router]);
+
+  if (!user) return null; // Tránh hiển thị nội dung khi đang redirect
+
   return (
     <div className={cx("home-wrapper")}>
       <div className={cx("container")}>
         <div className={cx("home-content")}>
-          <Sidebar/>
+          <Sidebar />
           <div className={cx("middle-content")}>
             <div className={cx("post")}>
               <div className={cx("post-header")}>

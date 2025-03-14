@@ -1,8 +1,8 @@
-
 export async function POST(request: Request) {
   const res = await request.json();
-  const sessionToken = res.payload?.data?.token;
+  const sessionToken = res.token;
   if (!sessionToken) {
+    console.log(res);
     return Response.json(
       { message: "Không nhận được sessionToken" },
       {
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     {
       status: 200,
       headers: {
-        "Set-Cookie": `sessionToken=${sessionToken}; Path=/; HttpOnly`
+        "Set-Cookie": `sessionToken=${sessionToken}; Path=/; HttpOnly`,
       },
     }
   );

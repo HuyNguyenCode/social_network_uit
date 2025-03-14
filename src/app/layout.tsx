@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
-// import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "sonner";
 
+import ReduxProvider from "@/providers/ReduxProvider";
 import { Provider } from "react-redux";
 import AppProvider from "@/app/AppProvider";
 import { cookies } from "next/headers";
@@ -29,24 +30,29 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const cookieStore = await cookies();
-  
-  const sessionToken = cookieStore.get('sessionToken')
+
+  const sessionToken = cookieStore.get("sessionToken");
 
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {/* <Header/> */}
-          {/* <Provider store={store}>{children}</Provider> */}
-          <AppProvider initialSessionToken = {sessionToken?.value} >{children}</AppProvider>
-        </ThemeProvider>
+        <ReduxProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {/* <Header/> */}
+            {/* <Provider store={store}>{children}</Provider> */}
+            <Toaster />
+            <AppProvider initialSessionToken={sessionToken?.value}>
+              {children}
+            </AppProvider>
+          </ThemeProvider>
+        </ReduxProvider>
       </body>
     </html>
   );
