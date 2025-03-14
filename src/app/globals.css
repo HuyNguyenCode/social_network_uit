@@ -74,3 +74,16 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* CKEditor default text color */
+.ck-content {
+  color: black !important;
+}
+
+.ck-content p {
+  color: black !important;
+}
+
+.ck.ck-editor__editable_inline {
+  color: black !important;
+}

@@ -40,6 +40,7 @@ interface CkEditorProps {
   editorData: string;
   setEditorData: React.Dispatch<React.SetStateAction<string>>;
 }
+
 const CkEditor: FC<CkEditorProps> = ({
   setEditorData,
   editorData,
@@ -105,7 +106,6 @@ const CkEditor: FC<CkEditorProps> = ({
           "indent",
           "sourceEditing",
         ],
-
         heading: {
           options: [
             {
@@ -197,16 +197,6 @@ const CkEditor: FC<CkEditorProps> = ({
             {
               color: "hsl(0, 0%, 90%)",
               label: "Light grey",
-            },
-            {
-              color: "hsl(0, 0%, 100%)",
-              label: "White",
-              hasBorder: true,
-            },
-            {
-              color: "hsl(0, 0%, 100%)",
-              label: "White",
-              hasBorder: true,
             },
             {
               color: "hsl(0, 75%, 60%)",
