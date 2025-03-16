@@ -11,11 +11,22 @@ import { HSIcon } from "@/app/settings/icons/HSIcon";
 import classNames from "classnames/bind";
 import styles from "./settings.module.scss";
 import Image from "next/image";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "@/redux/store";
+import { logoutUser } from "@/redux/authSlice";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+
 const cx = classNames.bind(styles);
 export default function Sidebar() {
   const pathname = usePathname();
   const navItems = [
-    { name: "Profile", path: "/settings/profile", icon: <ProfileIcon />, noti: 5 },
+    {
+      name: "Profile",
+      path: "/settings/profile",
+      icon: <ProfileIcon />,
+      noti: 5,
+    },
     { name: "Tasks", path: "/settings/todo", icon: <TaskIcon /> },
     {
       name: "Messages",
@@ -32,6 +43,54 @@ export default function Sidebar() {
       icon: <HSIcon />,
     },
   ];
+  const dispatch = useDispatch<AppDispatch>();
+  const { toast } = useToast();
+  const router = useRouter();
+  const { token } = useSelector((state: RootState) => state.auth);
+  const handleLogout = () => {
+    if (token) {
+      const result = dispatch(logoutUser(token));
+      if (logoutUser.fulfilled.match(result)) {
+        toast({
+          description: "Logout Successfully!",
+        });
+        router.push("/auth");
+      } else {
+        toast({
+          title: "Login error",
+          description: "Login error",
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: "Token error",
+        description: "Token is missing",
+        variant: "destructive",
+      });
+    }
+    // const result = fetch("../api/auth/logout", {
+    //   method: "POST",
+    //   body: JSON.stringify({}),
+    //   credentials: "include",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    // }).then(async (res) => {
+    //   const payload = await res.json();
+    //   const data = {
+    //     status: res.status,
+    //     payload,
+    //   };
+    //   if (!res.ok) {
+    //     throw data;
+    //   }
+ 
+    //   return data;
+    // });
+
+    
+  };
   return (
     <div className={cx("sidebar")}>
       <div className={cx("up-content")}>
@@ -69,7 +128,6 @@ export default function Sidebar() {
         </div>
         <div className={cx("navigation")}>
           {navItems.map((item) => (
-            
             <Link
               key={item.path}
               href={item.path}
@@ -103,7 +161,7 @@ export default function Sidebar() {
           <span className={cx("user-name")}>Azunyan U. Wu</span>
           <span className={cx("user-role")}>Admin</span>
         </div>
-        <button className={cx("logout")}>
+        <button className={cx("logout")} onClick={handleLogout}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"

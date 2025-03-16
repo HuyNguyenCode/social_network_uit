@@ -2,30 +2,29 @@
 
 import styles from "./auth.module.css";
 import classNames from "classnames/bind";
-import { useToast } from "@/hooks/use-toast";
-// import authApiRequest from '@/apiRequests/auth'
-// import { useToast } from '@/components/ui/use-toast'
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-// import { handleErrorApi } from '@/lib/utils'
-import { useState } from "react";
-import envConfig from "@/config";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useAppContext } from "@/app/AppProvider";
-// import { useAppContext } from '@/app/app-provider'
 import { z } from "zod";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "../../../redux/store";
+import { loginUser, registerUser } from "../../../redux/authSlice";
+
 const cx = classNames.bind(styles);
 
 // Schema validation cho đăng nhập
 const loginSchema = z.object({
-  email: z.string().email("Email không hợp lệ"),
+  username: z.string().min(2, "name phải có ít nhất 2 ký tự"),
   password: z.string().min(1, "Mật khẩu không được để trống"),
 });
 
 // Schema validation cho đăng ký
 const signUpSchema = z
   .object({
-    username: z.string().min(2, "Username phải có ít nhất 2 ký tự"),
+    username: z.string().min(2, "name phải có ít nhất 2 ký tự"),
     email: z.string().email("Email không hợp lệ"),
     password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
     confirmPassword: z.string(),
@@ -38,12 +37,14 @@ const signUpSchema = z
 const AuthPage = () => {
   // State để kiểm soát form hiển thị
   const [isSignUp, setIsSignUp] = useState(false);
-  const [loading, setLoading] = useState(false);
-  //   const { setUser } = useAppContext()
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { loading, error } = useSelector((state: RootState) => state.auth);
+  const { token } = useSelector((state: RootState) => state.auth);
+
   //   const { toast } = useToast()
   const router = useRouter();
 
-  const { toast } = useToast();
   const { setSessionToken } = useAppContext();
 
   // Hook form cho đăng nhập
@@ -65,86 +66,54 @@ const AuthPage = () => {
   });
 
   // Xử lý đăng nhập
-  const onLogin = async (data: any) => {
-    console.log("Dữ liệu đăng nhập:", data);
-    try {
-      try {
-        const response = await fetch("http://localhost:4000/auth/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }).then(async (res) => {
-          const payload = await res.json();
-          const data = {
-            status: res.status,
-            payload,
-          };
-          if (!res.ok) {
-            throw data;
-          }
-          return data;
-        });
-        toast({
-          description: response.payload.message,
-        });
-        const resultFromNextServer = await fetch("api/auth/", {
-          method: "POST",
-          body: JSON.stringify(response),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }).then(async (res) => {
-          const payload = await res.json();
-          const data = {
-            status: res.status,
-            payload,
-          };
-          if (!res.ok) {
-            throw data;
-          }
-          return data;
-        });
-        setSessionToken(resultFromNextServer.payload.data.token);
-      } catch (error: any) {
-        console.log(error);
-
-        const errors = error.payload.errors as {
-          field: string;
-          message: string;
-        }[];
-        const status = error.status as number;
-        if (status === 422) {
-          errors.forEach((error) => {
-            toast({
-              title: "Error",
-              description: error.message,
-              variant: "destructive",
-            });
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Lỗi đăng nhập:", error);
+  const onLogin = async (data: any) => {  
+    const result = await dispatch(loginUser(data));
+    console.log("📢 Kết quả từ loginUser:", result);
+  
+    if (loginUser.fulfilled.match(result)) {
+      toast.success("✅ Login Successfully!");
+      router.push("/");
+    } else {
+      console.log("❌ Đăng nhập thất bại:", result);
+      const errorMessage = (result.payload as { message: string })?.message || "Lỗi không xác định!";
+      toast.error(`❌ ${errorMessage}`);
     }
   };
+  
 
-  // Xử lý đăng ký
-  const onSignUp = async (data: any) => {
-    try {
-      const response = await fetch("http://localhost:4000/auth/register", {
+  //Gọi api để lưu sessionToken vào cookie
+  useEffect(() => {
+    if (token) {
+      fetch("api/auth/", {
         method: "POST",
+        body: JSON.stringify({ token }),
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+      }).then(async (res) => {
+        const payload = await res.json();
+        const data = {
+          status: res.status,
+          payload,
+        };
+        if (!res.ok) {
+          throw data;
+        }
+        return data;
       });
-      console.log(response);
+      setSessionToken(token);
+    }
+  }, [token]);
 
-      console.log(data);
-    } catch (error) {
-      console.error("Lỗi đăng ký:", error);
+  // Xử lý đăng ký
+  const onSignUp = async (data: any) => {
+    const result = dispatch(registerUser(data));
+    if (loginUser.fulfilled.match(result)) {
+      toast.success("Register Successfully!");
+      router.push("/auth");
+    } else {
+      toast.error(((await result).payload as { message: string })?.message  || "Signup error");
     }
   };
 
@@ -167,15 +136,15 @@ const AuthPage = () => {
               <div className={cx("login__box")}>
                 <i className={cx("bx bx-user login__icon")}></i>
                 <input
-                  {...registerLogin("email")}
+                  {...registerLogin("username")}
                   type="text"
-                  placeholder="Email"
+                  placeholder="Username"
                   className={cx("login__input")}
                 />
               </div>
-              {loginErrors.email && (
+              {loginErrors.name && (
                 <p className={cx("error-message")}>
-                  {loginErrors.email.message?.toString()}
+                  {loginErrors.name.message?.toString()}
                 </p>
               )}
               <div className={cx("login__box")}>
@@ -195,8 +164,12 @@ const AuthPage = () => {
               <a href="#" className={cx("login__forgot")}>
                 Forgot password?
               </a>
-              <button type="submit" className={cx("login__button")}>
-                Sign In
+              <button
+                type="submit"
+                className={cx("login__button")}
+                disabled={loading}
+              >
+                {loading ? "Signing up..." : "Signup"}
               </button>
               <div>
                 <span className={cx("login__account")}>
@@ -225,13 +198,13 @@ const AuthPage = () => {
                 <input
                   {...registerSignUp("username")}
                   type="text"
-                  placeholder="Username"
+                  placeholder="name"
                   className={cx("login__input")}
                 />
               </div>
-              {signUpErrors.username && (
+              {signUpErrors.name && (
                 <p className={cx("error-message")}>
-                  {signUpErrors.username.message?.toString()}
+                  {signUpErrors.name.message?.toString()}
                 </p>
               )}
 
