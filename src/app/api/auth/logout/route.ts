@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       {
         status: 200,
         headers: {
-          "Set-Cookie": `sessionToken=; Path=/; HttpOnly; Max-Age=0; SameSite=Strict`,
+          "Set-Cookie": `sessionToken=; Path=/; Max-Age=0; SameSite=Strict`,
         },
       }
     );
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       {
         status: 200,
         headers: {
-          "Set-Cookie": `sessionToken=; Path=/; HttpOnly; Max-Age=0; SameSite=Strict`,
+          "Set-Cookie": `sessionToken=; Path=/; Max-Age=0; SameSite=Strict`,
         },
       }
     );

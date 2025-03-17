@@ -106,10 +106,8 @@ export const registerUser = createAsyncThunk(
 // Thunk xử lý đăng xuất
 export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
-  async (sessionToken: string, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      console.log("sessionToken: ");
-      console.log(sessionToken);
       const response = await fetch("http://localhost:8080/api/Auth/logout", {
         method: "POST",
         body: JSON.stringify({}),
@@ -121,7 +119,7 @@ export const logoutUser = createAsyncThunk(
       if (!response.ok) {
         throw { status: response.status };
       } else {
-        console.log("Logout successdully!");
+        console.log("Logout successfully!");
       }
       return true;
     } catch (error) {
@@ -143,8 +141,6 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(loginUser.pending, (state) => {
-        console.log("Get into pending ");
-
         state.loading = true;
         state.error = null;
       })
@@ -161,12 +157,8 @@ const authSlice = createSlice({
         }
       )
       .addCase(loginUser.rejected, (state, action) => {
-        console.log("Get into rejected");
-
         state.loading = false;
         state.error = action.payload as string;
-        console.log("state.error: ");
-        console.log(action.payload);
       })
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
@@ -182,15 +174,19 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(logoutUser.pending, (state) => {
+      
+        
         state.loading = true;
       })
       .addCase(logoutUser.fulfilled, (state) => {
+        console.log("Get into logoutUser.fulfilled");
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
         state.loading = false;
       })
       .addCase(logoutUser.rejected, (state, action) => {
+        console.log("Get into logoutUser.rejected");
         state.loading = false;
         state.error = action.payload as string;
       });
