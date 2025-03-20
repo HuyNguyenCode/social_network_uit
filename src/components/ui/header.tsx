@@ -3,11 +3,38 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "./header.module.scss";
 import classNames from "classnames/bind";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import {  useDispatch } from "react-redux";
+import Cookies from "js-cookie";
+import {  AppDispatch } from "@/redux/store";
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-const cx = classNames.bind(styles);
+import { logoutUser } from "@/redux/authSlice";
+import { Button } from "@/components/ui/button";
+
 export default function Header() {
-return (
+  const cx = classNames.bind(styles);
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  interface LogoutResult {
+    payload?: { message: string };
+  }
+
+  const handleLogout = async () => {
+    const result = await dispatch(logoutUser()) as LogoutResult;
+    if (logoutUser.fulfilled.match(result)) {
+      Cookies.remove("sessionToken", { path: "/" });
+      console.log("Get into fulfilled");
+      toast.success("✅ Logout Successfully!");
+      router.push("/auth");
+    } else {
+      const errorMessage =
+        result.payload?.message || "Lỗi không xác định!";
+      toast.error(`❌ ${errorMessage}`);
+    }
+  };
+  return (
     <div className={cx("header-wrapper")}>
       <div className={cx("container")}>
         <div className={cx("header-content")}>
@@ -132,6 +159,7 @@ return (
                   <span>Settings </span>
                 </DropdownMenu.Item>
                 <DropdownMenu.Item className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer">
+                  <button onClick={handleLogout}>Log out </button>
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Root>

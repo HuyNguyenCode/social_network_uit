@@ -109,8 +109,9 @@ const AuthPage = () => {
   // Xử lý đăng ký
   const onSignUp = async (data: any) => {
     const result = dispatch(registerUser(data));
-    if (loginUser.fulfilled.match(result)) {
+    if (registerUser.fulfilled.match(result)) {
       toast.success("Register Successfully!");
+      toast.success("Check your mail for verification!");
       router.push("/auth");
     } else {
       toast.error(((await result).payload as { message: string })?.message  || "Signup error");
