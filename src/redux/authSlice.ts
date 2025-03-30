@@ -128,6 +128,34 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+// Thunk xử lý đổi mật khẩu
+export const changePassword = createAsyncThunk(
+  'auth/changePassword',
+  async (
+    { userId, oldPassword, newPassword }: { userId: number; oldPassword: string; newPassword: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/Auth/${userId}/changePassword`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldPassword, newPassword }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = result.Errors?.[0] || 'Đổi mật khẩu thất bại!';
+        return rejectWithValue({ message: errorMessage, status: response.status });
+      }
+
+      return result; // Trả về kết quả thành công
+    } catch (error: any) {
+      return rejectWithValue({ message: error.message || 'Lỗi máy chủ!', status: 500 });
+    }
+  }
+);
+
 // Slice
 const authSlice = createSlice({
   name: "auth",
@@ -189,7 +217,23 @@ const authSlice = createSlice({
         console.log("Get into logoutUser.rejected");
         state.loading = false;
         state.error = action.payload as string;
+      })
+      //Xử lý change-password
+      .addCase(changePassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.loading = false;
+        // Cập nhật trạng thái nếu cần
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
+      ;
+
+      
   },
 });
 
