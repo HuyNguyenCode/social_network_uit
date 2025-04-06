@@ -12,6 +12,7 @@ import ScrollBars from "@/components/profile/ScrollBars";
 import { useParams, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { mockUsers } from "./data/mockData";
+import PopularTags from "@/components/profile/PopularTags";
 
 const cx = classNames.bind(styles);
 
@@ -20,8 +21,7 @@ export default function UserPageLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const params = useParams();
-  const pathname = usePathname();
+  const params = useParams(); 
   const username = params.username as string;
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -71,19 +71,19 @@ export default function UserPageLayout({
                   <div className="w-1/6 relative">
                     <div className="aspect-square rounded-full overflow-hidden border-4 border-gray-200 bg-gray-300">
                       <Image
-                        src="/general/image.png"
-                        alt=""
+                        src={user.avatar_url || "/general/image4.png"}
+                        alt={user.username || ""}
                         width={100}
                         height={100}
+                        className="object-cover"
                       />
                     </div>
                     <Link
-                      href="/"
+                      href="/settings/settings/profile"
                       className="absolute bottom-0 right-0 translate-y-1/5 z-20"
                     >
                       <div className="w-8 h-8 flex items-center justify-center rounded-full border-[1px] cursor-pointer bg-gray-200">
                         <Image
-                          className=""
                           src="/icons/camera-svgrepo-com.svg"
                           alt="more"
                           width={15}
@@ -117,9 +117,11 @@ export default function UserPageLayout({
               </div>
             </div>
 
-            <div className=" text-black w-1/4 pr-6">
-              {/*FEEDS*/}
-              <RightBar />
+            <div className="text-black w-1/4 pr-6">
+              <RightBar 
+                username={user.username}
+                avatar_url={user.avatar_url}
+              />
             </div>
           </div>
 

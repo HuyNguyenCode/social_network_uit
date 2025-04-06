@@ -2,7 +2,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { FaPlus, FaRegComment } from "react-icons/fa";
 
-const PopularTags = () => {
+interface PopularTagsProps {
+  username: string;
+  avatar_url: string;
+}
+
+const PopularTags = ({ username, avatar_url }: PopularTagsProps) => {
+  console.log("PopularTags received username:", username);
   return (
     <div className="rounded-2xl border-[1px] border-borderGray flex flex-col bg-[#f7f9fa]">
       {/* BACKGROUND CHANGE*/}
@@ -26,8 +32,8 @@ const PopularTags = () => {
       <div className="px-4 py-2">
 
         {/* USER NAME */}
-        <h2 className=" font-bold py-2">
-          {"Wonderful_Law_0612"}
+        <h2 className="font-bold py-2">
+          {username || "No username"}
         </h2>
 
         <div className="flex gap-2 justify-between py-3">

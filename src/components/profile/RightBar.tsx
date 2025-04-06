@@ -1,12 +1,22 @@
 import Recommendations from "./Recommendations"; 
 import PopularTags from "./PopularTags"; 
 
+interface RightBarProps {
+  username: string;
+  avatar_url: string;
+}
 
-const RightBar = () => {
+const RightBar = ({ username, avatar_url }: RightBarProps) => {
   return (
-    <div className="w-full py-4 flex-col gap-4 sticky top-0 h-max flex "> 
-      <PopularTags />
-      <Recommendations />  
+    <div className="py-4 space-y-4">
+      <PopularTags 
+        username={username}
+        avatar_url={avatar_url}
+      />
+      <Recommendations 
+        username={username}
+        avatar_url={avatar_url}
+      />
     </div>
   );
 };

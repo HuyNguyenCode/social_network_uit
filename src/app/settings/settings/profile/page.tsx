@@ -1,17 +1,40 @@
 "use client";
 
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "@/redux/store";
-import { updateProfile } from "@/redux/profileSlice";
+import { useState } from 'react';
 import ProfileInfo from "@/components/profile/ProfileInfo";
 import ProfileAvatar from "@/components/profile/ProfileAvatar"; 
 
-export default function ProfilePage() {
-  const profile = useSelector((state: RootState) => state.profile);
-  const dispatch = useDispatch();
+interface ProfileData {
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  accountType: string;
+  avatarUrl: string;
+}
 
-  const handleInputChange = (field: keyof typeof profile, value: string) => {
-    dispatch(updateProfile({ [field]: value }));
+export default function ProfilePage() {
+  const [profile, setProfile] = useState<ProfileData>({
+    fullName: "Wonderful Law",
+    email: "wonderfullaw@gmail.com",
+    phoneNumber: "",
+    accountType: "Pro",
+    avatarUrl: "/general/image.png",
+  });
+  
+  const [isDirty, setIsDirty] = useState(false);
+
+  const handleInputChange = (field: keyof ProfileData, value: string) => {
+    setProfile(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    setIsDirty(true);
+  };
+
+  const handleSave = () => {
+    // Tạm thời chỉ hiện thông báo
+    alert("Changes saved!");
+    setIsDirty(false);
   };
 
   return (
@@ -29,6 +52,21 @@ export default function ProfilePage() {
             accountType={profile.accountType}
             onChange={handleInputChange}
           />
+          
+          {/* Nút Save */}
+          <div className="mt-6 w-full flex justify-end">
+            <button
+              onClick={handleSave}
+              disabled={!isDirty}
+              className={`px-6 py-2 rounded-lg text-white font-medium
+                ${isDirty 
+                  ? 'bg-blue-500 hover:bg-blue-600' 
+                  : 'bg-gray-400 cursor-not-allowed'
+                }`}
+            >
+              Save Changes
+            </button>
+          </div>
         </div>
       </div>
     </div>
