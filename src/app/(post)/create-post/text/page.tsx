@@ -2,9 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import TextEditor from "../editor";
+import TextEditor from "../ckEditor";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+import { postCreate } from "@/redux/postSlice";
+import { toast } from "sonner";
+import router from "next/router";
+
+const thumbnailUrl = "https://www.inspireuplift.com/resizer/?image=https://cdn.inspireuplift.com/uploads/images/seller_products/30455/1702641456_FunnyFuckMiddlefingerTrollFaceMeme.png&width=600&height=600&quality=90&format=auto&fit=pad"
+
 
 const link: { key: string, value: string }[] = [
   {
@@ -28,6 +36,8 @@ export default function Page() {
   const [error, setError] = useState("");
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
 
+  const dispatch = useDispatch<AppDispatch>();
+
   useEffect(() => {
     setIsButtonEnabled(title.trim().length > 0);
   }, [title]);
@@ -43,10 +53,23 @@ export default function Page() {
     }
   };
 
-  const handleSubmit = () => {
-    if (!title.trim()) {
-      setError("Vui lòng nhập tiêu đề bài viết");
-      return;
+  const handleSubmit = async () => {
+    const data = {
+      title: title,
+      content: content,
+      category: "text",
+      thumbnailUrl: "string",
+      userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      subredditId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    }
+    const result = await dispatch(postCreate(data));
+    if (postCreate.fulfilled.match(result)) {
+      toast.success("✅ Đã đăng bài viết thành công!");
+      router.push("/");
+    } else {
+      console.log("❌ Đăng bài viết thất bại:", result);
+      const errorMessage = (result.payload as { message: string })?.message || "Lỗi không xác định!";
+      toast.error(`❌ ${errorMessage}`);
     }
   };
 
@@ -70,7 +93,9 @@ export default function Page() {
         <label htmlFor="floating_filled" className="absolute text-gray-500 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] start-2.5 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto">Title</label>
         {error && <p className="absolute -bottom-[50px] left-2 text-red-500 my-2">{error}</p>}
       </div>
-      <TextEditor editorData={content} setEditorData={setContent} />
+      <div className="border border-[#FFFFFF33] rounded-2xl">
+        <TextEditor editorData={content} setEditorData={setContent} />
+      </div>
       <button
         onClick={handleSubmit}
         disabled={!isButtonEnabled}
