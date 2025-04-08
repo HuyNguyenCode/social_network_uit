@@ -10,6 +10,8 @@ import { AppDispatch } from "@/redux/store";
 import { postCreate } from "@/redux/postSlice";
 import { toast } from "sonner";
 import router from "next/router";
+import Followers from "../followers";
+import Following from "../following";
 
 const thumbnailUrl = "https://www.inspireuplift.com/resizer/?image=https://cdn.inspireuplift.com/uploads/images/seller_products/30455/1702641456_FunnyFuckMiddlefingerTrollFaceMeme.png&width=600&height=600&quality=90&format=auto&fit=pad"
 
@@ -35,6 +37,8 @@ export default function Page() {
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
+  const [viewFollowers, setViewFollowers] = useState(false);
+  const [viewFollowing, setViewFollowing] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -108,6 +112,15 @@ export default function Page() {
       >
         Post
       </button>
+
+      <button onClick={() => {
+        setViewFollowers(true);
+      }}>View Followers</button>
+      {viewFollowers && (<Followers isModalOpen={viewFollowers} setIsModalOpen={setViewFollowers} />)}
+      <button onClick={() => {
+        setViewFollowing(true);
+      }}>View Following</button>
+      {viewFollowing && (<Following isModalOpen={viewFollowing} setIsModalOpen={setViewFollowing} />)}
     </div>
   );
 }
