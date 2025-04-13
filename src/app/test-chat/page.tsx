@@ -8,9 +8,9 @@ import {
 } from "@microsoft/signalr";
 
 const users = [
-  { id: "08dd62a5-c7f9-48af-8811-0528eb1f3e51", name: "admin" },
-  { id: "08dd62a6-9600-4a0d-86ad-ba9d0fcbec8c", name: "ngntu1234" },
-  { id: "08dd642f-3db6-43fa-8158-af34b0bd9d42", name: "ngntu10" },
+  { id: "08dd68a8-1a45-492c-8d88-3a074394154c", name: "admin" },
+  { id: "08dd68a8-0acb-4ba0-8f39-84da41a58b6e", name: "ngntu1234" },
+  { id: "08dd67ab-ae5e-4097-8882-3543a74bcba3", name: "ngntu10" },
 ];
 
 const ChatPage = () => {
