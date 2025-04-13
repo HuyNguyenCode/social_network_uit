@@ -25,7 +25,7 @@ const ChatPage = () => {
 
   useEffect(() => {
     const connection = new HubConnectionBuilder()
-      .withUrl(`https://localhost:44371/chathub?userId=${currentUser.id}`)
+      .withUrl(`http://localhost:8080/chathub?userId=${currentUser.id}`)
       .configureLogging(LogLevel.Information)
       .withAutomaticReconnect()
       .build();
