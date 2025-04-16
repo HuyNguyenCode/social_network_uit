@@ -1,13 +1,10 @@
 "use client";
 
-import { useDispatch } from "react-redux";
-import { votePost } from "@/redux/postSlice";
-import { AppDispatch } from "@/redux/store";
-import { toast } from "sonner";
+// import { useDispatch } from "react-redux";
+// import { AppDispatch } from "@/redux/store";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import HoverUser from "./HoverUser";
 
 
 const UserPeakProfile = () => {
@@ -44,7 +41,7 @@ const UserPeakProfile = () => {
 
 const Post = () => {
     const [vote, setVote] = useState<number | null>(null);
-    const dispatch = useDispatch<AppDispatch>();
+    // const dispatch = useDispatch<AppDispatch>();
     const handleDownVote = async () => {
         // const result = await dispatch(votePost({ postId: "1", voteData: { userId: "1", voteType: 1 } }));
         // if (votePost.fulfilled.match(result)) {

@@ -15,13 +15,13 @@ const InputFile = () => {
     const inputFileRef = useRef<HTMLInputElement | null>(null);
     const [images, setImages] = useState<string[]>([]);
     const [currentIndex, setCurrentIndex] = useState<number>(0);
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const imageURL = URL.createObjectURL(file);
-            setImages((prev) => [...prev, imageURL]);
-        }
-    };
+    // const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    //     const file = event.target.files?.[0];
+    //     if (file) {
+    //         const imageURL = URL.createObjectURL(file);
+    //         setImages((prev) => [...prev, imageURL]);
+    //     }
+    // };
 
     const prevSlide = (): void => {
         setCurrentIndex(
