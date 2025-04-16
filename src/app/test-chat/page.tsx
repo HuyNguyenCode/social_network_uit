@@ -1,80 +1,175 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import WaitingRoom from "@/components/waitingroom";
-import ChatRoom from "@/components/chatroom";
+import { useState, useEffect } from "react";
 import {
   HubConnection,
   HubConnectionBuilder,
   LogLevel,
 } from "@microsoft/signalr";
-import { useEffect, useState } from "react";
 
-const ChatTest = () => {
+const users = [
+  { id: "08dd68a8-1a45-492c-8d88-3a074394154c", name: "admin" },
+  { id: "08dd68a8-0acb-4ba0-8f39-84da41a58b6e", name: "ngntu1234" },
+  { id: "08dd67ab-ae5e-4097-8882-3543a74bcba3", name: "ngntu10" },
+];
+
+const ChatPage = () => {
   const [conn, setConnection] = useState<HubConnection | null>(null);
   const [messages, setMessages] = useState<{ username: string; msg: string }[]>(
     []
   );
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [messageInput, setMessageInput] = useState<string>("");
+  const [currentUser] = useState(users[0]);
+  const [activeUsers, setActiveUsers] = useState<string[]>([]);
 
-  const joinChatRoom = async (username: string, chatroom: string) => {
-    try {
-      const newConn = new HubConnectionBuilder()
-        .withUrl("http://localhost:5120/chathub")
-        .configureLogging(LogLevel.Information)
-        .withAutomaticReconnect() // Tự động reconnect nếu mất kết nối
-        .build();
-
-      newConn.on("ReceiveSpecificMessage", (username, msg) => {
-        console.log("Nhận tin nhắn từ server: ", username, msg);
-        setMessages((prevMessages) => [...prevMessages, { username, msg }]);
-      });
-
-      await newConn.start();
-      console.log("Kết nối SignalR thành công");
-
-      await newConn.invoke("JoinSpecificChatRoom", {
-        Username: username,
-        ChatRoom: chatroom,
-      });
-      console.log(`Đã tham gia phòng: ${chatroom}`);
-      setConnection(newConn);
-    } catch (error) {
-      console.error("Lỗi khi kết nối SignalR: ", error);
-    }
-  };
-
-  // Cleanup connection khi component unmount
   useEffect(() => {
+    const connection = new HubConnectionBuilder()
+      .withUrl(`http://localhost:8080/chathub?userId=${currentUser.id}`)
+      .configureLogging(LogLevel.Information)
+      .withAutomaticReconnect()
+      .build();
+
+    connection.on("UpdateActiveUsers", (userIds: string[]) => {
+      console.log(userIds);
+      setActiveUsers(userIds);
+    });
+
+    connection.on("ReceiveMessage", (sender: string, msg: string) => {
+      const senderUser = users.find((u) => u.id === sender);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          username:
+            sender === currentUser.id
+              ? currentUser.name
+              : senderUser?.name || "Unknown",
+          msg,
+        },
+      ]);
+    });
+
+    // Xử lý lịch sử tin nhắn
+    connection.on("LoadMessages", (loadedMessages: any[]) => {
+      const formattedMessages = loadedMessages.map((m) => {
+        const senderUser = users.find((u) => u.id === m.SenderId);
+        return {
+          username:
+            m.SenderId === currentUser.id
+              ? currentUser.name
+              : senderUser?.name || "Unknown",
+          msg: m.Content,
+        };
+      });
+      setMessages(formattedMessages);
+    });
+
+    // Bắt đầu kết nối
+    connection
+      .start()
+      .then(() => setConnection(connection))
+      .catch((error) => console.error("Error connecting to SignalR:", error));
+
+    // Cleanup
     return () => {
-      if (conn) {
-        conn.stop();
-        console.log("Đã ngắt kết nối SignalR");
-      }
+      connection.stop();
     };
-  }, [conn]);
-  const sendMessage = async (messages: string) => {
-    try {
-      await conn?.invoke("SendMessage", messages);
-    } catch (e) {
-      console.log(e);
+  }, [currentUser.id]);
+
+  const joinChat = async (senderId: string, receiverId: string) => {
+    if (conn) {
+      try {
+        const roomId = [senderId, receiverId].sort().join("-");
+        await conn.invoke("JoinRoom", roomId, senderId, receiverId);
+      } catch (error) {
+        console.error("Error joining chat:", error);
+      }
     }
   };
+
+  const sendMessage = async () => {
+    if (conn && selectedUser && messageInput.trim() !== "") {
+      const senderId = currentUser.id;
+      const receiverId = selectedUser;
+      const roomId = [senderId, receiverId].sort().join("-");
+
+      await conn.invoke(
+        "SendMessage",
+        roomId,
+        senderId,
+        receiverId,
+        messageInput
+      );
+
+      setMessageInput("");
+    }
+  };
+
+  const handleSelectUser = (userId: string) => {
+    setSelectedUser(userId);
+    joinChat(currentUser.id, userId);
+  };
+
   return (
     <div>
-      <main>
-        <ul>
-          <li>
-            <h1>Welcome to the chat app</h1>
-          </li>
-          <li>
-            {!conn ? (
-              <WaitingRoom joinChatRoom={joinChatRoom} />
-            ) : (
-              <ChatRoom messages={messages} sendMessage={sendMessage} />
-            )}
-          </li>
-        </ul>
-      </main>
+      <h2>Chat Application</h2>
+      <p>
+        Logged in as: <strong>{currentUser.name}</strong>
+      </p>
+      {!selectedUser ? (
+        <div>
+          <h3>Select a user to chat with</h3>
+          <ul>
+            {users
+              .filter((user) => user.id !== currentUser.id)
+              .map((user) => (
+                <li
+                  key={user.id}
+                  onClick={() => handleSelectUser(user.id)}
+                  style={{
+                    cursor: "pointer",
+                    color: activeUsers.includes(user.id) ? "green" : "gray",
+                  }}
+                >
+                  {user.name}{" "}
+                  {activeUsers.includes(user.id) ? "(Online)" : "(Offline)"}
+                </li>
+              ))}
+          </ul>
+        </div>
+      ) : (
+        <div>
+          <h3>
+            Chat between <strong>{currentUser.name}</strong> and{" "}
+            <strong>{users.find((u) => u.id === selectedUser)?.name}</strong>
+          </h3>
+          <div
+            style={{
+              height: "300px",
+              overflowY: "scroll",
+              border: "1px solid #ccc",
+            }}
+          >
+            {messages.map((message, index) => (
+              <div key={index} style={{ padding: "5px", marginBottom: "10px" }}>
+                <strong>{message.username}: </strong>
+                {message.msg}
+              </div>
+            ))}
+          </div>
+          <div>
+            <input
+              type="text"
+              value={messageInput}
+              onChange={(e) => setMessageInput(e.target.value)}
+              placeholder="Type a message"
+            />
+            <button onClick={sendMessage}>Send</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default ChatTest;
+export default ChatPage;
