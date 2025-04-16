@@ -38,6 +38,7 @@ body {
     --gray-0-white: #FFF;
     /* --Gray-50:  */
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -70,7 +71,116 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.ck-content {
+  background-color: transparent !important;
+  color: white !important;
+  border-radius: 0.5rem !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ck-content p {
+  color: white !important;
+}
+
+.ck.ck-editor__editable_inline {
+  color: white !important;
+  border-radius: 0.5rem !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ck-editor__editable {
+  background-color: transparent !important;
+  color: white !important;
+  border-radius: 0.5rem !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ck-editor__editable_inline {
+  background-color: transparent !important;
+  color: white !important;
+  border-radius: 0.5rem !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ck-toolbar {
+  background-color: transparent !important;
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ck-toolbar__items {
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ck-button {
+  color: white !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ck-button:hover {
+  background-color: #283039 !important;
+}
+
+.ck-editor__main {
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ck.ck-editor__main>.ck-editor__editable {
+  border: none !important;
+  outline: none !important;
+}
+
+.ck.ck-editor__main>.ck-editor__editable:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.ck-sticky-panel__content {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.ck.ck-dropdown__panel, .ck-button.ck-on {
+  background-color: transparent !important;
+}
+
+.ck-list, .ck-list-item-button {
+  background-color: #0A0A0A !important;
+}
+
+.ck-content h1 {
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  color: white !important;
+}
+
+.ck-content h2 {  
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: white !important;
+}
+
+.ck-content p {
+  font-size: 16px !important;
+  font-weight: 400 !important;
+  color: white !important;
 }
