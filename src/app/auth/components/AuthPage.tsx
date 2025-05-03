@@ -12,6 +12,8 @@ import { z } from "zod";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../../../redux/store";
 import { loginUser, registerUser } from "../../../redux/authSlice";
+import { useUserStore } from "@/store/useUserStore"; // import store
+
 
 const cx = classNames.bind(styles);
 
@@ -36,10 +38,12 @@ const signUpSchema = z
 
 const AuthPage = () => {
   // State để kiểm soát form hiển thị
+   const { setUser } = useUserStore();  // Lấy hàm setUser từ store
+
   const [isSignUp, setIsSignUp] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { loading, error } = useSelector((state: RootState) => state.auth);
+  const { loading, error } = useSelector((state: RootState) => state.auth as { loading: boolean; error: string | null });
   const { token } = useSelector((state: RootState) => state.auth);
 
   //   const { toast } = useToast()
@@ -69,7 +73,13 @@ const AuthPage = () => {
   const onLogin = async (data: any) => {  
     const result = await dispatch(loginUser(data));
     console.log("📢 Kết quả từ loginUser:", result);
-  
+
+    // Cập nhật thông tin người dùng vào Zustand
+    const idPayload = result.payload as { user: { id: string } };
+    const unPayload = result.payload as { user: { name: string } };
+    setUser(idPayload.user.id, unPayload.user.name);
+
+
     if (loginUser.fulfilled.match(result)) {
       toast.success("✅ Login Successfully!");
       router.push("/");
