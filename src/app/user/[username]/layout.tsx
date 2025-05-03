@@ -11,8 +11,7 @@ import SortDropDown from "@/components/profile/SortDropDown";
 import ScrollBars from "@/components/profile/ScrollBars";
 import { useParams, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { mockUsers } from "./data/mockData";
-import PopularTags from "@/components/profile/PopularTags";
+import { mockUsers } from "./data/mockData"; 
 
 const cx = classNames.bind(styles);
 
@@ -106,10 +105,12 @@ export default function UserPageLayout({
                 </div>
 
                 <div className="flex border-b pb-3">
-                  <button className="py-1 px-4 gap-2 font-thin bg-white text-black text-sm rounded-full border-[1px] flex items-center hover:border-black">
-                    <span className="text-xl">+</span>
-                    <span>Create Post</span>
-                  </button>
+                  <Link href="/create-post/text">
+                    <button className="py-1 px-4 gap-2 font-thin bg-white text-black text-sm rounded-full border-[1px] flex items-center hover:border-black">
+                      <span className="text-xl">+</span>
+                      <span>Create Post</span>
+                    </button>
+                  </Link>
 
                   <SortDropDown />
                 </div>

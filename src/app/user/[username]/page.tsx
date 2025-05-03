@@ -8,10 +8,8 @@ export default function UserProfile() {
     const username = params.username as string;
 
     useEffect(() => {
-        // Only redirect to posts if we're on the exact username route
-        if (window.location.pathname === `/${username}`) {
-            router.push(`/${username}/posts`);
-        }
+        // Luôn redirect khi vào trang này
+        router.replace(`/user/${username}/posts`);
     }, [username, router]);
 
     return null;

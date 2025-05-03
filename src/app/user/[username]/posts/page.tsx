@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { mockUsers, mockPosts } from "../data/mockData";
 // import Postx from "@/components/profile/Postx";
 import { getTimeAgo } from "@/utils/dateFormat";
-import Post from "@/app/(post)/components/post";
+import Post from "@/app/(post)/components/post"; 
 
 export default function UserPosts() {
     const params = useParams();
@@ -56,7 +56,7 @@ export default function UserPosts() {
     }
 
     return (
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-4"> 
             {userPosts.map((post) => (
                 <div key={post.p_id} className="border-b border-border pb-4">
                     {/* <Postx post={post} /> */}

@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { mockUsers, mockPosts, mockSavedPosts, mockVotes } from "../data/mockData";
 import Postx from "@/components/profile/Postx";
 import { getTimeAgo } from "@/utils/dateFormat";
+import Post from "@/app/(post)/components/post";
+import UserPeakProfile from "@/app/(post)/components/UserPeakProfile";
+import Page from "@/app/(post)/[slug]/page";
 
 export default function SavedPosts() {
     const params = useParams();
@@ -84,7 +87,9 @@ export default function SavedPosts() {
         <div className="p-4 space-y-4">
             {savedPosts.map((post) => (
                 <div key={post.p_id} className="border-b border-border pb-4">
-                    <Postx post={post} />
+                    {/* <Postx post={post} /> */} 
+                    <Post/>  
+
                 </div>
             ))}
         </div>

@@ -17,11 +17,11 @@ const ScrollBars = () => {
 
   // Tạo links động dựa trên username
   const links = [
-    { name: "Posts", path: `/${username}/posts` },
-    { name: "Comments", path: `/${username}/comments` },
-    { name: "Saved", path: `/${username}/saved` },
-    { name: "Upvoted", path: `/${username}/upvoted` },
-    { name: "Downvoted", path: `/${username}/downvoted` },
+    { name: "Posts", path: `/user/${username}/posts` },
+    { name: "Comments", path: `/user/${username}/comments` },
+    { name: "Saved", path: `/user/${username}/saved` },
+    { name: "Upvoted", path: `/user/${username}/upvoted` },
+    { name: "Downvoted", path: `/user/${username}/downvoted` },
   ];
 
   const handleClick = (path: string) => {

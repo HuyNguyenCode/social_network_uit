@@ -1,6 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { FaPlus, FaRegComment } from "react-icons/fa";
+import Followers from "@/app/(post)/create-post/followers";
+import Following from "@/app/(post)/create-post/following";
+import { useState } from "react";
 
 interface PopularTagsProps {
   username: string;
@@ -8,7 +11,10 @@ interface PopularTagsProps {
 }
 
 const PopularTags = ({ username, avatar_url }: PopularTagsProps) => {
-  console.log("PopularTags received username:", username);
+  console.log("PopularTags received username:", username);  
+  const [viewFollowers, setViewFollowers] = useState(false);
+  const [viewFollowing, setViewFollowing] = useState(false);
+  
   return (
     <div className="rounded-2xl border-[1px] border-borderGray flex flex-col bg-[#f7f9fa]">
       {/* BACKGROUND CHANGE*/}
@@ -53,17 +59,32 @@ const PopularTags = ({ username, avatar_url }: PopularTagsProps) => {
         {/* TOPICS */}
 
         <div className="flex justify-between">
-          <div className="">
-            <h2 className="font-bold text-gray-600">96</h2>
+          <div className="flex flex-col items-center">
+            <button
+              onClick={() => setViewFollowers(true)}
+              className="font-bold text-gray-600 focus:outline-none hover:underline"
+            >
+              96
+            </button>
             <span className="text-sm text-gray-500">Followers</span>
+            {viewFollowers && (
+              <Followers isModalOpen={viewFollowers} setIsModalOpen={setViewFollowers} />
+            )}
           </div>
 
-          <div className="">
-            <h2 className="text-gray-600 font-bold">70</h2>
+          <div className="flex flex-col items-center">
+            <button
+              onClick={() => setViewFollowing(true)}
+              className="text-gray-600 font-bold focus:outline-none hover:underline"
+            >
+              70
+            </button>
             <span className="text-gray-500 text-sm">Followings</span>
+            {viewFollowing && (
+              <Following isModalOpen={viewFollowing} setIsModalOpen={setViewFollowing} />
+            )}
           </div>
         </div>
-
 
       </div>
     </div>

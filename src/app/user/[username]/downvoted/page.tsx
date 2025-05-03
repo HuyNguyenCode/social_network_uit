@@ -4,6 +4,7 @@ import { mockUsers, mockPosts, mockVotes } from "../data/mockData";
 import { useEffect, useState } from 'react';
 import Postx from "@/components/profile/Postx";
 import { getTimeAgo } from "@/utils/dateFormat";
+import Post from '@/app/(post)/components/post';
 
 const DownvotedPosts = () => {
     const params = useParams(); // Lấy params từ URL
@@ -70,7 +71,8 @@ const DownvotedPosts = () => {
         <div className="p-4 space-y-4">
             {downvotedPosts.map((post) => (
                 <div key={post.p_id} className="border-b border-border pb-4">
-                    <Postx post={post} />
+                    {/* <Postx post={post} /> */}
+                    <Post/>
                 </div>
             ))}
         </div>

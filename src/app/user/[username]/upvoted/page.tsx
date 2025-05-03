@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { mockUsers, mockPosts, mockVotes } from "../data/mockData";
 import Postx from "@/components/profile/Postx";
 import { getTimeAgo } from "@/utils/dateFormat";
+import Post from '@/app/(post)/components/post';
 
 // Define proper types to match your Postx component's expectations
 interface User {
@@ -107,7 +108,8 @@ export default function UpvotedPosts() {
         <div className="p-4 space-y-4">
             {upvotedPosts.map((post) => (
                 <div key={post.p_id} className="border-b border-border pb-4">
-                    <Postx post={post} />
+                    {/* <Postx post={post} /> */}
+                    <Post/>
                 </div>
             ))}
         </div>
