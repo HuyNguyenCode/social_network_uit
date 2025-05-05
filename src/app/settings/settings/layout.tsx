@@ -12,7 +12,7 @@ export default function SettingsLayout({
   const pathname = usePathname();
 
   const links = [
-    { name: "Profile", path: "/settings/settings/profile" },
+    // { name: "Profile", path: "/settings/settings/profile" },
     { name: "Manage Link Account", path: "/settings/settings/link" },
     { name: "Change Password", path: "/settings/settings/change-password" },
     { name: "Notifications", path: "/settings/settings/notification" },

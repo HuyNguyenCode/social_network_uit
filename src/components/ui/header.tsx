@@ -5,18 +5,23 @@ import styles from "./header.module.scss";
 import classNames from "classnames/bind";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {  useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import Cookies from "js-cookie";
-import {  AppDispatch } from "@/redux/store";
+import { AppDispatch } from "@/redux/store";
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { logoutUser } from "@/redux/authSlice";
 import { Button } from "@/components/ui/button";
 
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+
 export default function Header() {
   const cx = classNames.bind(styles);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const user = useSelector((state: RootState) => state.user);
+
   interface LogoutResult {
     payload?: { message: string };
   }
@@ -148,19 +153,20 @@ export default function Header() {
                 />
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
-                <DropdownMenu.Content 
-                  className="z-[100] bg-white shadow-lg rounded-lg p-2" 
+                <DropdownMenu.Content
+                  className="z-[100] bg-white shadow-lg rounded-lg p-2"
                   sideOffset={5}
                 >
-                  <Link href={"/settings/profile"}>
+                  <Link href={`/user/${user.username}`}>
                     <DropdownMenu.Item className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer">
                       <span>View Profile </span>
                     </DropdownMenu.Item>
                   </Link>
-                  <DropdownMenu.Item className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                    <Link href={"/settings/settings"}></Link>
-                    <span>Settings </span>
-                  </DropdownMenu.Item>
+                  <Link href={"/settings/settings"}>
+                    <DropdownMenu.Item className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                      <span>Settings</span>
+                    </DropdownMenu.Item>
+                  </Link>
                   <DropdownMenu.Item className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer">
                     <button onClick={handleLogout}>Log out </button>
                   </DropdownMenu.Item>
