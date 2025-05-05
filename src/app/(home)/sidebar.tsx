@@ -13,7 +13,7 @@ export default function Sidebar() {
     { name: "Home", path: "/feed=home", icon: <HomeIcon /> },
     { name: "Popular", path: "/r/popular", icon: <PopularIcon /> },
     {
-      name: "All",
+      name: "Following",
       path: "/r/all",
       icon: <AllIcon />,
     },
@@ -21,7 +21,7 @@ export default function Sidebar() {
   return (
     <div className={cx("left-content")}>
       <div className={cx("navigation")}>
-        {navItems.map((item, index) => {
+        {navItems.map((item) => {
           const isActive = pathname.startsWith(item.path);
           return (
             <Link

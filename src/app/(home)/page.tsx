@@ -4,12 +4,11 @@ import styles from "./home.module.scss";
 import classNames from "classnames/bind";
 import { Import, Video } from "lucide-react";
 import Sidebar from "@/app/(home)/sidebar";
-import { useSelector } from "react-redux";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useDispatch, UseSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { fetchPosts } from "@/redux/postSlice";
+import { fetcHomehPosts } from "@/redux/homePostSlice";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -21,7 +20,7 @@ export default function Home() {
   );
 
   useEffect(() => {
-    dispatch(fetchPosts());
+    dispatch(fetcHomehPosts());
   }, [dispatch]);
   console.log("data", data);
 
@@ -152,7 +151,7 @@ export default function Home() {
                           />
                         </svg>
                       </div>
-                      <span className={cx("post-interact-text")}>198</span>
+                      <span className={cx("post-interact-text")}>{post.comments.length}</span>
                     </div>
                     <div className={cx("post-interact-item")}>
                       <span className={cx("post-interact-text")}>Share</span>
