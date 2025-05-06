@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import Link from "next/link";
 
 
 const UserPeakProfile = () => {
@@ -39,7 +40,7 @@ const UserPeakProfile = () => {
     )
 }
 
-const Post = () => {
+const Post = ({ slug }: { slug: string }) => {
     const [vote, setVote] = useState<number | null>(null);
     // const dispatch = useDispatch<AppDispatch>();
     const handleDownVote = async () => {
@@ -115,12 +116,12 @@ const Post = () => {
                     </button>
                 </div>
                  
-                    <a href="#" className="bg-[#e5ebee] hover:bg-[#f7f9fa] flex flex-row items-center justify-center rounded-full px-3 active:bg-[#FFFFFF26]">
+                    <Link href={`/post/${slug}`} className="bg-[#e5ebee] hover:bg-[#f7f9fa] flex flex-row items-center justify-center rounded-full px-3 active:bg-[#FFFFFF26]">
                         <svg fill="currentcolor" aria-hidden="true" className="mr-[6px]"  height="16" icon-name="comment-outline" viewBox="0 0 20 20" width="16" xmlns="http://www.w3.org/2000/svg">
                             <path d="M10 19H1.871a.886.886 0 0 1-.798-.52.886.886 0 0 1 .158-.941L3.1 15.771A9 9 0 1 1 10 19Zm-6.549-1.5H10a7.5 7.5 0 1 0-5.323-2.219l.54.545L3.451 17.5Z"></path>
                         </svg>
                         <span className="text-black text-xs font-semibold">100</span> 
-                    </a> 
+                    </Link> 
                 <button className="border-gray-200 bg-[#e5ebee] hover:bg-[#f7f9fa] flex flex-row items-center justify-center rounded-full px-3 active:bg-[#FFFFFF26]">
                     <svg aria-hidden="true" className="mr-[6px]" fill="" height="16" icon-name="share-new-outline" viewBox="0 0 20 20" width="16" xmlns="http://www.w3.org/2000/svg">
                         <path d="M2.239 18.723A1.235 1.235 0 0 1 1 17.488C1 11.5 4.821 6.91 10 6.505V3.616a1.646 1.646 0 0 1 2.812-1.16l6.9 6.952a.841.841 0 0 1 0 1.186l-6.9 6.852A1.645 1.645 0 0 1 10 16.284v-2.76c-2.573.243-3.961 1.738-5.547 3.445-.437.47-.881.949-1.356 1.407-.23.223-.538.348-.858.347ZM10.75 7.976c-4.509 0-7.954 3.762-8.228 8.855.285-.292.559-.59.832-.883C5.16 14 7.028 11.99 10.75 11.99h.75v4.294a.132.132 0 0 0 .09.134.136.136 0 0 0 .158-.032L18.186 10l-6.438-6.486a.135.135 0 0 0-.158-.032.134.134 0 0 0-.09.134v4.36h-.75Z"></path>

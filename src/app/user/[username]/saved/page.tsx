@@ -6,7 +6,7 @@ import Postx from "@/components/profile/Postx";
 import { getTimeAgo } from "@/utils/dateFormat";
 import Post from "@/app/(post)/components/post";
 import UserPeakProfile from "@/app/(post)/components/UserPeakProfile";
-import Page from "@/app/(post)/[slug]/page";
+import Page from "@/app/(post)/post/[slug]/page";
 
 export default function SavedPosts() {
     const params = useParams();
