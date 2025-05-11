@@ -21,7 +21,7 @@ export default function Sidebar() {
   return (
     <div className={cx("left-content")}>
       <div className={cx("navigation")}>
-        {navItems.map((item) => {
+        {navItems.map((item, index) => {
           const isActive = pathname.startsWith(item.path);
           return (
             <Link

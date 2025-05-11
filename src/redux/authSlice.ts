@@ -25,7 +25,7 @@ export const loginUser = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await fetch("http://localhost:8080/api/Auth/login", {
+      const response = await fetch("http://103.82.194.197:8080/api/Auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -73,7 +73,7 @@ export const registerUser = createAsyncThunk(
     console.log(credentials);
 
     try {
-      const response = await fetch("http://localhost:8080/api/Auth/register", {
+      const response = await fetch("http://103.82.194.197:8080/api/Auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -106,10 +106,8 @@ export const registerUser = createAsyncThunk(
 // Thunk xử lý đăng xuất
 export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
-  async (sessionToken: string, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      console.log("sessionToken: ");
-      console.log(sessionToken);
       const response = await fetch("http://localhost:8080/api/Auth/logout", {
         method: "POST",
         body: JSON.stringify({}),
@@ -121,11 +119,39 @@ export const logoutUser = createAsyncThunk(
       if (!response.ok) {
         throw { status: response.status };
       } else {
-        console.log("Logout successdully!");
+        console.log("Logout successfully!");
       }
       return true;
     } catch (error) {
       return rejectWithValue("Lỗi hệ thống");
+    }
+  }
+);
+
+// Thunk xử lý đổi mật khẩu
+export const changePassword = createAsyncThunk(
+  'auth/changePassword',
+  async (
+    { userId, oldPassword, newPassword }: { userId: number; oldPassword: string; newPassword: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/Auth/${userId}/changePassword`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldPassword, newPassword }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = result.Errors?.[0] || 'Đổi mật khẩu thất bại!';
+        return rejectWithValue({ message: errorMessage, status: response.status });
+      }
+
+      return result; // Trả về kết quả thành công
+    } catch (error: any) {
+      return rejectWithValue({ message: error.message || 'Lỗi máy chủ!', status: 500 });
     }
   }
 );
@@ -143,8 +169,6 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(loginUser.pending, (state) => {
-        console.log("Get into pending ");
-
         state.loading = true;
         state.error = null;
       })
@@ -161,12 +185,8 @@ const authSlice = createSlice({
         }
       )
       .addCase(loginUser.rejected, (state, action) => {
-        console.log("Get into rejected");
-
         state.loading = false;
         state.error = action.payload as string;
-        console.log("state.error: ");
-        console.log(action.payload);
       })
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
@@ -182,18 +202,38 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(logoutUser.pending, (state) => {
+      
+        
         state.loading = true;
       })
       .addCase(logoutUser.fulfilled, (state) => {
+        console.log("Get into logoutUser.fulfilled");
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
         state.loading = false;
       })
       .addCase(logoutUser.rejected, (state, action) => {
+        console.log("Get into logoutUser.rejected");
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      //Xử lý change-password
+      .addCase(changePassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.loading = false;
+        // Cập nhật trạng thái nếu cần
+      })
+      .addCase(changePassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
+      ;
+
+      
   },
 });
 

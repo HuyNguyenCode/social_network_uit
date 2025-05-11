@@ -11,11 +11,12 @@ import { HSIcon } from "@/app/settings/icons/HSIcon";
 import classNames from "classnames/bind";
 import styles from "./settings.module.scss";
 import Image from "next/image";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "@/redux/store";
+import {  useDispatch } from "react-redux";
+import {  AppDispatch } from "@/redux/store";
 import { logoutUser } from "@/redux/authSlice";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const cx = classNames.bind(styles);
 export default function Sidebar() {
@@ -44,52 +45,22 @@ export default function Sidebar() {
     },
   ];
   const dispatch = useDispatch<AppDispatch>();
-  const { toast } = useToast();
-  const router = useRouter();
-  const { token } = useSelector((state: RootState) => state.auth);
-  const handleLogout = () => {
-    if (token) {
-      const result = dispatch(logoutUser(token));
-      if (logoutUser.fulfilled.match(result)) {
-        toast({
-          description: "Logout Successfully!",
-        });
-        router.push("/auth");
-      } else {
-        toast({
-          title: "Login error",
-          description: "Login error",
-          variant: "destructive",
-        });
-      }
-    } else {
-      toast({
-        title: "Token error",
-        description: "Token is missing",
-        variant: "destructive",
-      });
-    }
-    // const result = fetch("../api/auth/logout", {
-    //   method: "POST",
-    //   body: JSON.stringify({}),
-    //   credentials: "include",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // }).then(async (res) => {
-    //   const payload = await res.json();
-    //   const data = {
-    //     status: res.status,
-    //     payload,
-    //   };
-    //   if (!res.ok) {
-    //     throw data;
-    //   }
- 
-    //   return data;
-    // });
 
-    
+  const router = useRouter();
+  const handleLogout = async () => {
+    const result = await dispatch(logoutUser());
+    if (logoutUser.fulfilled.match(result)) {
+      Cookies.remove("sessionToken", { path: "/" });
+      Cookies.remove("userName", { path: "/" });
+      console.log("Get into fulfilled");
+      toast.success("✅ Logout Successfully!");
+      router.push("/auth");
+    } else {
+      const errorMessage =
+        (result.payload as { message: string })?.message ||
+        "Lỗi không xác định!";
+      toast.error(`❌ ${errorMessage}`);
+    }
   };
   return (
     <div className={cx("sidebar")}>

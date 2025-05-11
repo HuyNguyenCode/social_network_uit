@@ -1,10 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer from "./authSlice";
+import authReducer from "./authSlice"; 
+import userReducer from "./userSlice"; 
+
 
 const store = configureStore({
   reducer: {
-    auth: authReducer,
-  },
+    auth: authReducer,  
+    user: userReducer, // Thêm dòng này
+  }, 
 });
 
 // Lấy kiểu dữ liệu RootState và AppDispatch

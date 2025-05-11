@@ -5,10 +5,12 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 
 import ReduxProvider from "@/providers/ReduxProvider";
-import { Provider } from "react-redux";
+
+import SessionProvider from "@/components/SessionProvider";
+
 import AppProvider from "@/app/AppProvider";
 import { cookies } from "next/headers";
-// import { store } from "@/store/store"; // Import store từ Redux Toolkit
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -49,6 +51,7 @@ export default async function RootLayout({
             {/* <Provider store={store}>{children}</Provider> */}
             <Toaster />
             <AppProvider initialSessionToken={sessionToken?.value}>
+              <SessionProvider /> {/* Chạy logic refresh session */}
               {children}
             </AppProvider>
           </ThemeProvider>

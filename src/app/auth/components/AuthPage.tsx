@@ -14,6 +14,7 @@ import { RootState, AppDispatch } from "../../../redux/store";
 import { loginUser, registerUser } from "../../../redux/authSlice";
 import { useUserStore } from "@/store/useUserStore"; // import store
 
+import Cookies from "js-cookie";
 
 const cx = classNames.bind(styles);
 
@@ -38,7 +39,7 @@ const signUpSchema = z
 
 const AuthPage = () => {
   // State để kiểm soát form hiển thị
-   const { setUser } = useUserStore();  // Lấy hàm setUser từ store
+  const { setUser } = useUserStore(); // Lấy hàm setUser từ store
 
   const [isSignUp, setIsSignUp] = useState(false);
 
@@ -70,7 +71,7 @@ const AuthPage = () => {
   });
 
   // Xử lý đăng nhập
-  const onLogin = async (data: any) => {  
+  const onLogin = async (data: any) => {
     const result = await dispatch(loginUser(data));
     console.log("📢 Kết quả từ loginUser:", result);
 
@@ -78,7 +79,10 @@ const AuthPage = () => {
     const idPayload = result.payload as { user: { id: string } };
     const unPayload = result.payload as { user: { name: string } };
     setUser(idPayload.user.id, unPayload.user.name);
-
+    Cookies.set("userName", unPayload.user.name, {
+      expires: 1,
+      path: "/", // đảm bảo cookie được gửi trong mọi request
+    });
 
     if (loginUser.fulfilled.match(result)) {
       toast.success("✅ Login Successfully!");
@@ -89,7 +93,6 @@ const AuthPage = () => {
       toast.error(`❌ ${errorMessage}`);
     }
   };
-  
 
   //Gọi api để lưu sessionToken vào cookie
   useEffect(() => {
@@ -119,11 +122,12 @@ const AuthPage = () => {
   // Xử lý đăng ký
   const onSignUp = async (data: any) => {
     const result = dispatch(registerUser(data));
-    if (loginUser.fulfilled.match(result)) {
+    if (registerUser.fulfilled.match(result)) {
       toast.success("Register Successfully!");
+      toast.success("Check your mail for verification!");
       router.push("/auth");
     } else {
-      toast.error(((await result).payload as { message: string })?.message  || "Signup error");
+      toast.error(((await result).payload as { message: string })?.message || "Signup error");
     }
   };
 
@@ -145,50 +149,23 @@ const AuthPage = () => {
               <h1 className={cx("login__title")}>Log In</h1>
               <div className={cx("login__box")}>
                 <i className={cx("bx bx-user login__icon")}></i>
-                <input
-                  {...registerLogin("username")}
-                  type="text"
-                  placeholder="Username"
-                  className={cx("login__input")}
-                />
+                <input {...registerLogin("username")} type="text" placeholder="Username" className={cx("login__input")} />
               </div>
-              {loginErrors.name && (
-                <p className={cx("error-message")}>
-                  {loginErrors.name.message?.toString()}
-                </p>
-              )}
+              {loginErrors.name && <p className={cx("error-message")}>{loginErrors.name.message?.toString()}</p>}
               <div className={cx("login__box")}>
                 <i className={cx("bx bx-lock-alt login__icon")}></i>
-                <input
-                  {...registerLogin("password")}
-                  type="password"
-                  placeholder="Password"
-                  className={cx("login__input")}
-                />
+                <input {...registerLogin("password")} type="password" placeholder="Password" className={cx("login__input")} />
               </div>
-              {loginErrors.password && (
-                <p className={cx("error-message")}>
-                  {loginErrors.password.message?.toString()}
-                </p>
-              )}
+              {loginErrors.password && <p className={cx("error-message")}>{loginErrors.password.message?.toString()}</p>}
               <a href="#" className={cx("login__forgot")}>
                 Forgot password?
               </a>
-              <button
-                type="submit"
-                className={cx("login__button")}
-                disabled={loading}
-              >
+              <button type="submit" className={cx("login__button")} disabled={loading}>
                 {loading ? "Signing up..." : "Signup"}
               </button>
               <div>
-                <span className={cx("login__account")}>
-                  Don't have an Account?
-                </span>
-                <span
-                  className={cx("login__signin")}
-                  onClick={() => setIsSignUp(true)}
-                >
+                <span className={cx("login__account")}>Don't have an Account?</span>
+                <span className={cx("login__signin")} onClick={() => setIsSignUp(true)}>
                   Sign Up
                 </span>
               </div>
@@ -205,48 +182,21 @@ const AuthPage = () => {
               <h1 className={cx("login__title")}>Create Account</h1>
               <div className={cx("login__box")}>
                 <i className={cx("bx bx-user login__icon")}></i>
-                <input
-                  {...registerSignUp("username")}
-                  type="text"
-                  placeholder="name"
-                  className={cx("login__input")}
-                />
+                <input {...registerSignUp("username")} type="text" placeholder="name" className={cx("login__input")} />
               </div>
-              {signUpErrors.name && (
-                <p className={cx("error-message")}>
-                  {signUpErrors.name.message?.toString()}
-                </p>
-              )}
+              {signUpErrors.name && <p className={cx("error-message")}>{signUpErrors.name.message?.toString()}</p>}
 
               <div className={cx("login__box")}>
                 <i className={cx("bx bx-at login__icon")}></i>
-                <input
-                  {...registerSignUp("email")}
-                  type="email"
-                  placeholder="Email"
-                  className={cx("login__input")}
-                />
+                <input {...registerSignUp("email")} type="email" placeholder="Email" className={cx("login__input")} />
               </div>
-              {signUpErrors.email && (
-                <p className={cx("error-message")}>
-                  {signUpErrors.email.message?.toString()}
-                </p>
-              )}
+              {signUpErrors.email && <p className={cx("error-message")}>{signUpErrors.email.message?.toString()}</p>}
 
               <div className={cx("login__box")}>
                 <i className={cx("bx bx-lock-alt login__icon")}></i>
-                <input
-                  {...registerSignUp("password")}
-                  type="password"
-                  placeholder="Password"
-                  className={cx("login__input")}
-                />
+                <input {...registerSignUp("password")} type="password" placeholder="Password" className={cx("login__input")} />
               </div>
-              {signUpErrors.password && (
-                <p className={cx("error-message")}>
-                  {signUpErrors.password.message?.toString()}
-                </p>
-              )}
+              {signUpErrors.password && <p className={cx("error-message")}>{signUpErrors.password.message?.toString()}</p>}
 
               <div className={cx("login__box")}>
                 <i className={cx("bx bx-lock-alt login__icon")}></i>
@@ -258,21 +208,14 @@ const AuthPage = () => {
                 />
               </div>
               {signUpErrors.confirmPassword && (
-                <p className={cx("error-message")}>
-                  {signUpErrors.confirmPassword.message?.toString()}
-                </p>
+                <p className={cx("error-message")}>{signUpErrors.confirmPassword.message?.toString()}</p>
               )}
               <button type="submit" className={cx("login__button")}>
                 Sign Up
               </button>
               <div>
-                <span className={cx("login__account")}>
-                  Already have an Account?
-                </span>
-                <span
-                  className={cx("login__signup")}
-                  onClick={() => setIsSignUp(false)}
-                >
+                <span className={cx("login__account")}>Already have an Account?</span>
+                <span className={cx("login__signup")} onClick={() => setIsSignUp(false)}>
                   Sign In
                 </span>
               </div>

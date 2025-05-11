@@ -1,53 +1,164 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-// Interface cho trạng thái auth
-interface AuthState {
-  user: { id: number; name: string; email: string } | null;
-  token: string | null;
-  expiresAt: string | null;
+// Interface cho trạng thái post
+interface PostState {
+  currentPost: {
+    id: string;
+    title: string;
+    content: string;
+    category: string;
+    thumbnailUrl: string;
+    userId: string;
+    subredditId: string;
+  } | null;
   loading: boolean;
   error: string | null;
-  isAuthenticated: false;
 }
 
-const initialState: AuthState = {
-  user: null,
-  token: null,
-  expiresAt: null,
+const initialState: PostState = {
+  currentPost: null,
   loading: false,
   error: null,
-  isAuthenticated: false,
 };
+
 // Thunk xử lý đăng nhập
-export const loginUser = createAsyncThunk(
-  "auth/loginUser",
+export const postCreate = createAsyncThunk(
+  "post/create",
   async (
-    credentials: { username: string; password: string },
-    { rejectWithValue }
+    credentials: {
+      title: string;
+      content: string;
+      category?: string;
+      thumbnailUrl?: string;
+      userId: string;
+      subredditId?: string;
+    },
+    { rejectWithValue },
   ) => {
     try {
-      const response = await fetch("http://localhost:8080/api/Auth/login", {
+      const response = await fetch("http://localhost:8080/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       });
 
       const result = await response.json();
-      console.log("📢 API Response:", result); // LOG DỮ LIỆU API TRẢ VỀ
+      console.log("📢 API Response:", result);
 
       if (!response.ok) {
-        const errorMessage = result.Errors?.[0] || "Đăng nhập thất bại!";
+        const errorMessage = result.Errors?.[0] || "Đăng bài viết thất bại!";
         return rejectWithValue({ message: errorMessage, status: response.status });
       }
 
-      if (!result.result || !result.result.token) {
-        return rejectWithValue({ message: result.Errors?.[0], status: 500 });
+      if (!result.result) {
+        return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
       }
 
-      // Trích xuất token và thông tin user
-      const { token, expiresAt, account } = result.result;
-      console.log("✅ Đăng nhập thành công:", { token, account });
+      console.log("✅ Đăng bài viết thành công:", result.result);
+      const { post } = result.result;
+      const { message } = result;
+      return { post, message };
+    } catch (error: any) {
+      console.log("❌ Lỗi ngoại lệ:", error);
+      return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
+    }
+  },
+);
 
-      return { token, expiresAt, user: account, message: result.message };
+export const votePost = createAsyncThunk(
+  "post/vote",
+  async (
+    { postId, voteData }: { postId: string; voteData: { userId: string; voteType: number } },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/posts/${postId}/vote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(voteData),
+      });
+
+      const result = await response.json();
+      console.log("data: ");
+      console.log(result);
+      if (!response.ok || result.statusCode === 400) {
+        const errorMessage = result.Errors?.[0] || "Vote bài viết thất bại!";
+        return rejectWithValue({ message: errorMessage, status: response.status });
+      }
+
+      if (!result.result) {
+        return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
+      }
+
+      console.log("✅ Vote bài viết thành công:", result.result);
+      return { post: result.result, message: result.message };
+    } catch (error: any) {
+      console.log("❌ Lỗi ngoại lệ:", error);
+      return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
+    }
+  },
+);
+
+// Thunk xử lý đăng ký
+export const updatePost = createAsyncThunk(
+  "post/update",
+  async (
+    { postId, postData }: { postId: string; postData: { title: string; content: string; thumbnailUrl: string } },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/posts/${postId}/update`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(postData),
+      });
+
+      const result = await response.json();
+      console.log("data: ");
+      console.log(result);
+      if (!response.ok || result.statusCode === 400) {
+        const errorMessage = result.Errors?.[0] || "Cập nhật bài viết thất bại!";
+        return rejectWithValue({ message: errorMessage, status: response.status });
+      }
+
+      if (!result.result) {
+        return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
+      }
+
+      console.log("✅ Cập nhật bài viết thành công:", result.result);
+      return { post: result.result, message: result.message };
+    } catch (error: any) {
+      console.log("❌ Lỗi ngoại lệ:", error);
+      return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
+    }
+  },
+);
+
+// Thunk xử lý lấy bài viết theo ID
+export const getPostWithId = createAsyncThunk(
+  "post/getPostWithId",
+  async (postId: string, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/posts/${postId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+      console.log("📢 API Response:", result);
+
+      if (!response.ok) {
+        const errorMessage = result.Errors?.[0] || "Không thể lấy thông tin bài viết!";
+        return rejectWithValue({ message: errorMessage, status: response.status });
+      }
+
+      if (!result.result) {
+        return rejectWithValue({ message: "Không tìm thấy bài viết", status: 404 });
+      }
+
+      console.log("✅ Lấy thông tin bài viết thành công:", result.result);
+      return { post: result.result, message: result.message };
     } catch (error: any) {
       console.log("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
@@ -55,143 +166,63 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-
-
-// Thunk xử lý đăng ký
-export const registerUser = createAsyncThunk(
-  "auth/registerUser",
-  async (
-    credentials: {
-      username: string;
-      email: string;
-      password: string;
-      confirmPassword: string;
-    },
-    { rejectWithValue }
-  ) => {
-    console.log("credentials: ");
-    console.log(credentials);
-
-    try {
-      const response = await fetch("http://localhost:8080/api/Auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
-      });
-
-      const result = await response.json();
-      console.log("data: ");
-      console.log(result);
-      if (!response.ok || result.statusCode === 400) {
-        const errorMessage = result.errors?.[0] || "Đăng ký thất bại!";
-        return rejectWithValue({ message: errorMessage, status: response.status });
-      }
-
-      if (!result.result || !result.result.token) {
-        return rejectWithValue({ message: result.Errors?.[0], status: 500 });
-      }
-
-      // Trích xuất token và thông tin user
-      const { token, expiresAt, account } = result.result;
-      console.log("✅ Đăng nhập thành công:", { token, account });
-
-      return { token, expiresAt, user: account, message: result.message };
-
-    } catch (error) {
-      return rejectWithValue("Lỗi hệ thống");
-    }
-  }
-);
-
-// Thunk xử lý đăng xuất
-export const logoutUser = createAsyncThunk(
-  "auth/logoutUser",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await fetch("http://localhost:8080/api/Auth/logout", {
-        method: "POST",
-        body: JSON.stringify({}),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw { status: response.status };
-      } else {
-        console.log("Logout successfully!");
-      }
-      return true;
-    } catch (error) {
-      return rejectWithValue("Lỗi hệ thống");
-    }
-  }
-);
-
 // Slice
-const authSlice = createSlice({
-  name: "auth",
+const postSlice = createSlice({
+  name: "post",
   initialState,
   reducers: {
-    logout(state) {
-      state.user = null;
-      state.token = null;
+    clearCurrentPost(state) {
+      state.currentPost = null;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(loginUser.pending, (state) => {
+      // Xử lý getPostWithId
+      .addCase(getPostWithId.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        loginUser.fulfilled,
-        (
-          state,
-          action: PayloadAction<{ token: string; expiresAt: string; user: any }>
-        ) => {
-          state.loading = false;
-          state.user = action.payload.user;
-          state.token = action.payload.token;
-          state.expiresAt = action.payload.expiresAt;
-        }
-      )
-      .addCase(loginUser.rejected, (state, action) => {
+      .addCase(getPostWithId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentPost = action.payload.post;
+        state.error = null;
+      })
+      .addCase(getPostWithId.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.currentPost = null;
       })
-      .addCase(registerUser.pending, (state) => {
+      // Xử lý postCreate
+      .addCase(postCreate.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      .addCase(postCreate.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
+        state.currentPost = action.payload.post;
+        state.error = null;
       })
-      .addCase(registerUser.rejected, (state, action) => {
+      .addCase(postCreate.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(logoutUser.pending, (state) => {
-      
-        
+      // Xử lý updatePost
+      .addCase(updatePost.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
-      .addCase(logoutUser.fulfilled, (state) => {
-        console.log("Get into logoutUser.fulfilled");
-        state.user = null;
-        state.token = null;
-        state.isAuthenticated = false;
+      .addCase(updatePost.fulfilled, (state, action) => {
         state.loading = false;
+        state.currentPost = action.payload.post;
+        state.error = null;
       })
-      .addCase(logoutUser.rejected, (state, action) => {
-        console.log("Get into logoutUser.rejected");
+      .addCase(updatePost.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
   },
 });
 
-export const { logout } = authSlice.actions;
-export default authSlice.reducer;
+export const { clearCurrentPost } = postSlice.actions;
+export default postSlice.reducer;
