@@ -51,6 +51,7 @@ export default function Sidebar() {
     const result = await dispatch(logoutUser());
     if (logoutUser.fulfilled.match(result)) {
       Cookies.remove("sessionToken", { path: "/" });
+      Cookies.remove("userName", { path: "/" });
       console.log("Get into fulfilled");
       toast.success("✅ Logout Successfully!");
       router.push("/auth");

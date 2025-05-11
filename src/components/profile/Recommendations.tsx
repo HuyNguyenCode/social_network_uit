@@ -36,7 +36,7 @@ const Recommendations = ({ username, avatar_url }: RecommendationsProps) => {
         </div>
         {/* BUTTON */}
         <div>
-          <Link href="/settings/settings/profile">
+          <Link href="/settings/profile">
             <button className="py-1 px-2 font-semibold bg-gray-200 text-black rounded-full text-[12px] hover:bg-gray-100">
               Edit Profile
             </button>

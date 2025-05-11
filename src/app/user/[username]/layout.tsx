@@ -11,38 +11,51 @@ import SortDropDown from "@/components/profile/SortDropDown";
 import ScrollBars from "@/components/profile/ScrollBars";
 import { useParams, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { mockUsers } from "./data/mockData"; 
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { fetchUserById } from "@/redux/userSlice";
+import { useUserStore } from "@/store/useUserStore";
 
 const cx = classNames.bind(styles);
 
-export default function UserPageLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const params = useParams(); 
-  const username = params.username as string;
+export default function UserPageLayout({ children }: { children: React.ReactNode }) {
+  const params = useParams();
+  // const username = params.username as string;
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const { userId, username } = useUserStore(); // Lấy thông tin từ store
+
+  const dispatch = useDispatch<AppDispatch>();
+  const { userInfor, loading } = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
-    // Find the user
-    const userData = mockUsers.find((u) => u.username === username);
-    if (!userData) {
-      setError("User not found");
-      return;
+    if (userId) {
+      dispatch(fetchUserById(userId));
+    } else {
+      setError("User ID is missing");
     }
-    setUser(userData);
-  }, [username]);
+  }, [userId, dispatch]);
+
+  useEffect(() => {
+    if (loading) return; // đợi redux fetch xong đã
+
+    if (userInfor) {
+      console.log("userInfor: ", userInfor);
+      setUser(userInfor);
+      setError(null);
+    } else {
+      setError("User nickname not found");
+    }
+  }, [userInfor, loading]);
 
   // If user doesn't exist, show error
-  if (error) {
-    return (
-      <div className="container mx-auto p-4">
-        <div className="text-red-500">{error}</div>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="container mx-auto p-4">
+  //       <div className="text-red-500">{error || "User not found"}</div>
+  //     </div>
+  //   );
+  // }
 
   // Don't redirect, just show loading state if needed
   if (!user) {
@@ -55,7 +68,9 @@ export default function UserPageLayout({
 
   return (
     <div className="">
-      <div className="z-10"><Header /></div>
+      <div className="z-10">
+        <Header />
+      </div>
       <div className={cx("home-wrapper")}>
         <div className={cx("container")}>
           <div className={cx("home-content")}>
@@ -71,23 +86,15 @@ export default function UserPageLayout({
                     <div className="aspect-square rounded-full overflow-hidden border-4 border-gray-200 bg-gray-300">
                       <Image
                         src={user.avatar_url || "/general/image4.png"}
-                        alt={user.username || ""}
+                        alt={user.userName || ""}
                         width={100}
                         height={100}
                         className="object-cover"
                       />
                     </div>
-                    <Link
-                      href="/settings/settings/profile"
-                      className="absolute bottom-0 right-0 translate-y-1/5 z-20"
-                    >
+                    <Link href="/settings/settings/profile" className="absolute bottom-0 right-0 translate-y-1/5 z-20">
                       <div className="w-8 h-8 flex items-center justify-center rounded-full border-[1px] cursor-pointer bg-gray-200">
-                        <Image
-                          src="/icons/camera-svgrepo-com.svg"
-                          alt="more"
-                          width={15}
-                          height={15}
-                        />
+                        <Image src="/icons/camera-svgrepo-com.svg" alt="more" width={15} height={15} />
                       </div>
                     </Link>
                   </div>
@@ -119,10 +126,7 @@ export default function UserPageLayout({
             </div>
 
             <div className="text-black w-1/4 pr-6">
-              <RightBar 
-                username={user.username}
-                avatar_url={user.avatar_url}
-              />
+              <RightBar username={user.userName} avatar_url={user.avatar_url} />
             </div>
           </div>
 

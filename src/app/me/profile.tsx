@@ -2,9 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useAppContext } from "@/app/AppProvider";
+import { useUserStore } from "@/store/useUserStore";
+
+
 export default function ProfilePage() {
   const { sessionToken } = useAppContext();
   const [userName, setUserName] = useState();
+  const { userId, username } = useUserStore(); // Lấy thông tin từ store
+
   useEffect(() => {
     const fetchRequest = async () => {
       // const response = await fetch("http://localhost:4000/auth/login", {
@@ -50,5 +55,14 @@ export default function ProfilePage() {
     };
     fetchRequest();
   }, [sessionToken]);
-  return <div>Profile Hi {userName}</div>;
+  console.log("username: ", username);
+  console.log("userId: ", userId);
+
+  
+  return (
+    <div>
+     <h1>Welcome, {username}!</h1>
+     <p>Your User ID is: {userId}</p>
+    </div>
+  );
 }

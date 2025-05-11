@@ -6,7 +6,7 @@ export default function UserProfile() {
     const params = useParams();
     const router = useRouter();
     const username = params.username as string;
-
+      
     useEffect(() => {
         // Luôn redirect khi vào trang này
         router.replace(`/user/${username}/posts`);
