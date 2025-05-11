@@ -9,7 +9,7 @@ export const CldUploadWg = ({ props }: { props: {children: React.ReactNode, setI
 
     return (
         <CldUploadWidget
-            signatureEndpoint="/api/sign-image"
+            uploadPreset="ml_default"
             options={{
                 sources: ['local', 'url'],
                 multiple: true,

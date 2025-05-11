@@ -142,7 +142,7 @@ const InputFile = () => {
                     )}
                     <div className="w-full h-full">
                         <CldImage
-                            // deliveryType="fetch" 
+                            key={images[currentIndex]}
                             src={images[currentIndex]}
                             alt={`image ${currentIndex}`}
                             loading="lazy"
@@ -158,23 +158,3 @@ const InputFile = () => {
 };
 
 export default InputFile;
-
-const fadeIn = `
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.animate-fadeIn {
-    animation: fadeIn 0.3s ease-in-out;
-}`
-    ;
-const styleTag = document.createElement('style');
-styleTag.textContent = fadeIn;
-document.head.appendChild(styleTag);
