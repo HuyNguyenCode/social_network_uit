@@ -44,8 +44,7 @@ export default function Page() {
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
-  const [viewFollowers, setViewFollowers] = useState(false);
-  const [viewFollowing, setViewFollowing] = useState(false);
+
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -68,12 +67,11 @@ export default function Page() {
     const data = {
       title: title,
       content: content,
-      category: "text",
-      thumbnailUrl: "string",
-      userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      subredditId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
-    }
+      category: "text", // hoặc lấy từ state nếu có nhiều loại
+      postImages: [] // hoặc truyền mảng ảnh nếu có
+    };
     const result = await dispatch(postCreate(data));
+    
     if (postCreate.fulfilled.match(result)) {
       toast.success("✅ Đã đăng bài viết thành công!");
       router.push("/");
@@ -127,7 +125,6 @@ export default function Page() {
                 Post
               </button>
 
-        
             </div>
           </div>
         </div>

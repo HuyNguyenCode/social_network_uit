@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import Cookies from "js-cookie";
 // Interface cho trạng thái post
 interface PostState {
   currentPost: {
@@ -6,9 +7,7 @@ interface PostState {
     title: string;
     content: string;
     category: string;
-    thumbnailUrl: string;
-    userId: string;
-    subredditId: string;
+    postImages: string[];
   } | null;
   loading: boolean;
   error: string | null;
@@ -20,50 +19,57 @@ const initialState: PostState = {
   error: null,
 };
 
-// Thunk xử lý đăng nhập
+// Thunk xử lý create post
 export const postCreate = createAsyncThunk(
   "post/create",
   async (
-    credentials: {
+    postData: {
       title: string;
       content: string;
-      category?: string;
-      thumbnailUrl?: string;
-      userId: string;
-      subredditId?: string;
+      category: string;
+      postImages?: string[];
     },
-    { rejectWithValue },
+    { rejectWithValue }
   ) => {
     try {
-      const response = await fetch("http://localhost:8080/api/posts", {
+      const token = Cookies.get("sessionToken"); // Lấy token từ cookie
+
+      const response = await fetch("http://103.82.194.197:8080/api/posts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(credentials),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(postData),
       });
 
-      const result = await response.json();
-      console.log("📢 API Response:", result);
+      const data = await response.json();
+      console.log("📢 API Response:", data);
 
       if (!response.ok) {
-        const errorMessage = result.Errors?.[0] || "Đăng bài viết thất bại!";
-        return rejectWithValue({ message: errorMessage, status: response.status });
+        // Xử lý lỗi từ server
+        const errorMessage = data.message ||
+          data.errors?.join(", ") ||
+          "Đăng bài viết thất bại";
+        return rejectWithValue({
+          message: errorMessage,
+          status: response.status
+        });
       }
 
-      if (!result.result) {
-        return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
-      }
-
-      console.log("✅ Đăng bài viết thành công:", result.result);
-      const { post } = result.result;
-      const { message } = result;
-      return { post, message };
+      console.log("✅ Đăng bài viết thành công:", data);
+      return data; // Trả về toàn bộ response data nếu API không có nested 'result'
     } catch (error: any) {
-      console.log("❌ Lỗi ngoại lệ:", error);
-      return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
+      console.error("❌ Lỗi ngoại lệ:", error);
+      return rejectWithValue({
+        message: error.message || "Lỗi kết nối đến server",
+        status: 500
+      });
     }
-  },
+  }
 );
 
+//votePost
 export const votePost = createAsyncThunk(
   "post/vote",
   async (
@@ -71,7 +77,7 @@ export const votePost = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}/vote`, {
+      const response = await fetch(`http://103.82.194.197:8080/api/posts/user/${userId}/${getBy}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(voteData),
@@ -98,7 +104,7 @@ export const votePost = createAsyncThunk(
   },
 );
 
-// Thunk xử lý đăng ký
+// Thunk update post
 export const updatePost = createAsyncThunk(
   "post/update",
   async (
@@ -106,7 +112,7 @@ export const updatePost = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}/update`, {
+      const response = await fetch(`http://103.82.194.197:8080/api/posts/${id}/update`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(postData),
@@ -134,11 +140,27 @@ export const updatePost = createAsyncThunk(
 );
 
 // Thunk xử lý lấy bài viết theo ID
+// Thunk xử lý lấy danh sách bài viết theo userID (có phân trang)
 export const getPostWithId = createAsyncThunk(
   "post/getPostWithId",
-  async (postId: string, { rejectWithValue }) => {
+  async (
+    { 
+      userId,
+      page = 1,
+      pageSize = 10 
+    }: { 
+      userId: string;
+      page?: number;
+      pageSize?: number;
+    },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}`, {
+      const url = new URL(`http://103.82.194.197:8080/api/posts/user/${userId}/paginated`);
+      url.searchParams.append('page', page.toString());
+      url.searchParams.append('pageSize', pageSize.toString());
+
+      const response = await fetch(url.toString(), {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -148,20 +170,34 @@ export const getPostWithId = createAsyncThunk(
       const result = await response.json();
       console.log("📢 API Response:", result);
 
-      if (!response.ok) {
-        const errorMessage = result.Errors?.[0] || "Không thể lấy thông tin bài viết!";
-        return rejectWithValue({ message: errorMessage, status: response.status });
+      if (!response.ok || !result.succeeded) {
+        const errorMessage = result.message || 
+          result.errors?.join(", ") || 
+          "Không thể lấy danh sách bài viết";
+        return rejectWithValue({ 
+          message: errorMessage, 
+          status: response.status 
+        });
       }
 
       if (!result.result) {
-        return rejectWithValue({ message: "Không tìm thấy bài viết", status: 404 });
+        return rejectWithValue({ 
+          message: "Không tìm thấy bài viết", 
+          status: 404 
+        });
       }
 
-      console.log("✅ Lấy thông tin bài viết thành công:", result.result);
-      return { post: result.result, message: result.message };
+      console.log("✅ Lấy danh sách bài viết thành công:", result.result);
+      return {
+        data: result.result, // Bao gồm items, page, pages, size, total
+        message: result.message
+      };
     } catch (error: any) {
-      console.log("❌ Lỗi ngoại lệ:", error);
-      return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
+      console.error("❌ Lỗi ngoại lệ:", error);
+      return rejectWithValue({
+        message: error.message || "Lỗi kết nối đến server",
+        status: 500
+      });
     }
   }
 );
