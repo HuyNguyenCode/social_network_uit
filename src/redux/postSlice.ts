@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import Cookies from "js-cookie";
+import Cookies from "js-cookie"; 
+
+
 // Interface cho trạng thái post
 interface PostState {
   currentPost: {
@@ -19,26 +21,30 @@ const initialState: PostState = {
   error: null,
 };
 
+
+// const user = Cookies.get("userName");
+
 // Thunk xử lý create post
 export const postCreate = createAsyncThunk(
   "post/create",
-  async (
+  async ( 
     postData: {
       title: string;
       content: string;
-      category: string;
+      category: string; 
       postImages?: string[];
     },
     { rejectWithValue }
   ) => {
-    try {
+    try { 
       const token = Cookies.get("sessionToken"); // Lấy token từ cookie
+      console.log("Token lấy từ cookie:", token); // Thêm dòng này để kiểm tra
 
       const response = await fetch("http://103.82.194.197:8080/api/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(postData),
       });
@@ -46,7 +52,7 @@ export const postCreate = createAsyncThunk(
       const data = await response.json();
       console.log("📢 API Response:", data);
 
-      if (!response.ok) {
+      if (!response.ok || !data.succeeded) {
         // Xử lý lỗi từ server
         const errorMessage = data.message ||
           data.errors?.join(", ") ||
@@ -58,7 +64,7 @@ export const postCreate = createAsyncThunk(
       }
 
       console.log("✅ Đăng bài viết thành công:", data);
-      return data; // Trả về toàn bộ response data nếu API không có nested 'result'
+      return data.result; // Trả về toàn bộ response data nếu API không có nested 'result'
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({
