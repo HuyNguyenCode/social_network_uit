@@ -4,14 +4,18 @@ import { AdvancedImage } from "@cloudinary/react";
 import { CldUploadWg } from "@/components/ui/cldUploadWidget";
 import { Cloudinary } from "@cloudinary/url-gen";
 import { CldImage } from "next-cloudinary";
-
+import { useEffect } from "react";
 const cloudinary = new Cloudinary({
     cloud: {
         cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
     }
 });
 
-const InputFile = () => {
+type InputFileProps = {
+    onImagesChange: (images: string[]) => void;
+};
+
+const InputFile = ({ onImagesChange }: InputFileProps) => {
     const inputFileRef = useRef<HTMLInputElement | null>(null);
     const [images, setImages] = useState<string[]>([]);
     const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -22,6 +26,10 @@ const InputFile = () => {
     //         setImages((prev) => [...prev, imageURL]);
     //     }
     // };
+   
+    useEffect(() => {
+        onImagesChange(images);
+    }, [images, onImagesChange]);
 
     const prevSlide = (): void => {
         setCurrentIndex(
@@ -62,7 +70,7 @@ const InputFile = () => {
             )}
 
             {images.length > 0 && (
-                <div className="relative w-full h-[400px] border-2 border-gray-400 bg-white/10 backdrop-blur-3xl rounded-lg flex gap-2 items-center justify-center cursor-none">
+                <div className="relative w-full h-[400px] border-2 border-gray-400 bg-white/10 backdrop-blur-3xl rounded-lg flex gap-2 items-center justify-center cursor-none text-white">
                     {/* <button
                         className="absolute top-3 left-3 py-2 px-3 z-10 gap-2 rounded-full bg-black hover:bg-black/70 flex justify-center items-center cursor-pointer"
                         onClick={() => inputFileRef.current?.click()}
@@ -98,7 +106,7 @@ const InputFile = () => {
                             Add
                         </>,
                         setImages: setImages,
-                        className: "absolute top-3 left-3 py-2 px-3 z-10 gap-2 rounded-full bg-black hover:bg-black/70 flex justify-center items-center cursor-pointer"
+                        className: "absolute top-3 left-3 py-2 px-3 z-10 gap-2 rounded-full bg-black hover:bg-black/70 flex justify-center items-center cursor-pointer text-white"
                     }} />
                     <button className="absolute top-3 right-3 p-2 rounded-full bg-black hover:bg-black/70 z-10" onClick={() => handleDeleteImage(currentIndex)}>
                         <svg fill="currentColor" height="16" icon-name="delete-outline" viewBox="0 0 20 20" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M15.751 6.023 17 6.106l-.761 11.368a2.554 2.554 0 0 1-.718 1.741A2.586 2.586 0 0 1 13.8 20H6.2a2.585 2.585 0 0 1-1.718-.783 2.553 2.553 0 0 1-.719-1.737L3 6.106l1.248-.083.761 11.369c-.005.333.114.656.333.908.22.252.525.415.858.458h7.6c.333-.043.64-.207.859-.46.22-.254.338-.578.332-.912l.76-11.363ZM18 2.983v1.243H2V2.983h4v-.372A2.737 2.737 0 0 1 6.896.718 2.772 2.772 0 0 1 8.875.002h2.25c.729-.03 1.44.227 1.979.716.538.488.86 1.169.896 1.893v.372h4Zm-10.75 0h5.5v-.372a1.505 1.505 0 0 0-.531-1.014 1.524 1.524 0 0 0-1.094-.352h-2.25c-.397-.03-.79.097-1.094.352-.304.256-.495.62-.531 1.014v.372Z"></path></svg>
