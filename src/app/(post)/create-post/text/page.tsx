@@ -18,6 +18,9 @@ import styles from "@/app/(home)/home.module.scss";
 import classNames from "classnames/bind";
 import Sidebar from "@/app/(home)/sidebar";
 
+import { useUserStore } from "@/store/useUserStore";
+
+
 const cx = classNames.bind(styles);
 
 const thumbnailUrl = "https://www.inspireuplift.com/resizer/?image=https://cdn.inspireuplift.com/uploads/images/seller_products/30455/1702641456_FunnyFuckMiddlefingerTrollFaceMeme.png&width=600&height=600&quality=90&format=auto&fit=pad"
@@ -62,12 +65,12 @@ export default function Page() {
       setError("");
     }
   };
-
+  
   const handleSubmit = async () => {
     const data = {
       title: title,
       content: content,
-      category: "text", // hoặc lấy từ state nếu có nhiều loại
+      category: "text", // hoặc lấy từ state nếu có nhiều loại 
       postImages: [] // hoặc truyền mảng ảnh nếu có
     };
     const result = await dispatch(postCreate(data));
