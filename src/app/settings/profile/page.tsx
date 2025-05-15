@@ -41,7 +41,6 @@ export default function ProfilePage() {
     if (loading) return; // đợi redux fetch xong đã
 
     if (userInfor) {
-      // console.log("userInfor: ", userInfor);
       setUser(userInfor);
       setUserName(userInfor.userName || "");
       setEmail(userInfor.email || "");
@@ -81,9 +80,9 @@ export default function ProfilePage() {
   useEffect(() => {
     if (isUpdate) {
       alert("Cập nhật thông tin thành công!");
-      window.location.reload();
+      // window.location.reload();
     }
-  }, [isUpdate,loading]);
+  }, [isUpdate, loading]);
 
   return (
     <div className={cx("profile-wrapper")}>
@@ -212,9 +211,13 @@ export default function ProfilePage() {
                 </div>
                 <select className={cx("input-select")} value={gender} onChange={(e) => setGender(e.target.value)}>
                   <option value={gender}>{gender}</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
+                  {["Male", "Female", "Other"]
+                    .filter((g) => g !== gender)
+                    .map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
                 </select>
               </div>
             </div>

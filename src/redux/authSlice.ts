@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { stat } from "fs";
 // Interface cho trạng thái auth
 interface AuthState {
   user: { id: number; name: string; email: string } | null;
@@ -7,6 +8,7 @@ interface AuthState {
   loading: boolean;
   error: string | null;
   isAuthenticated: false;
+  isPasswordChanged: boolean
 }
 
 const initialState: AuthState = {
@@ -16,6 +18,7 @@ const initialState: AuthState = {
   loading: false,
   error: null,
   isAuthenticated: false,
+  isPasswordChanged: false,
 };
 // Thunk xử lý đăng nhập
 export const loginUser = createAsyncThunk(
@@ -136,7 +139,7 @@ export const changePassword = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/Auth/${userId}/changePassword`, {
+      const response = await fetch(`http://103.82.194.197:8080/api/Auth/${userId}/changePassword`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ oldPassword, newPassword }),
@@ -225,6 +228,7 @@ const authSlice = createSlice({
       })
       .addCase(changePassword.fulfilled, (state) => {
         state.loading = false;
+        state.isPasswordChanged = true; // Đánh dấu là đã đổi mật khẩu thành công
         // Cập nhật trạng thái nếu cần
       })
       .addCase(changePassword.rejected, (state, action) => {
