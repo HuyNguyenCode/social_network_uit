@@ -74,6 +74,9 @@ export const updateUserById = createAsyncThunk(
       });
 
       const data = await response.json();
+      console.log("📢 API Response:", data);
+      console.log("token:", token); // LOG DỮ LIỆU API TRẢ VỀ
+      
 
       if (!response.ok || !data.succeeded) {
         const errorMessage = data.message || "Cập nhật thông tin thất bại.";

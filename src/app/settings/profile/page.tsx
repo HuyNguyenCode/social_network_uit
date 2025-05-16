@@ -10,11 +10,10 @@ import { AppDispatch, RootState } from "@/redux/store";
 import { fetchUserById } from "@/redux/userSlice";
 import { updateUserById } from "@/redux/userSlice";
 import { logError } from "ckeditor5";
-import { set } from "date-fns";
 import InputFile from "../../(post)/create-post/inputFile";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
-
+import { toast } from "sonner";
 const cx = classNames.bind(styles);
 export default function ProfilePage() {
   const { userId, username } = useUserStore(); // Lấy thông tin từ store
@@ -55,7 +54,7 @@ export default function ProfilePage() {
     }
   }, [userInfor, loading]);
 
-  const handleUpdateProfile = () => {
+  const handleUpdateProfile = async  () => {
     const userInforUpdate = {
       username: userName,
       email: email,
@@ -65,13 +64,21 @@ export default function ProfilePage() {
     };
     const sessionToken = Cookies.get("sessionToken");
     if (userId) {
-      dispatch(
+       const result = await dispatch(
         updateUserById({
           userId,
           updatedData: userInforUpdate,
           token: sessionToken || "",
         }),
       );
+      if (updateUserById.fulfilled.match(result)) {
+        toast.success("✅ Updated profile successfully!");
+        // router.push("/");
+      } else {
+        console.log("❌ Updated profile failed:", result);
+        const errorMessage = (result.payload as { message: string })?.message || "Lỗi không xác định!";
+        toast.error(`❌ ${errorMessage}`);
+      }
     } else {
       logError("User ID is null");
     }
