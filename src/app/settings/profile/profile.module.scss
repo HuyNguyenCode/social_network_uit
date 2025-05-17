@@ -17,9 +17,12 @@
     padding: 0 32px;
     width: 100%;
     .profile-avatar-wrapper {
+      position: relative;
+      height: 100px;
+      width: 100px;
       .profile-avatar {
         border-radius: 246px;
-        background: var(--Avatar-1, url("../../../../public/avatar.jpg") lightgray 50% / cover no-repeat);
+        // background: var(--Avatar-1, url("../../../../public/avatar.jpg") lightgray 50% / cover no-repeat);
       }
     }
     .profile-infor-wrapper {
@@ -174,6 +177,12 @@
           .change-avatar-section {
             display: flex;
             gap: 32px;
+            .avatar-origin {
+              position: relative;
+              width: 11%;
+              height: 34%;
+              border-radius: 100%;
+            }
             .avatar-upload-box {
               flex: 1;
               display: flex;

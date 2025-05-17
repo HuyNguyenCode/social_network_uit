@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { fetchUserById } from "@/redux/userSlice";
 import { useUserStore } from "@/store/useUserStore";
-
+import OutputFile from "@/app/(post)/create-post/outputFile";
 const cx = classNames.bind(styles);
 
 export default function UserPageLayout({ children }: { children: React.ReactNode }) {
@@ -58,6 +58,8 @@ export default function UserPageLayout({ children }: { children: React.ReactNode
   // }
 
   // Don't redirect, just show loading state if needed
+  console.log("user: ", user);  
+  
   if (!user) {
     return (
       <div className="container mx-auto p-4">
@@ -84,13 +86,7 @@ export default function UserPageLayout({ children }: { children: React.ReactNode
 
                   <div className="w-1/6 relative">
                     <div className="aspect-square rounded-full overflow-hidden border-4 border-gray-200 bg-gray-300">
-                      <Image
-                        src={user.avatar_url || "/general/image4.png"}
-                        alt={user.userName || ""}
-                        width={100}
-                        height={100}
-                        className="object-cover"
-                      />
+                      <OutputFile imageID={user.avatarId}/>
                     </div>
                     <Link href="/settings/settings/profile" className="absolute bottom-0 right-0 translate-y-1/5 z-20">
                       <div className="w-8 h-8 flex items-center justify-center rounded-full border-[1px] cursor-pointer bg-gray-200">

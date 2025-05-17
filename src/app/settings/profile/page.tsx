@@ -14,6 +14,8 @@ import InputFile from "../../(post)/create-post/inputFile";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import OutputFile from "@/app/(post)/create-post/outputFile";
+
 const cx = classNames.bind(styles);
 export default function ProfilePage() {
   const { userId, username } = useUserStore(); // Lấy thông tin từ store
@@ -54,17 +56,19 @@ export default function ProfilePage() {
     }
   }, [userInfor, loading]);
 
-  const handleUpdateProfile = async  () => {
+  const handleUpdateProfile = async () => {
     const userInforUpdate = {
-      username: userName,
+      userName: userName,
       email: email,
       phoneNumber: phoneNumber,
       gender: gender,
       avatarId: uploadedImages,
     };
+    console.log(userInforUpdate);
+
     const sessionToken = Cookies.get("sessionToken");
     if (userId) {
-       const result = await dispatch(
+      const result = await dispatch(
         updateUserById({
           userId,
           updatedData: userInforUpdate,
@@ -73,6 +77,7 @@ export default function ProfilePage() {
       );
       if (updateUserById.fulfilled.match(result)) {
         toast.success("✅ Updated profile successfully!");
+        window.location.reload();
         // router.push("/");
       } else {
         console.log("❌ Updated profile failed:", result);
@@ -84,19 +89,22 @@ export default function ProfilePage() {
     }
   };
 
-  useEffect(() => {
-    if (isUpdate) {
-      alert("Cập nhật thông tin thành công!");
-      // window.location.reload();
-    }
-  }, [isUpdate, loading]);
+  // useEffect(() => {
+  //   if (isUpdate) {
+  //     alert("Cập nhật thông tin thành công!");
+  //     // window.location.reload();
+  //   }
+  // }, [isUpdate, loading]);
 
   return (
     <div className={cx("profile-wrapper")}>
       <div className={cx("profile-background")}></div>
       <div className={cx("profile-container")}>
         <div className={cx("profile-avatar-wrapper")}>
-          <Image aria-hidden src="/avatar.jpg" alt="File icon" width={128} height={128} className={cx("profile-avatar")} />
+          {/* <Image aria-hidden src="/avatar.jpg" alt="File icon" width={128} height={128} className={cx("profile-avatar")} /> */}
+          <div className={cx("profile-avatar")}>
+            <OutputFile imageID={user && user.avatarId} />
+          </div>
         </div>
         <div className={cx("profile-infor-wrapper")}>
           <div className={cx("profile-infor")}>
@@ -234,7 +242,8 @@ export default function ProfilePage() {
               <span className={cx("input-text")}>Change Avatar</span>
               <div className={cx("change-avatar-section")}>
                 <div className={cx("avatar-origin")}>
-                  <Image aria-hidden src="/avatar.jpg" alt="File icon" width={64} height={64} className={cx("profile-avatar")} />
+                  {/* <Image aria-hidden src="/avatar.jpg" alt="File icon" width={64} height={64} className={cx("profile-avatar")} /> */}
+                  <OutputFile imageID={user && user.avatarId} />
                 </div>
                 <div className={cx("avatar-upload-box")}>
                   <div className={cx("avatar-upload-text-wrapper")}>
