@@ -21,13 +21,13 @@ interface PostProps {
   }; 
 }
 
-const createSlug = (title: string) => {
-  return title
-    .toLowerCase() // Chuyển thành chữ thường
-    .replace(/[^\w\s]/g, '') // Loại bỏ ký tự đặc biệt
-    .replace(/\s+/g, '-') // Thay khoảng trắng bằng dấu gạch ngang
-    .trim(); // Loại bỏ khoảng trắng ở đầu/cuối
-};
+// const createSlug = (title: string) => {
+//   return title
+//     .toLowerCase() // Chuyển thành chữ thường
+//     .replace(/[^\w\s]/g, '') // Loại bỏ ký tự đặc biệt
+//     .replace(/\s+/g, '-') // Thay khoảng trắng bằng dấu gạch ngang
+//     .trim(); // Loại bỏ khoảng trắng ở đầu/cuối
+// };
 
 const UserPeakProfile = () => {
     return (
@@ -63,7 +63,7 @@ const UserPeakProfile = () => {
 
 const Post = ({ post}: PostProps) => {
  // Tạo slug từ post.title
-    const slug = createSlug(post.title);
+    // const slug = createSlug(post.title);
 
     const [vote, setVote] = useState<number | null>(null);
     // const dispatch = useDispatch<AppDispatch>();
@@ -140,7 +140,7 @@ const Post = ({ post}: PostProps) => {
                     </button>
                 </div>
                  
-                    <Link href={`/post/${slug}`} className="bg-[#e5ebee] hover:bg-[#f7f9fa] flex flex-row items-center justify-center rounded-full px-3 active:bg-[#FFFFFF26]">
+                    <Link href={`/post/${post.id}`} className="bg-[#e5ebee] hover:bg-[#f7f9fa] flex flex-row items-center justify-center rounded-full px-3 active:bg-[#FFFFFF26]">
                         <svg fill="currentcolor" aria-hidden="true" className="mr-[6px]"  height="16" icon-name="comment-outline" viewBox="0 0 20 20" width="16" xmlns="http://www.w3.org/2000/svg">
                             <path d="M10 19H1.871a.886.886 0 0 1-.798-.52.886.886 0 0 1 .158-.941L3.1 15.771A9 9 0 1 1 10 19Zm-6.549-1.5H10a7.5 7.5 0 1 0-5.323-2.219l.54.545L3.451 17.5Z"></path>
                         </svg>

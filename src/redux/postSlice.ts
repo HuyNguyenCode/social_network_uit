@@ -2,25 +2,6 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
 
 
-// Interface cho trạng thái post
-// interface PostState {
-//   currentPost: {
-//     id: string;
-//     title: string;
-//     content: string;
-//     category: string;
-//     postImages: string[];
-//   } | null;
-//   loading: boolean;
-//   error: string | null;
-// }
-
-// const initialState: PostState = {
-//   currentPost: null,
-//   loading: false,
-//   error: null,
-// };
-
 // interface PostDetail {
 //   id: string;
 //   title: string;
@@ -34,36 +15,79 @@ import Cookies from "js-cookie";
 // }
 
 
+// interface PostState {
+//   posts: { // Thêm mảng posts để lưu danh sách
+//     items: Array<{
+//       id: string;
+//       title: string;
+//       content: string;
+//       category: string;
+//       createdOn: string;
+//       upvoteCount: number;
+//       downvoteCount: number;
+//       postImages: string[];
+//       // ...thêm các field khác từ API
+//     }>;
+//     page: number;
+//     pages: number;
+//     size: number;
+//     total: number;
+//   } | null;
+//   currentPost: PostDetail | null; // Thêm field riêng cho post detail
+//   loading: boolean;
+//   error: string | null;
+// }
+
+// const initialState: PostState = {
+//   posts: null, // Thay currentPost bằng posts
+//   currentPost: null,
+//   loading: false,
+//   error: null,
+// };
+
+
+interface PostListItem {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  createdOn: string;
+  upvoteCount: number;
+  downvoteCount: number;
+  postImages: string[];
+  username: string;
+  userAvatar: string | null;
+}
+
+interface PostListResponse {
+  items: PostListItem[];
+  page: number;
+  pages: number;
+  size: number;
+  total: number;
+}
+
+interface PostDetail extends PostListItem {
+  // Các field bổ sung chỉ có trong detail
+  comments: any[];
+  votes: any[];
+  shares: any[];
+  reports: any[];
+}
+
 interface PostState {
-  posts: { // Thêm mảng posts để lưu danh sách
-    items: Array<{
-      id: string;
-      title: string;
-      content: string;
-      category: string;
-      createdOn: string;
-      upvoteCount: number;
-      downvoteCount: number;
-      postImages: string[];
-      // ...thêm các field khác từ API
-    }>;
-    page: number;
-    pages: number;
-    size: number;
-    total: number;
-  } | null;
-  // currentPost: PostDetail | null; // Thêm field riêng cho post detail
+  posts: PostListResponse | null;
+  currentPost: PostDetail | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: PostState = {
   posts: null, // Thay currentPost bằng posts
-  // currentPost: null,
+  currentPost: null,
   loading: false,
   error: null,
 };
-
 
 // const user = Cookies.get("userName");
 
@@ -187,8 +211,7 @@ export const updatePost = createAsyncThunk(
     }
   },
 );
-
-// Thunk xử lý lấy bài viết theo ID
+ 
 // Thunk xử lý lấy danh sách bài viết theo userID (có phân trang)
 export const getPostWithId = createAsyncThunk(
   "post/getPostWithId",
@@ -251,48 +274,33 @@ export const getPostWithId = createAsyncThunk(
   }
 );
 
-// // Thunk xử lý PostDetail
-// export const getPostDetailWithId = createAsyncThunk(
-//   "post/getPostDetailWithId",
-//   async (id: string, { rejectWithValue }) => {
-//     try {
-//       const response = await fetch(`http://103.82.194.197:8080/api/posts/${id}`, {
-//         method: "GET",
-//         headers: { "Content-Type": "application/json" },
-//       });
+//Lấy chi tiết bài viết theo ID
+export const getPostDetailWithId = createAsyncThunk(
+  "post/getPostDetail",
+  async (postId: string, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`http://103.82.194.197:8080/api/posts/${postId}`);
+      const result = await response.json();
 
-//       const result = await response.json();
-      
-//       if (!response.ok || !result.succeeded) {
-//         const errorMessage = result.message || 
-//           result.errors?.join(", ") || 
-//           "Không thể lấy chi tiết bài viết";
-//         return rejectWithValue({
-//           message: errorMessage,
-//           status: response.status
-//         });
-//       }
+      if (!response.ok || !result.succeeded) {
+        return rejectWithValue({
+          message: result.message || "Failed to fetch post detail",
+          status: response.status
+        });
+      }
 
-//       if (!result.result) {
-//         return rejectWithValue({
-//           message: "Không tìm thấy bài viết",
-//           status: 404
-//         });
-//       }
-//       console.log("✅ Lấy chi tiết bài viết thành công:", result.result);
-
-//       return {
-//         post: result.result, // Chỉ trả về post detail, không có pagination
-//         message: result.message,
-//       };
-//     } catch (error: any) {
-//       return rejectWithValue({
-//         message: error.message || "Lỗi kết nối đến server",
-//         status: 500
-//       });
-//     }
-//   }
-// );
+      return {
+        post: result.result as PostDetail,
+        message: result.message
+      };
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || "Server error",
+        status: 500
+      });
+    }
+  }
+);
 
 
 // Slice
@@ -306,7 +314,7 @@ const postSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder 
+    builder
       .addCase(getPostWithId.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -349,22 +357,38 @@ const postSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-    //   //Xử lý PostDetail
-    //   .addCase(getPostDetailWithId.pending, (state) => {
-    //   state.loading = true;
-    //   state.error = null;
-    //   state.currentPost = null; // Reset current post khi fetch mới
-    // })
-    // .addCase(getPostDetailWithId.fulfilled, (state, action) => {
-    //   state.loading = false;
-    //   state.currentPost = action.payload.post; // Lưu vào currentPost
-    //   state.error = null;
-    // })
-    // .addCase(getPostDetailWithId.rejected, (state, action) => {
-    //   state.loading = false;
-    //   state.error = (action.payload as any)?.message || "Lỗi không xác định";
-    //   state.currentPost = null;
-    // });
+      //   //Xử lý PostDetail
+      //   .addCase(getPostDetailWithId.pending, (state) => {
+      //   state.loading = true;
+      //   state.error = null;
+      //   state.currentPost = null; // Reset current post khi fetch mới
+      // })
+      // .addCase(getPostDetailWithId.fulfilled, (state, action) => {
+      //   state.loading = false;
+      //   state.currentPost = action.payload.post; // Lưu vào currentPost
+      //   state.error = null;
+      // })
+      // .addCase(getPostDetailWithId.rejected, (state, action) => {
+      //   state.loading = false;
+      //   state.error = (action.payload as any)?.message || "Lỗi không xác định";
+      //   state.currentPost = null;
+      // }); 
+      // Xử lý getPostDetailWithId (chi tiết)
+      .addCase(getPostDetailWithId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.currentPost = null;
+      })
+      .addCase(getPostDetailWithId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentPost = action.payload.post;
+        state.error = null;
+      })
+      .addCase(getPostDetailWithId.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as any)?.message || "Failed to load post detail";
+        state.currentPost = null;
+      })
   },
 });
 
