@@ -9,9 +9,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { postCreate } from "@/redux/postSlice";
 import { toast } from "sonner";
-import router from "next/router";
-import Followers from "../followers";
-import Following from "../following";
+import router from "next/router"; 
 
 import Header from '@/components/ui/header';
 import styles from "@/app/(home)/home.module.scss";

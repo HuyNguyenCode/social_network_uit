@@ -7,6 +7,27 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
+interface PostProps {
+  post: {
+    id: string;
+    title: string;
+    content: string;
+    createdOn: string;
+    username: string;
+    upvoteCount: number;
+    downvoteCount: number;
+    commentCount?: number;
+    // Thêm các trường khác nếu cần
+  }; 
+}
+
+const createSlug = (title: string) => {
+  return title
+    .toLowerCase() // Chuyển thành chữ thường
+    .replace(/[^\w\s]/g, '') // Loại bỏ ký tự đặc biệt
+    .replace(/\s+/g, '-') // Thay khoảng trắng bằng dấu gạch ngang
+    .trim(); // Loại bỏ khoảng trắng ở đầu/cuối
+};
 
 const UserPeakProfile = () => {
     return (
@@ -40,7 +61,10 @@ const UserPeakProfile = () => {
     )
 }
 
-const Post = ({ slug }: { slug: string }) => {
+const Post = ({ post}: PostProps) => {
+ // Tạo slug từ post.title
+    const slug = createSlug(post.title);
+
     const [vote, setVote] = useState<number | null>(null);
     // const dispatch = useDispatch<AppDispatch>();
     const handleDownVote = async () => {
@@ -69,7 +93,7 @@ const Post = ({ slug }: { slug: string }) => {
                 <div className="flex flex-row items-center gap-1 text-[#8BA2AD] text-xs font-semibold">
                     <div className="flex flex-row items-center gap-[6px] text-gray-700 hover:text-[#90A9FD] cursor-pointer">
                         <Image src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZw4HYx8PHlE8ZniW1hqck5nZeKaYZSqG56g&s" alt="avatar" className="w-6 h-6 rounded-full" width={24} height={24} />
-                        <p className="text-gray-700">John Doe</p>
+                        <p className="text-gray-700"> {post.username}</p>
                     </div>
                     <span>•</span>
                     <span>7 hour ago</span>
@@ -77,10 +101,10 @@ const Post = ({ slug }: { slug: string }) => {
                 <UserPeakProfile />
             </div>
             <div className="font-semibold text-black text-2xl mb-4">
-                How long does it take for a report I made to be processed?
+               {post.title}
             </div>
             <div className="text-sm text-black">
-                For the life of me I don't understand why I'm forced to have two reddit accounts. One that got created by default that I can't get rid of, like digital herpes, and the one I actually use. Whenever I clear my browser cache to un$%*& chrome, my reddit digital herpes flares up and I have a hell of a time getting back to the account I ACTUALLY created and the one Reddit forced on me. If I log out it immediately logs me back into the herpes account before I can enter my real credentials to log into the account I want to use. How do I fix this? LET ME DELETE THIS u/willing_past herpes account!
+                {post.content}
             </div>
             <div className="flex flex-row mt-4 gap-3">
                 <div className={cn("bg-[#e5ebee] flex flex-row items-center justify-center rounded-full ease-in-out duration-100", vote === 0 && "bg-[#D93900]", vote === 1 && "bg-[#6A3CFF]")}>
@@ -101,7 +125,7 @@ const Post = ({ slug }: { slug: string }) => {
                             (vote === 0 || vote === 1) ? "text-white" : "text-black"
                         )}
                     >
-                        100
+                        {post.upvoteCount - post.downvoteCount}
                     </span>
                     <button onClick={handleDownVote} className={cn("hover:bg-[#f7f9fa] rounded-full p-2 text-black w-8 h-8", vote === null && "hover:text-[#6A3CFF]", vote === 1 && "hover:bg-[#532DFF]", vote === 0 && "hover:bg-[#AE2C00]")}>
                         {vote === 1 ? (
