@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { FaPlus, FaRegComment } from "react-icons/fa";
-import Followers from "@/app/(post)/create-post/followers";
-import Following from "@/app/(post)/create-post/following";
+import Followers from "@/app/user/[username]/components/followers";
+import Following from "@/app/user/[username]/components/following";
 import { useState } from "react";
 
 interface PopularTagsProps {
