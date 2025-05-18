@@ -88,7 +88,7 @@ export default function UserPageLayout({ children }: { children: React.ReactNode
                     <div className="aspect-square rounded-full overflow-hidden border-4 border-gray-200 bg-gray-300">
                       <OutputFile imageID={user.avatarId}/>
                     </div>
-                    <Link href="/settings/settings/profile" className="absolute bottom-0 right-0 translate-y-1/5 z-20">
+                    <Link href="/settings/profile" className="absolute bottom-0 right-0 translate-y-1/5 z-20">
                       <div className="w-8 h-8 flex items-center justify-center rounded-full border-[1px] cursor-pointer bg-gray-200">
                         <Image src="/icons/camera-svgrepo-com.svg" alt="more" width={15} height={15} />
                       </div>

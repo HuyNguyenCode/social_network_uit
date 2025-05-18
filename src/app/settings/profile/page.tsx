@@ -1,7 +1,6 @@
 "use client";
 import classNames from "classnames/bind";
 import styles from "./profile.module.scss";
-import Image from "next/image";
 import Link from "next/link";
 import { useUserStore } from "@/store/useUserStore";
 import { useState, useEffect } from "react";
@@ -62,7 +61,7 @@ export default function ProfilePage() {
       email: email,
       phoneNumber: phoneNumber,
       gender: gender,
-      avatarId: uploadedImages,
+      avatarId: uploadedImages || user?.avatarId,
     };
     console.log(userInforUpdate);
 
@@ -78,7 +77,6 @@ export default function ProfilePage() {
       if (updateUserById.fulfilled.match(result)) {
         toast.success("✅ Updated profile successfully!");
         window.location.reload();
-        // router.push("/");
       } else {
         console.log("❌ Updated profile failed:", result);
         const errorMessage = (result.payload as { message: string })?.message || "Lỗi không xác định!";
@@ -89,19 +87,11 @@ export default function ProfilePage() {
     }
   };
 
-  // useEffect(() => {
-  //   if (isUpdate) {
-  //     alert("Cập nhật thông tin thành công!");
-  //     // window.location.reload();
-  //   }
-  // }, [isUpdate, loading]);
-
   return (
     <div className={cx("profile-wrapper")}>
       <div className={cx("profile-background")}></div>
       <div className={cx("profile-container")}>
         <div className={cx("profile-avatar-wrapper")}>
-          {/* <Image aria-hidden src="/avatar.jpg" alt="File icon" width={128} height={128} className={cx("profile-avatar")} /> */}
           <div className={cx("profile-avatar")}>
             <OutputFile imageID={user && user.avatarId} />
           </div>
@@ -242,7 +232,6 @@ export default function ProfilePage() {
               <span className={cx("input-text")}>Change Avatar</span>
               <div className={cx("change-avatar-section")}>
                 <div className={cx("avatar-origin")}>
-                  {/* <Image aria-hidden src="/avatar.jpg" alt="File icon" width={64} height={64} className={cx("profile-avatar")} /> */}
                   <OutputFile imageID={user && user.avatarId} />
                 </div>
                 <div className={cx("avatar-upload-box")}>
