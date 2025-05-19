@@ -17,6 +17,7 @@ interface PostProps {
     upvoteCount: number;
     downvoteCount: number;
     commentCount?: number;
+    timeAgo?: string;
     // Thêm các trường khác nếu cần
   }; 
 }

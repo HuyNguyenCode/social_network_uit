@@ -7,8 +7,8 @@ import { getTimeAgo } from "@/utils/dateFormat";
 import Post from "@/app/(post)/components/post";
 import { useUserStore } from "@/store/useUserStore";
 import { Button } from "@/components/ui/button";
+import { AppDispatch, RootState } from "@/redux/store";
 
- 
 // export default function UserPosts() {
 //   const { userId } = useUserStore(); // Lấy thông tin từ store
 //   const dispatch = useDispatch();
@@ -50,8 +50,8 @@ import { Button } from "@/components/ui/button";
 
 export default function UserPosts() {
   const { username } = useParams();
-  const dispatch = useDispatch();
-  const { posts, loading, error } = useSelector((state) => state.post);
+  const dispatch = useDispatch<AppDispatch>();
+  const { posts, loading, error } = useSelector((state: RootState) => state.post);
   
   // State quản lý trang hiện tại
   const [currentPage, setCurrentPage] = useState(1);
