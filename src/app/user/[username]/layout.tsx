@@ -9,7 +9,7 @@ import Sidebar from "@/app/(home)/sidebar";
 import RightBar from "@/components/profile/RightBar";
 import SortDropDown from "@/components/profile/SortDropDown";
 import ScrollBars from "@/components/profile/ScrollBars";
-import { useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
@@ -58,7 +58,6 @@ export default function UserPageLayout({ children }: { children: React.ReactNode
   // }
 
   // Don't redirect, just show loading state if needed
-  console.log("user: ", user);  
   
   if (!user) {
     return (
