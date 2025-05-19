@@ -53,7 +53,7 @@ export const updateUserById = createAsyncThunk(
     }: {
       userId: string;
       updatedData: {
-        username: string;
+        userName: string;
         email: string;
         phoneNumber: string;
         gender: string;
@@ -74,6 +74,9 @@ export const updateUserById = createAsyncThunk(
       });
 
       const data = await response.json();
+      console.log("📢 API Response:", data);
+      console.log("token:", token); // LOG DỮ LIỆU API TRẢ VỀ
+      
 
       if (!response.ok || !data.succeeded) {
         const errorMessage = data.message || "Cập nhật thông tin thất bại.";
@@ -120,7 +123,6 @@ const userSlice = createSlice({
       .addCase(updateUserById.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
         state.isUpdate = true;
-        console.log("Cập nhật thông tin thành công:",  state.isUpdate);
       })
       .addCase(updateUserById.rejected, (state, action) => {
         state.loading = false;

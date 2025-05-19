@@ -22,13 +22,7 @@ const Recommendations = ({ username, avatar_url }: RecommendationsProps) => {
         {/* IMAGE AND USER INFO */}
         <div className='flex items-center gap-2'>
           <div className='relative rounded-full overflow-hidden w-10 border h-10'>
-            <Image 
-              src={avatar_url || "/general/image.png"}
-              alt={username}
-              width={40}
-              height={40}
-              className="object-cover w-full h-full"
-            />
+             <Image className="p-1" src="/icons/profile-svg.svg" alt="Avatar" width={100} height={100} />
           </div>
           <div className=''>
             <h1 className="text-sm font-bold">Profile</h1>
@@ -52,14 +46,14 @@ const Recommendations = ({ username, avatar_url }: RecommendationsProps) => {
             <Image className="p-1" src="/icons/profile-svg.svg" alt="Avatar" width={100} height={100} />
           </div>
           <div className=''>
-            <h1 className="text-sm font-bold">Avatar</h1>
+            <h1 className="text-sm font-bold">Notification</h1>
           </div>
         </div>
         {/* BUTTON */}
         <div>
-          <Link href="/settings/settings/profile">
+          <Link href="/settings/settings/notification">
             <button className="py-1 px-2 font-semibold bg-gray-200 text-black rounded-full text-[12px] hover:bg-gray-100">
-              Style Avatar
+             Notification Setting
             </button>
           </Link>
         </div>

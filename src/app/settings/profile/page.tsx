@@ -1,7 +1,6 @@
 "use client";
 import classNames from "classnames/bind";
 import styles from "./profile.module.scss";
-import Image from "next/image";
 import Link from "next/link";
 import { useUserStore } from "@/store/useUserStore";
 import { useState, useEffect } from "react";
@@ -10,10 +9,11 @@ import { AppDispatch, RootState } from "@/redux/store";
 import { fetchUserById } from "@/redux/userSlice";
 import { updateUserById } from "@/redux/userSlice";
 import { logError } from "ckeditor5";
-import { set } from "date-fns";
 import InputFile from "../../(post)/create-post/inputFile";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import OutputFile from "@/app/(post)/create-post/outputFile";
 
 const cx = classNames.bind(styles);
 export default function ProfilePage() {
@@ -41,7 +41,6 @@ export default function ProfilePage() {
     if (loading) return; // đợi redux fetch xong đã
 
     if (userInfor) {
-      // console.log("userInfor: ", userInfor);
       setUser(userInfor);
       setUserName(userInfor.userName || "");
       setEmail(userInfor.email || "");
@@ -56,41 +55,46 @@ export default function ProfilePage() {
     }
   }, [userInfor, loading]);
 
-  const handleUpdateProfile = () => {
+  const handleUpdateProfile = async () => {
     const userInforUpdate = {
-      username: userName,
+      userName: userName,
       email: email,
       phoneNumber: phoneNumber,
       gender: gender,
-      avatarId: uploadedImages,
+      avatarId: uploadedImages || user?.avatarId,
     };
+    console.log(userInforUpdate);
+
     const sessionToken = Cookies.get("sessionToken");
     if (userId) {
-      dispatch(
+      const result = await dispatch(
         updateUserById({
           userId,
           updatedData: userInforUpdate,
           token: sessionToken || "",
         }),
       );
+      if (updateUserById.fulfilled.match(result)) {
+        toast.success("✅ Updated profile successfully!");
+        window.location.reload();
+      } else {
+        console.log("❌ Updated profile failed:", result);
+        const errorMessage = (result.payload as { message: string })?.message || "Lỗi không xác định!";
+        toast.error(`❌ ${errorMessage}`);
+      }
     } else {
       logError("User ID is null");
     }
   };
-
-  useEffect(() => {
-    if (isUpdate) {
-      alert("Cập nhật thông tin thành công!");
-      window.location.reload();
-    }
-  }, [isUpdate,loading]);
 
   return (
     <div className={cx("profile-wrapper")}>
       <div className={cx("profile-background")}></div>
       <div className={cx("profile-container")}>
         <div className={cx("profile-avatar-wrapper")}>
-          <Image aria-hidden src="/avatar.jpg" alt="File icon" width={128} height={128} className={cx("profile-avatar")} />
+          <div className={cx("profile-avatar")}>
+            <OutputFile imageID={user && user.avatarId} />
+          </div>
         </div>
         <div className={cx("profile-infor-wrapper")}>
           <div className={cx("profile-infor")}>
@@ -212,9 +216,13 @@ export default function ProfilePage() {
                 </div>
                 <select className={cx("input-select")} value={gender} onChange={(e) => setGender(e.target.value)}>
                   <option value={gender}>{gender}</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
+                  {["Male", "Female", "Other"]
+                    .filter((g) => g !== gender)
+                    .map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
                 </select>
               </div>
             </div>
@@ -224,7 +232,7 @@ export default function ProfilePage() {
               <span className={cx("input-text")}>Change Avatar</span>
               <div className={cx("change-avatar-section")}>
                 <div className={cx("avatar-origin")}>
-                  <Image aria-hidden src="/avatar.jpg" alt="File icon" width={64} height={64} className={cx("profile-avatar")} />
+                  <OutputFile imageID={user && user.avatarId} />
                 </div>
                 <div className={cx("avatar-upload-box")}>
                   <div className={cx("avatar-upload-text-wrapper")}>
