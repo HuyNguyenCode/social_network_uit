@@ -13,6 +13,12 @@ import Sidebar from "@/app/(home)/sidebar";
 import { useParams } from 'next/navigation';
 import { useDispatch, useSelector } from "react-redux";
 import { getPostDetailWithId } from "@/redux/postSlice";
+import { postDelete } from "@/redux/postSlice";
+import { toast } from "sonner";
+
+import { useRouter } from 'next/navigation';
+
+
 
 const cx = classNames.bind(styles);
 
@@ -250,7 +256,7 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
 
 const Page = () => {
 
-
+  const router = useRouter();
   const [vote, setVote] = useState<number | null>(null);
   const [content, setContent] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -302,27 +308,40 @@ const Page = () => {
     setIsMenuOpen(false);
   };
 
-  const handleConfirmDelete = () => {
-    // Xử lý logic xóa bài viết ở đây
-    setIsDeleteConfirmOpen(false);
+  const handleSubmitEdit = async () => {
+    // Giả sử bạn có state content, title, thumbnailUrl
+    const postData = {
+      title: currentPost.title, // hoặc state title nếu có input riêng
+      content: content,         // nội dung đã chỉnh sửa
+      thumbnailUrl: ""          // hoặc lấy từ state nếu có
+    };
+    const result = await dispatch(updatePost({ postId, postData }));
+    if (updatePost.fulfilled.match(result)) {
+      setIsEdit(false);
+      toast.success("Đã lưu chỉnh sửa!");
+      // Có thể reload lại chi tiết bài viết nếu muốn
+      dispatch(getPostDetailWithId(postId));
+    } else {
+      toast.error("Cập nhật thất bại!");
+    }
   };
 
-  //xử lý fetch PostById
-  // const params = useParams();
-  // const slug = params.slug as string;
-  // console.log("slug", slug);
-  // const dispatch = useDispatch();
-
-
-  // useEffect(() => {
-  //   if (slug) {
-  //     dispatch(getPostDetailWithId(slug));
-  //   }
-  // }, [slug, dispatch]);
   const params = useParams();
   const postId = params.slug as string;
   const dispatch = useDispatch();
   const { currentPost, loading, error } = useSelector((state) => state.post);
+
+  const handleConfirmDelete = async () => {
+    const result = await dispatch(postDelete(postId));
+    setIsDeleteConfirmOpen(false);
+    if (postDelete.fulfilled.match(result)) {
+      toast.success("✅ Xóa bài viết thành công!");
+      // Ví dụ: chuyển về trang chủ hoặc trang danh sách bài viết
+      router.push("/");
+    } else {
+      toast.error("❌ Xóa bài viết thất bại!");
+    }
+  };
 
   useEffect(() => {
     dispatch(getPostDetailWithId(postId));
@@ -334,7 +353,7 @@ const Page = () => {
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div>Error: {typeof error === "string" ? error : error?.message || "Unknown error"}</div>;
   }
 
   if (!currentPost) {
@@ -381,10 +400,29 @@ const Page = () => {
                 </div>
                 <div className="font-semibold text-gray-900 text-2xl mb-4">
                   {currentPost.title}                </div>
-                {isEdit ? (<div className="border border-gray-300 rounded-2xl h-40">
-                  <TextEditor editorData={content} setEditorData={setContent} />
-                </div>) : (<div className="text-sm text-gray-700">
-                  {currentPost.content}                </div>)}
+                {isEdit ? (
+                  <div className="border border-gray-300 rounded-2xl h-40 flex flex-col gap-2">
+                    <TextEditor editorData={content} setEditorData={setContent} />
+                    <div className="flex justify-end gap-2 mt-6 pr-2">
+                      <button
+                        className="bg-gray-500 text-white rounded-full px-4 py-1 text-sm"
+                        onClick={() => setIsEdit(false)}
+                      >
+                        Hủy
+                      </button>
+                      <button
+                        className="bg-blue-600 text-white rounded-full px-4 py-1 text-sm"
+                        onClick={handleSubmitEdit}
+                      >
+                        Lưu chỉnh sửa
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-700">
+                    {currentPost.content}
+                  </div>
+                )}
                 <div className="flex flex-row mt-4 gap-3">
                   <div className={cn("bg-[#e5ebee] flex flex-row items-center justify-center rounded-full ease-in-out duration-100", vote === 0 && "bg-[#D93900]", vote === 1 && "bg-[#6A3CFF]")}>
                     <button onClick={handleUpVote} className={cn("hover:bg-[#f7f9fa] rounded-full p-2 text-black w-8 h-8 ease-in-out duration-100", vote === null && "hover:text-[#D93900]", vote === 1 && "hover:bg-[#532DFF]", vote === 0 && "hover:bg-[#AE2C00]")}>
