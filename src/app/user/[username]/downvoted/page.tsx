@@ -1,82 +1,84 @@
 "use client";
-import { useParams } from 'next/navigation'; // Sử dụng useParams
-import { mockUsers, mockPosts, mockVotes } from "../data/mockData";
-import { useEffect, useState } from 'react';
-import Postx from "@/components/profile/Postx";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getUserVotedPosts } from "@/redux/postSlice";
 import { getTimeAgo } from "@/utils/dateFormat";
-import Post from '@/app/(post)/components/post';
+import Post from "@/app/(post)/components/post";
+import { AppDispatch, RootState } from "@/redux/store";
+import { useUserStore } from "@/store/useUserStore";
+import { Button } from "@/components/ui/button";
 
 const DownvotedPosts = () => {
-    const params = useParams(); // Lấy params từ URL
-    const username = params.username as string; // Lấy username từ params
-    const [downvotedPosts, setDownvotedPosts] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+  const params = useParams();
+  const username = params.username as string;
+  const { userId } = useUserStore();
+  const dispatch = useDispatch<AppDispatch>();
+  const { votedPosts, loading, error } = useSelector((state: RootState) => state.post);
 
-    useEffect(() => {
-        try {
-            const currentUser = mockUsers.find((u) => u.username === username);
-            
-            if (!currentUser) {
-                setLoading(false);
-                return;
-            }
+  // State for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
-            const posts = mockVotes
-                .filter((vote) => 
-                    vote.user_id === currentUser.p_id && 
-                    vote.vote_type === 0  // For downvotes
-                )
-                .map((vote) => {
-                    const post = mockPosts.find((p) => p.p_id === vote.post_id);
-                    if (!post) return null;
-
-                    // Find the original post author
-                    const postAuthor = mockUsers.find((u) => u.p_id === post.user_id);
-                    if (!postAuthor) return null;
-
-                    return {
-                        ...post,
-                        user: postAuthor, // Use the original post author
-                        vote_type: vote.vote_type,
-                        timeAgo: getTimeAgo(post.created_at)
-                    };
-                })
-                .filter(Boolean);
-
-            setDownvotedPosts(posts);
-        } catch (error) {
-            console.error("Error fetching downvoted posts:", error);
-        } finally {
-            setLoading(false);
-        }
-    }, [username]);
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[200px] p-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-        );
+  useEffect(() => {
+    if (userId) {
+      dispatch(
+        getUserVotedPosts({
+          userId: userId as string,
+          voteType: "downvote",
+        }),
+      );
     }
+  }, [userId, dispatch, currentPage]);
 
-    if (downvotedPosts.length === 0) {
-        return (
-            <div className="flex items-center justify-center min-h-[200px] p-4 text-muted-foreground">
-                No downvoted posts found
-            </div>
-        );
+  // Debug logging
+  useEffect(() => {
+    if (votedPosts) {
+      console.log("Received downvoted posts data:", votedPosts);
     }
+  }, [votedPosts]);
 
+  if (loading) {
     return (
-        <div className="p-4 space-y-4">
-            {downvotedPosts.map((post) => (
-                <div key={post.p_id} className="border-b border-border pb-4">
-                    {/* <Postx post={post} /> */}
-                    <Post/>
-                </div>
-            ))}
-        </div>
+      <div className="flex items-center justify-center min-h-[200px] p-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
     );
+  }
+
+  if (error) {
+    return <div className="flex items-center justify-center min-h-[200px] p-4 text-destructive">Error: {error}</div>;
+  }
+
+  if (!votedPosts?.length) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px] p-4 text-muted-foreground">No downvoted posts found</div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Danh sách bài viết */}
+      <div className="space-y-4">
+        {votedPosts.map((post) => (
+          <div key={post.id} className="border-b border-border pb-4">
+            <Post
+              post={{
+                id: post.id,
+                title: post.title || "Untitled Post",
+                content: post.content || "",
+                createdOn: post.createdOn || new Date().toISOString(),
+                username: post.username || "Unknown User",
+                upvoteCount: post.upvoteCount || 0,
+                downvoteCount: post.downvoteCount || 0,
+                timeAgo: getTimeAgo(post.createdOn),
+              }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default DownvotedPosts;
