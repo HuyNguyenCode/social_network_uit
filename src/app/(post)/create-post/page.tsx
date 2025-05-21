@@ -17,7 +17,9 @@ const CreatePost = () => {
                 {/* <Editor 
                     
                 /> */}
-                <InputFile />
+                <InputFile onImagesChange={function (images: string[]): void {
+                    throw new Error('Function not implemented.');
+                } } />
             </div>
         </div>
     );

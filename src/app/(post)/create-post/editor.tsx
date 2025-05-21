@@ -1,14 +1,14 @@
 import CkEditor from "./ckEditor";
 import { useState } from "react";
-const TextEditor: React.FC = () => {
-  const [editorData, setEditorData] = useState<string>("");
+interface TextEditorProps {
+  editorData: string;
+  setEditorData: React.Dispatch<React.SetStateAction<string>>;
+}
 
-  return (
-    <CkEditor
-      editorData={editorData}
-      setEditorData={setEditorData}
-    />
-  );
+const TextEditor: React.FC<TextEditorProps> = ({ editorData, setEditorData }) => {
+  // const [editorData, setEditorData] = useState<string>("");
+
+  return <CkEditor editorData={editorData} setEditorData={setEditorData} />;
 };
 
 export default TextEditor;

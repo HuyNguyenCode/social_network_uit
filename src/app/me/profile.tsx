@@ -55,9 +55,6 @@ export default function ProfilePage() {
     };
     fetchRequest();
   }, [sessionToken]);
-  console.log("username: ", username);
-  console.log("userId: ", userId);
-
   
   return (
     <div>

@@ -14,7 +14,7 @@ type OutputFileProps = {
   imageID: string;
 };
 
-const OutputFile = ({ imageID }: OutputFileProps) => {
+const OutputFile = ({ imageID }: OutputFileProps) => {  
   return (
     <>
       {imageID && imageID !== "undefined" && (

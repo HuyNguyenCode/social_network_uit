@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
 
-
 // interface PostDetail {
 //   id: string;
 //   title: string;
@@ -13,7 +12,6 @@ import Cookies from "js-cookie";
 //   postImages: string[];
 //   // ...thêm các field khác từ API
 // }
-
 
 // interface PostState {
 //   posts: { // Thêm mảng posts để lưu danh sách
@@ -44,7 +42,6 @@ import Cookies from "js-cookie";
 //   loading: false,
 //   error: null,
 // };
-
 
 interface PostListItem {
   id: string;
@@ -78,6 +75,10 @@ interface PostDetail extends PostListItem {
 interface PostState {
   posts: PostListResponse | null;
   currentPost: PostDetail | null;
+  upvotedPosts: PostListItem | null; // Thay đổi kiểu dữ liệu
+  downvotedPosts: PostListItem | null; // Thay đổi kiểu dữ liệu
+  homePosts: PostListItem | null; // Thay đổi kiểu dữ liệu
+  popularPosts: PostListItem[] | null; // ✅ Sửa tại đây
   loading: boolean;
   error: string | null;
 }
@@ -85,6 +86,10 @@ interface PostState {
 const initialState: PostState = {
   posts: null, // Thay currentPost bằng posts
   currentPost: null,
+  upvotedPosts: null,
+  downvotedPosts: null,
+  homePosts: null,
+  popularPosts: [], // ✅ Sửa tại đây
   loading: false,
   error: null,
 };
@@ -101,17 +106,18 @@ export const postCreate = createAsyncThunk(
       category: string;
       postImages?: string[];
     },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       const token = Cookies.get("sessionToken"); // Lấy token từ cookie
       console.log("Token lấy từ cookie:", token); // Thêm dòng này để kiểm tra
-
+      console.log("postData:", postData); // Thêm dòng này để kiểm tra
+      
       const response = await fetch("http://103.82.194.197:8080/api/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(postData),
       });
@@ -121,12 +127,10 @@ export const postCreate = createAsyncThunk(
 
       if (!response.ok || !data.succeeded) {
         // Xử lý lỗi từ server
-        const errorMessage = data.message ||
-          data.errors?.join(", ") ||
-          "Đăng bài viết thất bại";
+        const errorMessage = data.message || data.errors?.join(", ") || "Đăng bài viết thất bại";
         return rejectWithValue({
           message: errorMessage,
-          status: response.status
+          status: response.status,
         });
       }
 
@@ -136,19 +140,16 @@ export const postCreate = createAsyncThunk(
       console.error("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({
         message: error.message || "Lỗi kết nối đến server",
-        status: 500
+        status: 500,
       });
     }
-  }
+  },
 );
 
 //votePost
 export const votePost = createAsyncThunk(
   "post/vote",
-  async (
-    { postId, voteData }: { postId: string; voteData: { userId: string; voteType: number } },
-    { rejectWithValue },
-  ) => {
+  async ({ postId, voteData }: { postId: string; voteData: { userId: string; voteType: number } }, { rejectWithValue }) => {
     try {
       const response = await fetch(`http://103.82.194.197:8080/api/posts/user/${userId}/${getBy}`, {
         method: "POST",
@@ -211,7 +212,7 @@ export const updatePost = createAsyncThunk(
     }
   },
 );
- 
+
 // Thunk xử lý lấy danh sách bài viết theo userID (có phân trang)
 export const getPostWithId = createAsyncThunk(
   "post/getPostWithId",
@@ -219,18 +220,111 @@ export const getPostWithId = createAsyncThunk(
     {
       userId,
       page = 1,
-      pageSize = 10
+      pageSize = 10,
     }: {
       userId: string;
       page?: number;
       pageSize?: number;
     },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       const url = new URL(`http://103.82.194.197:8080/api/posts/user/${userId}/paginated`);
-      url.searchParams.append('page', page.toString());
-      url.searchParams.append('pageSize', pageSize.toString());
+      url.searchParams.append("page", page.toString());
+      url.searchParams.append("pageSize", pageSize.toString());
+
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+      // console.log("📢 API Response get post with id:", result);
+
+      if (!response.ok || !result.succeeded) {
+        const errorMessage = result.message || result.errors?.join(", ") || "Không thể lấy danh sách bài viết";
+        return rejectWithValue({
+          message: errorMessage,
+          status: response.status,
+        });
+      }
+
+      if (!result.result) {
+        return rejectWithValue({
+          message: "Không tìm thấy bài viết",
+          status: 404,
+        });
+      }
+
+      return {
+        data: result.result, // Bao gồm items, page, pages, size, total
+        message: result.message,
+      };
+    } catch (error: any) {
+      console.error("❌ Lỗi ngoại lệ:", error);
+      return rejectWithValue({
+        message: error.message || "Lỗi kết nối đến server",
+        status: 500,
+      });
+    }
+  },
+);
+
+// Thunk xử lý lấy danh sách bài viết theo userID (có phân trang)
+export const getHomePost = createAsyncThunk("post/getHomePost", async (_, { rejectWithValue }) => {
+  try {
+    const response = await fetch("http://103.82.194.197:8080/api/posts/home", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const result = await response.json();
+
+    if (!response.ok || !result) {
+      const errorMessage = result.message || result.errors?.join(", ") || "Không thể lấy danh sách bài viết";
+      return rejectWithValue({
+        message: errorMessage,
+        status: response.status,
+      });
+    }
+
+    if (!result) {
+      return rejectWithValue({
+        message: "Không tìm thấy bài viết",
+        status: 404,
+      });
+    }
+    return {
+      data: result,
+    };
+  } catch (error: any) {
+    console.error("❌ Lỗi ngoại lệ:", error);
+    return rejectWithValue({
+      message: error.message || "Lỗi kết nối đến server",
+      status: 500,
+    });
+  }
+});
+
+export const getPopularPost = createAsyncThunk(
+  "post/getPopularPost",
+  async (
+    {
+      page = 1,
+      pageSize = 10,
+    }: {
+      page?: number;
+      pageSize?: number;
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      const url = new URL(`http://103.82.194.197:8080/api/posts/popular`);
+      url.searchParams.append("page", page.toString());
+      url.searchParams.append("pageSize", pageSize.toString());
 
       const response = await fetch(url.toString(), {
         method: "GET",
@@ -242,66 +336,116 @@ export const getPostWithId = createAsyncThunk(
       const result = await response.json();
       console.log("📢 API Response:", result);
 
-      if (!response.ok || !result.succeeded) {
-        const errorMessage = result.message ||
-          result.errors?.join(", ") ||
-          "Không thể lấy danh sách bài viết";
+      if (!response.ok || !result) {
+        const errorMessage = result.message || result.errors?.join(", ") || "Không thể lấy danh sách bài viết";
         return rejectWithValue({
           message: errorMessage,
-          status: response.status
+          status: response.status,
         });
       }
 
-      if (!result.result) {
+      if (!result) {
         return rejectWithValue({
           message: "Không tìm thấy bài viết",
-          status: 404
+          status: 404,
         });
       }
 
-      console.log("✅ Lấy danh sách bài viết thành công:", result.result);
       return {
-        data: result.result, // Bao gồm items, page, pages, size, total
-        message: result.message
+        data: result, // Bao gồm items, page, pages, size, total
       };
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({
         message: error.message || "Lỗi kết nối đến server",
-        status: 500
+        status: 500,
       });
     }
-  }
+  },
 );
+
+//Get upvoted post
+export const getUpVotePostById = createAsyncThunk("post/upvoted", async (userId: string, { rejectWithValue }) => {
+  try {
+    const response = await fetch(`http://103.82.194.197:8080/api/posts/user/${userId}/upvote`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const result = await response.json();
+    console.log("data: ");
+    console.log(result);
+    if (!response.ok || result.statusCode === 400) {
+      const errorMessage = result.Errors?.[0] || "Failed to get upvoted post!";
+      return rejectWithValue({ message: errorMessage, status: response.status });
+    }
+
+    if (!result.result) {
+      return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
+    }
+
+    console.log("✅ Vote bài viết thành công:", result.result);
+    return { data: result.result, message: result.message };
+  } catch (error: any) {
+    console.log("❌ Lỗi ngoại lệ:", error);
+    return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
+  }
+});
+
+//Get downvoted post
+export const getDownVotePostById = createAsyncThunk("post/downvoted", async (userId: string, { rejectWithValue }) => {
+  try {
+    const response = await fetch(`http://103.82.194.197:8080/api/posts/user/${userId}/downvote`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const result = await response.json();
+    console.log("data: ");
+    console.log(result);
+    if (!response.ok || result.statusCode === 400) {
+      const errorMessage = result.Errors?.[0] || "Failed to get upvoted post!";
+      return rejectWithValue({ message: errorMessage, status: response.status });
+    }
+
+    if (!result.result) {
+      return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
+    }
+
+    console.log("✅ Vote bài viết thành công:", result.result);
+    return { data: result.result, message: result.message };
+  } catch (error: any) {
+    console.log("❌ Lỗi ngoại lệ:", error);
+    return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
+  }
+});
 
 //Lấy chi tiết bài viết theo ID
-export const getPostDetailWithId = createAsyncThunk(
-  "post/getPostDetail",
-  async (postId: string, { rejectWithValue }) => {
-    try {
-      const response = await fetch(`http://103.82.194.197:8080/api/posts/${postId}`);
-      const result = await response.json();
+export const getPostDetailWithId = createAsyncThunk("post/getPostDetail", async (postId: string, { rejectWithValue }) => {
+  try {
+    const response = await fetch(`http://103.82.194.197:8080/api/posts/${postId}`);
+    const result = await response.json();
+    console.log("result: ");
+    console.log(result);
 
-      if (!response.ok || !result.succeeded) {
-        return rejectWithValue({
-          message: result.message || "Failed to fetch post detail",
-          status: response.status
-        });
-      }
-
-      return {
-        post: result.result as PostDetail,
-        message: result.message
-      };
-    } catch (error: any) {
+    if (!response.ok || !result.succeeded) {
       return rejectWithValue({
-        message: error.message || "Server error",
-        status: 500
+        message: result.message || "Failed to fetch post detail",
+        status: response.status,
       });
     }
-  }
-);
 
+    return {
+      post: result.result as PostDetail,
+      message: result.message,
+    };
+  } catch (error: any) {
+    return rejectWithValue({
+      message: error.message || "Server error",
+      status: 500,
+    });
+  }
+});
 
 // Slice
 const postSlice = createSlice({
@@ -372,7 +516,7 @@ const postSlice = createSlice({
       //   state.loading = false;
       //   state.error = (action.payload as any)?.message || "Lỗi không xác định";
       //   state.currentPost = null;
-      // }); 
+      // });
       // Xử lý getPostDetailWithId (chi tiết)
       .addCase(getPostDetailWithId.pending, (state) => {
         state.loading = true;
@@ -389,6 +533,83 @@ const postSlice = createSlice({
         state.error = (action.payload as any)?.message || "Failed to load post detail";
         state.currentPost = null;
       })
+
+      // Xử lý getUpvotedPostlWithId (chi tiết)
+      .addCase(getUpVotePostById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.upvotedPosts = null;
+      })
+      .addCase(getUpVotePostById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.upvotedPosts = action.payload.data;
+        state.error = null;
+      })
+      .addCase(getUpVotePostById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as any)?.message || "Failed to load upvoted post";
+        state.upvotedPosts = null;
+      })
+
+      // Xử lý getDownvotedPostlWithId (chi tiết)
+      .addCase(getDownVotePostById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.downvotedPosts = null;
+      })
+      .addCase(getDownVotePostById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.downvotedPosts = action.payload.data;
+        state.error = null;
+      })
+      .addCase(getDownVotePostById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as any)?.message || "Failed to load downvoted post";
+        state.downvotedPosts = null;
+      })
+
+      // Xử lý getHomePost(chi tiết)
+      .addCase(getHomePost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.homePosts = null;
+      })
+      .addCase(getHomePost.fulfilled, (state, action) => {
+        state.loading = false;
+        state.homePosts = action.payload.data;
+        state.error = null;
+      })
+      .addCase(getHomePost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as any)?.message || "Failed to load downvoted post";
+        state.homePosts = null;
+      })
+
+      // Xử lý getPopularPost(chi tiết)
+      .addCase(getPopularPost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getPopularPost.fulfilled, (state, action) => {
+        state.loading = false;
+
+        const newItems = action.payload.data || [];
+
+        if (state.popularPosts && state.popularPosts.length > 0) {
+          // Lazy load: nối thêm bài viết mới
+          state.popularPosts = [...state.popularPosts, ...newItems];
+        } else {
+          // Load lần đầu
+          state.popularPosts = newItems;
+        }
+
+        state.error = null;
+        console.log("🔥 Fulfilled data:", action.payload.data);
+      })
+      .addCase(getPopularPost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as any)?.message || "Lỗi không xác định";
+      });
   },
 });
 

@@ -29,7 +29,7 @@ export default function SortDropdown() {
 
             {/* Dropdown menu */}
             {isOpen && (
-                <div className="absolute left-0 mt-2 w-32 bg-white border border-gray-300 rounded-lg shadow-lg">
+                <div className="absolute left-0 mt-2 w-32 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
                     {options.map((option) => (
                         <button
                             key={option}

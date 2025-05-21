@@ -1,112 +1,49 @@
 "use client";
 
-// import { useDispatch } from "react-redux";
-// import { AppDispatch } from "@/redux/store";
-
-import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { useState } from "react";
-import OutputFile from "@/app/(post)/create-post/outputFile";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
-import OutputFiles from "@/app/(post)/create-post/outputFiles";
-interface PostProps {
-  post: {
-    id: string;
-    title: string;
-    content: string;
-    createdOn?: string;
-    createdBy?: string;
-    username?: string;
-    upvoteCount: number;
-    downvoteCount: number;
-    commentCount?: number;
-    userAvatar?: string;
-    comments?: any[];
-    timeAgo?: string;
-    postImages?: any[];
-    // Thêm các trường khác nếu cần
+import { cn } from "@/lib/utils";
+import { useState } from "react";
+
+
+type CommentType = {
+  id: number;
+  user: { avatar: string; name: string };
+  time: string;
+  content: string;
+  votes: number;
+  children: CommentType[];
+};
+
+function Comment({ comment, level = 0 }: { comment: CommentType; level?: number }) {
+  const [vote, setVote] = useState<null | 0 | 1>(null);
+  const getVoteCount = () => {
+    if (vote === 0) return comment.votes + 1;
+    if (vote === 1) return comment.votes - 1;
+    return comment.votes;
   };
-}
-
-// const createSlug = (title: string) => {
-//   return title
-//     .toLowerCase() // Chuyển thành chữ thường
-//     .replace(/[^\w\s]/g, '') // Loại bỏ ký tự đặc biệt
-//     .replace(/\s+/g, '-') // Thay khoảng trắng bằng dấu gạch ngang
-//     .trim(); // Loại bỏ khoảng trắng ở đầu/cuối
-// };
-
-const Post = ({ post }: PostProps) => {
-  // Tạo slug từ post.title
-  // const slug = createSlug(post.title);
-
-  //   const dispatch = useDispatch<AppDispatch>();
-  //   const { userInfor } = useSelector((state: RootState) => state.user);
-
-  //   if (post.createdBy) {
-  //     dispatch(fetchUserById(post.createdBy));
-  //   } else {
-  //     console.error("User ID is missing");
-  //   }
-
-  //   console.log(userInfor);
-
-  const [vote, setVote] = useState<number | null>(null);
-  // const dispatch = useDispatch<AppDispatch>();
-  const handleDownVote = async () => {
-    // const result = await dispatch(votePost({ postId: "1", voteData: { userId: "1", voteType: 1 } }));
-    // if (votePost.fulfilled.match(result)) {
-    //     toast.success("✅ Vote bài viết thành công!");
-    // } else {
-    //     toast.error("❌ Vote bài viết thất bại!");
-    // }
-    setVote((prev) => (prev === 1 ? null : 1));
-  };
-
-  const handleUpVote = async () => {
-    // const result = await dispatch(votePost({ postId: "1", voteData: { userId: "1", voteType: 0 } }));
-    // if (votePost.fulfilled.match(result)) {
-    //     toast.success("✅ Vote bài viết thành công!");
-    // } else {
-    //     toast.error("❌ Vote bài viết thất bại!");
-    // }
+  const handleUpVote = () => {
     setVote((prev) => (prev === 0 ? null : 0));
   };
-  dayjs.extend(relativeTime);
-  // console.log(post);
-  
+  const handleDownVote = () => {
+    setVote((prev) => (prev === 1 ? null : 1));
+  };
   return (
-    <div className="border-t border-[#212121]">
-      <div className="pt-1 pb-3 px-4 mt-1 w-full max-w-[732px] bg-transparent hover:bg-[#f7f9fa] rounded-xl">
-        <div className="relative group/profile">
-          <div className="flex flex-row items-center gap-1 text-[#8BA2AD] text-xs font-semibold">
-            <div className="flex flex-row items-center gap-[6px] text-gray-700 hover:text-[#90A9FD] cursor-pointer">
-              <div className="w-6 h-6 rounded-full position-relative" style={{ position: "relative" }}>
-                {post?.userAvatar ? (
-                  <OutputFile imageID={post?.userAvatar ?? ""} />
-                ) : (
-                  <Image
-                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZw4HYx8PHlE8ZniW1hqck5nZeKaYZSqG56g&s"
-                    alt="avatar"
-                    className="w-12 h-12 rounded-full"
-                    width={48}
-                    height={48}
-                    style={{ height: "100%" }}
-                  />
-                )}
-              </div>
-              <p className="text-gray-700"> {post?.username}</p>
-            </div>
-            <span>•</span>
-            <span>{dayjs(post.createdOn).fromNow()}</span>
-          </div>
+    <div className={cn("flex", level > 0 ? "ml-8" : "", "mb-4")}>
+      <Image
+        src={comment.user.avatar}
+        alt="avatar"
+        className="w-8 h-8 rounded-full border border-gray-300"
+        width={32}
+        height={32}
+      />
+
+      <div className="ml-3 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-gray-900">{comment.user.name}</span>
+          <span className="text-xs text-gray-500">• {comment.time}</span>
         </div>
-        <div className="font-semibold text-black text-2xl mb-4">{post.title}</div>
-        <div className="text-sm text-black">{post.content}</div>
-         <OutputFiles imagesArr={post?.postImages ?? []} />
-        <div className="flex flex-row mt-4 gap-3">
+        <div className="mt-1 text-gray-900">{comment.content}</div>
+        <div className="flex items-center gap-2 mt-2 text-gray-500 text-sm">
           <div
             className={cn(
               "bg-[#e5ebee] flex flex-row items-center justify-center rounded-full ease-in-out duration-100",
@@ -119,8 +56,8 @@ const Post = ({ post }: PostProps) => {
               className={cn(
                 "hover:bg-[#f7f9fa] rounded-full p-2 text-black w-8 h-8 ease-in-out duration-100",
                 vote === null && "hover:text-[#D93900]",
-                vote === 1 && "hover:bg-[#532DFF]",
-                vote === 0 && "hover:bg-[#AE2C00]",
+                vote === 0 && "hover:bg-[#532DFF] text-white",
+                vote === 1 && "hover:bg-[#AE2C00]",
               )}
             >
               {vote === 0 ? (
@@ -148,14 +85,14 @@ const Post = ({ post }: PostProps) => {
               )}
             </button>
             <span className={cn("text-xs font-semibold", vote === 0 || vote === 1 ? "text-white" : "text-black")}>
-              {post.upvoteCount - post.downvoteCount}
+              {getVoteCount()}
             </span>
             <button
               onClick={handleDownVote}
               className={cn(
                 "hover:bg-[#f7f9fa] rounded-full p-2 text-black w-8 h-8",
                 vote === null && "hover:text-[#6A3CFF]",
-                vote === 1 && "hover:bg-[#532DFF]",
+                vote === 1 && "hover:bg-[#532DFF] text-white",
                 vote === 0 && "hover:bg-[#AE2C00]",
               )}
             >
@@ -184,10 +121,9 @@ const Post = ({ post }: PostProps) => {
               )}
             </button>
           </div>
-
-          <Link
-            href={`/post/${post.id}`}
-            className="bg-[#e5ebee] hover:bg-[#f7f9fa] flex flex-row items-center justify-center rounded-full px-3 active:bg-[#FFFFFF26]"
+          <a
+            href="#"
+            className="bg-[#e5ebee] hover:bg-[#f7f9fa] flex flex-row items-center justify-center rounded-full h-8 px-3 py-2 text-sm active:bg-[#FFFFFF26]"
           >
             <svg
               fill="currentcolor"
@@ -201,13 +137,13 @@ const Post = ({ post }: PostProps) => {
             >
               <path d="M10 19H1.871a.886.886 0 0 1-.798-.52.886.886 0 0 1 .158-.941L3.1 15.771A9 9 0 1 1 10 19Zm-6.549-1.5H10a7.5 7.5 0 1 0-5.323-2.219l.54.545L3.451 17.5Z"></path>
             </svg>
-            <span className="text-black text-xs font-semibold">{post.comments && post.comments.length}</span>
-          </Link>
-          <button className="border-gray-200 bg-[#e5ebee] hover:bg-[#f7f9fa] flex flex-row items-center justify-center rounded-full px-3 active:bg-[#FFFFFF26]">
+            <span className="text-black text-xs font-semibold">Reply</span>
+          </a>
+          <button className="border-gray-200 bg-[#e5ebee] hover:bg-[#f7f9fa] flex flex-row items-center justify-center rounded-full h-8 px-3 py-2 text-sm active:bg-[#FFFFFF26]">
             <svg
               aria-hidden="true"
               className="mr-[6px]"
-              fill=""
+              fill="currentcolor"
               height="16"
               icon-name="share-new-outline"
               viewBox="0 0 20 20"
@@ -219,9 +155,16 @@ const Post = ({ post }: PostProps) => {
             <span className="text-black text-xs font-semibold">Share</span>
           </button>
         </div>
+        {comment.children && comment.children.length > 0 && (
+          <div className="mt-3">
+            {comment.children.map((child: CommentType) => (
+              <Comment key={child.id} comment={child} level={level + 1} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
-};
+}
 
-export default Post;
+export default Comment;

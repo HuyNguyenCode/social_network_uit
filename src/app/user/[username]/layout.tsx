@@ -40,7 +40,6 @@ export default function UserPageLayout({ children }: { children: React.ReactNode
     if (loading) return; // đợi redux fetch xong đã
 
     if (userInfor) {
-      console.log("userInfor: ", userInfor);
       setUser(userInfor);
       setError(null);
     } else {

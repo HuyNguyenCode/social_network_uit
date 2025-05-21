@@ -34,7 +34,7 @@ import { AppDispatch, RootState } from "@/redux/store";
 //   return (
 //     <div>
 //       {posts.items.map((post) => (
-//         <Post 
+//         <Post
 //           key={post.id}
 //           post={{
 //             ...post,
@@ -46,26 +46,26 @@ import { AppDispatch, RootState } from "@/redux/store";
 //   );
 // }
 
-
-
 export default function UserPosts() {
   const { username } = useParams();
   const dispatch = useDispatch<AppDispatch>();
   const { posts, loading, error } = useSelector((state: RootState) => state.post);
-  
+
   // State quản lý trang hiện tại
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10; // Có thể điều chỉnh
   const { userId } = useUserStore(); // Lấy thông tin từ store
-
-
+  console.log("posts", posts);
+  
   useEffect(() => {
     if (userId) {
-      dispatch(getPostWithId({ 
-        userId: userId as string, 
-        page: currentPage, 
-        pageSize 
-      }));
+      dispatch(
+        getPostWithId({
+          userId: userId as string,
+          page: currentPage,
+          pageSize,
+        }),
+      );
     }
   }, [username, currentPage, dispatch]);
 
@@ -94,11 +94,7 @@ export default function UserPosts() {
   }
 
   if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-[200px] p-4 text-destructive">
-        Error: {error}
-      </div>
-    );
+    return <div className="flex items-center justify-center min-h-[200px] p-4 text-destructive">Error: {error}</div>;
   }
 
   if (!posts?.items?.length) {
@@ -115,7 +111,7 @@ export default function UserPosts() {
       <div className="space-y-4">
         {posts.items.map((post) => (
           <div key={post.id} className="border-b border-border pb-4">
-            <Post post={{ ...post, timeAgo: getTimeAgo(post.createdOn) }} />
+            <Post post={{ ...post, userAvatar: post.userAvatar ?? undefined, timeAgo: getTimeAgo(post.createdOn) }} />
           </div>
         ))}
       </div>
@@ -123,11 +119,7 @@ export default function UserPosts() {
       {/* Phân trang */}
       {posts.pages > 1 && (
         <div className="flex items-center justify-between mt-6">
-          <Button 
-            variant="outline"
-            disabled={currentPage === 1}
-            onClick={handlePrevPage}
-          >
+          <Button variant="outline" disabled={currentPage === 1} onClick={handlePrevPage}>
             Trang trước
           </Button>
 
@@ -156,11 +148,7 @@ export default function UserPosts() {
             })}
           </div>
 
-          <Button
-            variant="outline"
-            disabled={currentPage >= posts.pages}
-            onClick={handleNextPage}
-          >
+          <Button variant="outline" disabled={currentPage >= posts.pages} onClick={handleNextPage}>
             Trang sau
           </Button>
         </div>

@@ -41,8 +41,6 @@ export default function Header() {
     }
   };
   const { userId, username } = useUserStore(); // Lấy thông tin từ store
-  console.log("username: ", username);
-  console.log("userId: ", userId);
   return (
     <div className={cx("header-wrapper")}>
       <div className={cx("container")}>
