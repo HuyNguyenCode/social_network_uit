@@ -117,65 +117,57 @@
 //     </div>
 //   );
 // }
-
 "use client";
-import Image from "next/image";
-import styles from "../../home.module.scss";
-import classNames from "classnames/bind";
-const cx = classNames.bind(styles);
-
-import Sidebar from "@/app/(home)/sidebar";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/redux/store";
-import { getPopularPost } from "@/redux/postSlice";
 import { useEffect, useState, useRef, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getPopularPost } from "@/redux/postSlice";
+import { RootState, AppDispatch } from "@/redux/store";
+import Sidebar from "@/app/(home)/sidebar";
 import Post from "@/app/(post)/components/post";
 import { getTimeAgo } from "@/utils/dateFormat";
+import classNames from "classnames/bind";
+import styles from "../../home.module.scss";
+
+const cx = classNames.bind(styles);
 
 export default function PopularPage() {
   const dispatch = useDispatch<AppDispatch>();
   const { popularPosts, loading } = useSelector((state: RootState) => state.post);
+  const [page, setPage] = useState(1);
+  const observer = useRef<IntersectionObserver | null>(null);
   const lastPostRef = useRef<HTMLDivElement | null>(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  // Gọi API khi currentPage thay đổi
+  // Gọi API khi page thay đổi
   useEffect(() => {
-    dispatch(
-      getPopularPost({
-        page: currentPage,
-        pageSize,
-      }),
-    );
-  }, [currentPage, dispatch]);
-
-  // IntersectionObserver callback
+    dispatch(getPopularPost({ page, pageSize }));
+  }, [page, dispatch]);
+  console.log("page: ", page);
+  console.log("popularPosts:", popularPosts);
+  // Tạo observer khi scroll tới cuối
   const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const target = entries[0];
-      if (target.isIntersecting && !loading) {
-        setCurrentPage((prev) => prev + 1);
-      }
+    (node: HTMLDivElement | null) => {
+      if (loading) return;
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && popularPosts && page < popularPosts.pages) {
+          setPage((prev) => prev + 1);
+        }
+      });
+
+      if (node) observer.current.observe(node);
     },
-    [loading],
+    [loading, popularPosts, page],
   );
 
+  // Gắn observer vào post cuối
   useEffect(() => {
-    const observer = new IntersectionObserver(handleObserver, {
-      threshold: 1,
-    });
-
     if (lastPostRef.current) {
-      observer.observe(lastPostRef.current);
+      handleObserver(lastPostRef.current);
     }
-
-    return () => {
-      if (lastPostRef.current) {
-        observer.unobserve(lastPostRef.current);
-      }
-    };
-  }, [popularPosts, handleObserver]);
+  }, [popularPosts?.items, handleObserver]);
 
   return (
     <div className={cx("home-wrapper")}>
@@ -183,22 +175,27 @@ export default function PopularPage() {
         <div className={cx("home-content")}>
           <Sidebar />
           <div className={cx("middle-content")}>
-            {popularPosts &&
-              popularPosts.map((post, index) => {
-                const isLastPost = index === popularPosts.length - 1;
-                return (
-                  <div key={post.id} ref={isLastPost ? lastPostRef : null} className="border-b border-border pb-4">
-                    <Post
-                      post={{
-                        ...post,
-                        userAvatar: post.userAvatar ?? undefined,
-                        timeAgo: getTimeAgo(post.createdOn),
-                      }}
-                    />
-                  </div>
-                );
-              })}
-            {loading && <div className="text-center py-4 text-gray-500 text-sm">Đang tải thêm bài viết...</div>}
+            {popularPosts?.items?.length ? (
+              <>
+                {popularPosts.items.map((post, index) => {
+                  const isLastPost = index === popularPosts.items.length - 1;
+                  return (
+                    <div key={index} ref={isLastPost ? lastPostRef : null} className="border-b border-border pb-4">
+                      <Post
+                        post={{
+                          ...post,
+                          userAvatar: post.userAvatar ?? undefined,
+                          timeAgo: getTimeAgo(post.createdOn),
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+                {loading && <div className="text-center text-gray-500 py-2">Đang tải thêm bài viết...</div>}
+              </>
+            ) : (
+              <div className="text-gray-500 text-sm text-center py-4">Không có bài viết nào.</div>
+            )}
           </div>
         </div>
       </div>

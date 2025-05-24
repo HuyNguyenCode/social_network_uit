@@ -4,14 +4,19 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
-
+import OutputFile from "@/app/(post)/create-post/outputFile";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 type CommentType = {
   id: number;
-  user: { avatar: string; name: string };
-  time: string;
+  user: { avatarId: string; userName: string; id: string };
+  createdBy: string;
+  createdOn: string;
   content: string;
+  postId: string;
+  parentCommentId: string;
   votes: number;
-  children: CommentType[];
+  childComments: CommentType[];
 };
 
 function Comment({ comment, level = 0 }: { comment: CommentType; level?: number }) {
@@ -27,20 +32,29 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
   const handleDownVote = () => {
     setVote((prev) => (prev === 1 ? null : 1));
   };
+  // console.log("comment", comment);
+  dayjs.extend(relativeTime);
+
   return (
     <div className={cn("flex", level > 0 ? "ml-8" : "", "mb-4")}>
-      <Image
-        src={comment.user.avatar}
-        alt="avatar"
-        className="w-8 h-8 rounded-full border border-gray-300"
-        width={32}
-        height={32}
-      />
-
+      {comment?.user.avatarId ? (
+        <div className="w-8 h-8 rounded-full border border-gray-300" style={{ position: "relative" }}>
+          <OutputFile imageID={comment?.user?.avatarId ?? ""} />
+        </div>
+      ) : (
+        <Image
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZw4HYx8PHlE8ZniW1hqck5nZeKaYZSqG56g&s"
+          alt="avatar"
+          className="w-8 h-8 rounded-full border border-gray-300"
+          width={32}
+          height={32}
+          style={{ height: "100%" }}
+        />
+      )}
       <div className="ml-3 flex-1">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-gray-900">{comment.user.name}</span>
-          <span className="text-xs text-gray-500">• {comment.time}</span>
+          <span className="font-semibold text-gray-900">{comment.user.userName}</span>
+          <span className="text-xs text-gray-500">• {dayjs(comment.createdOn).fromNow()}</span>
         </div>
         <div className="mt-1 text-gray-900">{comment.content}</div>
         <div className="flex items-center gap-2 mt-2 text-gray-500 text-sm">
@@ -155,9 +169,9 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
             <span className="text-black text-xs font-semibold">Share</span>
           </button>
         </div>
-        {comment.children && comment.children.length > 0 && (
+        {comment.childComments && comment.childComments.length > 0 && (
           <div className="mt-3">
-            {comment.children.map((child: CommentType) => (
+            {comment.childComments.map((child: CommentType) => (
               <Comment key={child.id} comment={child} level={level + 1} />
             ))}
           </div>

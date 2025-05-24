@@ -14,8 +14,46 @@
   --h1-font-size: 1.5rem;
   --normal-font-size: 0.938rem;
   --small-font-size: 0.813rem;
+  --primary-color: #4f46e5; /* Indigo */
+  --primary-light: #6366f1;
+  --bg-light: #f9fafb;
+  --text-dark: #111827;
+  --text-muted: #6b7280;
+  --error-color: #ef4444;
+
+  --font-family: "Inter", sans-serif;
+
+  --h1-font-size: 2rem;
+  --normal-font-size: 1rem;
+  --small-font-size: 0.875rem;
 }
 
+.auth__bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("/your-image.jpg") no-repeat center center/cover;
+  filter: blur(8px);
+  z-index: -1;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: -1;
+}
+
+body {
+  background: linear-gradient(135deg, #f3f4f6, #e0e7ff);
+}
 @media screen and (min-width: 768px) {
   :root {
     --normal-font-size: 1rem;
@@ -66,9 +104,6 @@
   display: grid;
 }
 
-.login__img {
-  justify-self: center;
-}
 
 .login__img img {
   width: 310px;
@@ -122,7 +157,7 @@
 }
 
 .login__create .error-message,
-.login__registre .error-message{
+.login__registre .error-message {
   color: red;
   text-align: left;
 }

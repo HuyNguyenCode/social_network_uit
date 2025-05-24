@@ -78,7 +78,11 @@ interface PostState {
   upvotedPosts: PostListItem | null; // Thay đổi kiểu dữ liệu
   downvotedPosts: PostListItem | null; // Thay đổi kiểu dữ liệu
   homePosts: PostListItem | null; // Thay đổi kiểu dữ liệu
-  popularPosts: PostListItem[] | null; // ✅ Sửa tại đây
+  popularPosts: {
+    items: PostListItem[];
+    page: number;
+    pages: number;
+  } | null;
   loading: boolean;
   error: string | null;
 }
@@ -89,7 +93,11 @@ const initialState: PostState = {
   upvotedPosts: null,
   downvotedPosts: null,
   homePosts: null,
-  popularPosts: [], // ✅ Sửa tại đây
+  popularPosts: {
+    items: [],
+    page: 0,
+    pages: 0,
+  },
   loading: false,
   error: null,
 };
@@ -112,7 +120,7 @@ export const postCreate = createAsyncThunk(
       const token = Cookies.get("sessionToken"); // Lấy token từ cookie
       console.log("Token lấy từ cookie:", token); // Thêm dòng này để kiểm tra
       console.log("postData:", postData); // Thêm dòng này để kiểm tra
-      
+
       const response = await fetch("http://103.82.194.197:8080/api/posts", {
         method: "POST",
         headers: {
@@ -298,7 +306,7 @@ export const getHomePost = createAsyncThunk("post/getHomePost", async (_, { reje
       });
     }
     return {
-      data: result,
+      data: result.result.items,
     };
   } catch (error: any) {
     console.error("❌ Lỗi ngoại lệ:", error);
@@ -352,7 +360,7 @@ export const getPopularPost = createAsyncThunk(
       }
 
       return {
-        data: result, // Bao gồm items, page, pages, size, total
+        data: result.result,
       };
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
@@ -592,19 +600,18 @@ const postSlice = createSlice({
       })
       .addCase(getPopularPost.fulfilled, (state, action) => {
         state.loading = false;
+        const { items, pages } = action.payload.data;
+        const currentPage = action.meta.arg.page ?? 1;
 
-        const newItems = action.payload.data || [];
-
-        if (state.popularPosts && state.popularPosts.length > 0) {
-          // Lazy load: nối thêm bài viết mới
-          state.popularPosts = [...state.popularPosts, ...newItems];
+        if (currentPage === 1) {
+          state.popularPosts = { items, page: currentPage, pages };
         } else {
-          // Load lần đầu
-          state.popularPosts = newItems;
+          state.popularPosts = {
+            items: [...(state.popularPosts?.items || []), ...items],
+            page: currentPage,
+            pages,
+          };
         }
-
-        state.error = null;
-        console.log("🔥 Fulfilled data:", action.payload.data);
       })
       .addCase(getPopularPost.rejected, (state, action) => {
         state.loading = false;

@@ -121,7 +121,7 @@ const AuthPage = () => {
 
   // Xử lý đăng ký
   const onSignUp = async (data: any) => {
-    const result = dispatch(registerUser(data));
+    const result = await dispatch(registerUser(data));
     if (registerUser.fulfilled.match(result)) {
       toast.success("Register Successfully!");
       toast.success("Check your mail for verification!");
@@ -133,9 +133,11 @@ const AuthPage = () => {
 
   return (
     <div className={cx("authContainer")}>
+      <div className={cx("auth__bg")}></div>
       <div className={cx("login")}>
         <div className={cx("login__content")}>
-          <div className={cx("login__img")}></div>
+          <div className={cx("login__img")}>
+          </div>
           <div className={cx("login__forms")}>
             {/* Form đăng nhập */}
 
@@ -151,7 +153,7 @@ const AuthPage = () => {
                 <i className={cx("bx bx-user login__icon")}></i>
                 <input {...registerLogin("username")} type="text" placeholder="Username" className={cx("login__input")} />
               </div>
-              {loginErrors.name && <p className={cx("error-message")}>{loginErrors.name.message?.toString()}</p>}
+              {loginErrors.username && <p className={cx("error-message")}>{loginErrors.username.message?.toString()}</p>}
               <div className={cx("login__box")}>
                 <i className={cx("bx bx-lock-alt login__icon")}></i>
                 <input {...registerLogin("password")} type="password" placeholder="Password" className={cx("login__input")} />
@@ -161,7 +163,7 @@ const AuthPage = () => {
                 Forgot password?
               </a>
               <button type="submit" className={cx("login__button")} disabled={loading}>
-                {loading ? "Signing up..." : "Signup"}
+                {loading ? "Logging  up..." : "Login"}
               </button>
               <div>
                 <span className={cx("login__account")}>Don't have an Account?</span>

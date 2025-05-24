@@ -11,7 +11,7 @@ interface PopularTagsProps {
 }
 
 const PopularTags = ({ username, avatar_url }: PopularTagsProps) => {
-  console.log("PopularTags received username:", username);  
+  // console.log("PopularTags received username:", username);  
   const [viewFollowers, setViewFollowers] = useState(false);
   const [viewFollowing, setViewFollowing] = useState(false);
   

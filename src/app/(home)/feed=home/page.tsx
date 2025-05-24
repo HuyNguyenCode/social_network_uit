@@ -18,6 +18,7 @@ export default function HomePage() {
   useEffect(() => {
     dispatch(getHomePost());
   }, [dispatch]);
+console.log("homePosts", homePosts);
 
   return (
     <div className={cx("home-wrapper")}>

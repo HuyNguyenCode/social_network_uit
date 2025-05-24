@@ -5,7 +5,7 @@
 
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import OutputFile from "@/app/(post)/create-post/outputFile";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -75,8 +75,27 @@ const Post = ({ post }: PostProps) => {
     setVote((prev) => (prev === 0 ? null : 0));
   };
   dayjs.extend(relativeTime);
-  // console.log(post);
-  
+  console.log(post);
+
+  const countTotalComments = (comments: any[]) => {
+    let count = 0;
+    const visited = new Set();
+
+    const dfs = (commentList: any[]) => {
+      for (const comment of commentList) {
+        if (!visited.has(comment.id)) {
+          visited.add(comment.id);
+          count++;
+          if (comment.childComments?.length) {
+            dfs(comment.childComments);
+          }
+        }
+      }
+    };
+
+    dfs(comments);
+    return count;
+  };
   return (
     <div className="border-t border-[#212121]">
       <div className="pt-1 pb-3 px-4 mt-1 w-full max-w-[732px] bg-transparent hover:bg-[#f7f9fa] rounded-xl">
@@ -105,7 +124,7 @@ const Post = ({ post }: PostProps) => {
         </div>
         <div className="font-semibold text-black text-2xl mb-4">{post.title}</div>
         <div className="text-sm text-black">{post.content}</div>
-         <OutputFiles imagesArr={post?.postImages ?? []} />
+        <OutputFiles imagesArr={post?.postImages ?? []} />
         <div className="flex flex-row mt-4 gap-3">
           <div
             className={cn(
@@ -201,7 +220,9 @@ const Post = ({ post }: PostProps) => {
             >
               <path d="M10 19H1.871a.886.886 0 0 1-.798-.52.886.886 0 0 1 .158-.941L3.1 15.771A9 9 0 1 1 10 19Zm-6.549-1.5H10a7.5 7.5 0 1 0-5.323-2.219l.54.545L3.451 17.5Z"></path>
             </svg>
-            <span className="text-black text-xs font-semibold">{post.comments && post.comments.length}</span>
+            <span className="text-black text-xs font-semibold">
+              {post.comments && post.comments.length && countTotalComments(post.comments)}
+            </span>
           </Link>
           <button className="border-gray-200 bg-[#e5ebee] hover:bg-[#f7f9fa] flex flex-row items-center justify-center rounded-full px-3 active:bg-[#FFFFFF26]">
             <svg
