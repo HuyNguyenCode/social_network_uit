@@ -3,7 +3,8 @@
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import TextEditor from "../../create-post/ckEditor";
-
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import Header from "@/components/ui/header";
 import styles from "@/app/(home)/home.module.scss";
 import classNames from "classnames/bind";
@@ -214,7 +215,7 @@ const Page = () => {
     return <div>Post not found</div>;
   }
   console.log("commentArr", commentArr);
-
+  dayjs.extend(relativeTime);
   return (
     <div className="">
       <div className="z-10">
@@ -248,7 +249,7 @@ const Page = () => {
                       <p className="hover:text-blue-600">{currentPost.username}</p>
                     </div>
                     <span>•</span>
-                    <span>7 hour ago</span>
+                    <span>{dayjs(currentPost.createdOn).fromNow()}</span>
                   </div>
                   <div ref={menuRef} className="relative">
                     <button
@@ -407,7 +408,6 @@ const Page = () => {
                   <span className="font-semibold text-lg text-gray-900">Comments</span>
                 </div>
                 <div>
-
                   {commentArr &&
                     commentArr.length > 0 &&
                     commentArr.map((comment) => <Comment key={comment.id} comment={comment} />)}
