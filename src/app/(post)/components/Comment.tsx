@@ -7,6 +7,10 @@ import TextEditor from "../create-post/ckEditor";
 import OutputFile from "@/app/(post)/create-post/outputFile";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { toast } from "sonner";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { updateComment, getCommentDetailWithId } from "@/redux/commentSlice";
 type CommentType = {
   id: number;
   user: { avatarId: string; userName: string; id: string };
@@ -20,6 +24,7 @@ type CommentType = {
 };
 
 function Comment({ comment, level = 0 }: { comment: CommentType; level?: number }) {
+  const { currentComment, loading, error } = useSelector((state: RootState) => state.comment);
   const [vote, setVote] = useState<null | 0 | 1>(null);
   const getVoteCount = () => {
     if (vote === 0) return comment.votes + 1;
@@ -35,10 +40,13 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
   // console.log("comment", comment);
   dayjs.extend(relativeTime);
   const menuRef = useRef<HTMLDivElement>(null);
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [content, setContent] = useState("");
+  const [commentId, setCommentId] = useState("");
+  const dispatch = useDispatch<AppDispatch>();
   const CommentMenu = ({ isOpen, onEdit, onDelete }: { isOpen: boolean; onEdit: () => void; onDelete: () => void }) => {
     if (!isOpen) return null;
 
@@ -85,6 +93,62 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
     setIsEdit(true);
     setIsMenuOpen(false);
   };
+  const handleConfirmDelete = () => {
+    // Xử lý logic xóa bài viết ở đây
+    setIsDeleteConfirmOpen(false);
+  };
+  const DeleteConfirmation = ({
+    isOpen,
+    onClose,
+    onConfirm,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+  }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-xl p-6 w-[400px]">
+          <h2 className="text-gray-900 text-xl font-semibold mb-4">Delete Comment?</h2>
+          <p className="text-gray-700 mb-6">Once you delete this comment, it can&apos;t be restored.</p>
+          <div className="flex justify-end gap-3">
+            <button onClick={onClose} className="px-4 py-2 text-white bg-gray-500 hover:bg-gray-600 rounded-full">
+              Go back
+            </button>
+            <button onClick={onConfirm} className="px-4 py-2 bg-red-500 text-white hover:bg-red-600 rounded-full">
+              Yes, Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  const handleSubmitEdit = async () => {
+    // Giả sử bạn có state content, title, thumbnailUrl
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = content;
+    const plainText = tempDiv.textContent || tempDiv.innerText || "";
+    const commentData = {
+      content: plainText, // nội dung đã chỉnh sửa
+    };
+    const result = await dispatch(updateComment({ commentId, commentData }));
+    if (updateComment.fulfilled.match(result)) {
+      setIsEdit(false);
+      setContent(plainText);
+      toast.success("Đã lưu chỉnh sửa!");
+      // Có thể reload lại chi tiết bài viết nếu muốn
+      dispatch(getCommentDetailWithId(commentId));
+      // window.location.reload();
+    } else {
+      toast.error("Cập nhật thất bại!");
+    }
+  };
+  useEffect(() => {
+    if (currentComment) setContent(currentComment.content);
+  }, [currentComment]);
+
   const handleDeleteComment = () => {
     setIsDeleteConfirmOpen(true);
     setIsMenuOpen(false);
@@ -96,11 +160,13 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
       }
     };
     setContent(comment.content);
+    setCommentId(String(comment.id));
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  console.log("currentComment", currentComment);
 
   return (
     <div className={cn("flex", level > 0 ? "ml-8" : "", "mb-4")}>
@@ -126,6 +192,14 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
         {isEdit ? (
           <div className="border border-gray-300 rounded-2xl h-40" style={{ width: "99%", marginTop: "8px" }}>
             <TextEditor editorData={content} setEditorData={setContent} />
+            <div className="flex justify-end gap-2 mt-6 pr-2">
+              <button className="bg-gray-500 text-white rounded-full px-4 py-1 text-sm" onClick={() => setIsEdit(false)}>
+                Cancel
+              </button>
+              <button className="bg-blue-600 text-white rounded-full px-4 py-1 text-sm" onClick={handleSubmitEdit}>
+                Save edit
+              </button>
+            </div>
           </div>
         ) : (
           <div className="mt-1 text-gray-900">{comment.content} </div>
@@ -260,6 +334,11 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
             <CommentMenu isOpen={isMenuOpen} onEdit={handleEditComment} onDelete={handleDeleteComment} />
           </div>
         </div>
+        <DeleteConfirmation
+          isOpen={isDeleteConfirmOpen}
+          onClose={() => setIsDeleteConfirmOpen(false)}
+          onConfirm={handleConfirmDelete}
+        />
         {comment.childComments && comment.childComments.length > 0 && (
           <div className="mt-3">
             {comment.childComments.map((child: CommentType) => (

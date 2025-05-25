@@ -131,7 +131,7 @@ export const postCreate = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API Response:", data);
+      // console.log("📢 API Response:", data);
 
       if (!response.ok || !data.succeeded) {
         // Xử lý lỗi từ server
@@ -433,8 +433,6 @@ export const getPostDetailWithId = createAsyncThunk("post/getPostDetail", async 
   try {
     const response = await fetch(`http://103.82.194.197:8080/api/posts/${postId}`);
     const result = await response.json();
-    console.log("result: ");
-    console.log(result);
 
     if (!response.ok || !result.succeeded) {
       return rejectWithValue({

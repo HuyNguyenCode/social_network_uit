@@ -214,7 +214,7 @@ const Page = () => {
   if (!currentPost) {
     return <div>Post not found</div>;
   }
-  console.log("commentArr", commentArr);
+
   dayjs.extend(relativeTime);
   return (
     <div className="">

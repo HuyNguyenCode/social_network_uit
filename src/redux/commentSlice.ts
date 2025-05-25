@@ -14,12 +14,14 @@ interface Comment {
 
 interface CommentState {
   comments: Comment | null;
+  currentComment: Comment | null; // Thêm trường này để lưu comment hiện tại
   loading: boolean;
   error: string | null;
 }
 
 const initialState: CommentState = {
   comments: null, // Thay currentPost bằng posts
+  currentComment: null, // Thêm trường này để lưu comment hiện tại
   loading: false,
   error: null,
 };
@@ -108,40 +110,39 @@ const initialState: CommentState = {
 //   },
 // );
 
-// // Thunk update post
-// export const updatePost = createAsyncThunk(
-//   "post/update",
-//   async (
-//     { postId, postData }: { postId: string; postData: { title: string; content: string; thumbnailUrl: string } },
-//     { rejectWithValue },
-//   ) => {
-//     try {
-//       const response = await fetch(`http://103.82.194.197:8080/api/posts/${id}/update`, {
-//         method: "PUT",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify(postData),
-//       });
+// Thunk update comment
+export const updateComment = createAsyncThunk(
+  "comment/update",
+  async ({ commentId, commentData }: { commentId: string; commentData: { content: string } }, { rejectWithValue }) => {
+    try {
+      const token = Cookies.get("sessionToken"); // Lấy token từ cookie
+      const response = await fetch(`http://103.82.194.197:8080/api/comments/${commentId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
 
-//       const result = await response.json();
-//       console.log("data: ");
-//       console.log(result);
-//       if (!response.ok || result.statusCode === 400) {
-//         const errorMessage = result.Errors?.[0] || "Cập nhật bài viết thất bại!";
-//         return rejectWithValue({ message: errorMessage, status: response.status });
-//       }
+        body: JSON.stringify(commentData),
+      });
 
-//       if (!result.result) {
-//         return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
-//       }
+      const result = await response.json();
+      // console.log("result: ");
+      // console.log(result);
+      if (!response.ok || result.statusCode === 400) {
+        const errorMessage = result.Errors?.[0] || "Update comment successfull !";
+        return rejectWithValue({ message: errorMessage, status: response.status });
+      }
 
-//       console.log("✅ Cập nhật bài viết thành công:", result.result);
-//       return { post: result.result, message: result.message };
-//     } catch (error: any) {
-//       console.log("❌ Lỗi ngoại lệ:", error);
-//       return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
-//     }
-//   },
-// );
+      if (!result.result) {
+        return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
+      }
+
+      // console.log("✅ Update comment successfull:", result.result);
+      return { comment: result.result, message: result.message };
+    } catch (error: any) {
+      console.log("❌ Lỗi ngoại lệ:", error);
+      return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
+    }
+  },
+);
 
 // Thunk xử lý lấy danh sách comment theo userID
 export const getCommentWithId = createAsyncThunk(
@@ -196,88 +197,41 @@ export const getCommentWithId = createAsyncThunk(
   },
 );
 
-// //Get upvoted post
-// export const getUpVotePostById = createAsyncThunk("post/upvoted", async (userId: string, { rejectWithValue }) => {
-//   try {
-//     const response = await fetch(`http://103.82.194.197:8080/api/posts/user/${userId}/upvote`, {
-//       method: "GET",
-//       headers: { "Content-Type": "application/json" },
-//     });
-
-//     const result = await response.json();
-//     console.log("data: ");
-//     console.log(result);
-//     if (!response.ok || result.statusCode === 400) {
-//       const errorMessage = result.Errors?.[0] || "Failed to get upvoted post!";
-//       return rejectWithValue({ message: errorMessage, status: response.status });
-//     }
-
-//     if (!result.result) {
-//       return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
-//     }
-
-//     console.log("✅ Vote bài viết thành công:", result.result);
-//     return { data: result.result, message: result.message };
-//   } catch (error: any) {
-//     console.log("❌ Lỗi ngoại lệ:", error);
-//     return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
-//   }
-// });
-
 // //Get downvoted post
-// export const getDownVotePostById = createAsyncThunk("post/downvoted", async (userId: string, { rejectWithValue }) => {
-//   try {
-//     const response = await fetch(`http://103.82.194.197:8080/api/posts/user/${userId}/downvote`, {
-//       method: "GET",
-//       headers: { "Content-Type": "application/json" },
-//     });
-
-//     const result = await response.json();
-//     console.log("data: ");
-//     console.log(result);
-//     if (!response.ok || result.statusCode === 400) {
-//       const errorMessage = result.Errors?.[0] || "Failed to get upvoted post!";
-//       return rejectWithValue({ message: errorMessage, status: response.status });
-//     }
-
-//     if (!result.result) {
-//       return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
-//     }
-
-//     console.log("✅ Vote bài viết thành công:", result.result);
-//     return { data: result.result, message: result.message };
-//   } catch (error: any) {
-//     console.log("❌ Lỗi ngoại lệ:", error);
-//     return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
-//   }
-// });
 
 // //Lấy chi tiết bài viết theo ID
-// export const getPostDetailWithId = createAsyncThunk("post/getPostDetail", async (postId: string, { rejectWithValue }) => {
-//   try {
-//     const response = await fetch(`http://103.82.194.197:8080/api/posts/${postId}`);
-//     const result = await response.json();
-//     console.log("result: ");
-//     console.log(result);
+export const getCommentDetailWithId = createAsyncThunk(
+  "comment/getCommentDetailWithId",
+  async (commentId: string, { rejectWithValue }) => {
+    try {
+      const token = Cookies.get("sessionToken"); // Lấy token từ cookie
+      const response = await fetch(`http://103.82.194.197:8080/api/comments/${commentId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      });
+      const result = await response.json();
+      // console.log("result: ");
+      // console.log(result);
 
-//     if (!response.ok || !result.succeeded) {
-//       return rejectWithValue({
-//         message: result.message || "Failed to fetch post detail",
-//         status: response.status,
-//       });
-//     }
+      if (!response.ok || !result.succeeded) {
+        return rejectWithValue({
+          message: result.message || "Failed to fetch post detail",
+          status: response.status,
+        });
+      }
 
-//     return {
-//       post: result.result as PostDetail,
-//       message: result.message,
-//     };
-//   } catch (error: any) {
-//     return rejectWithValue({
-//       message: error.message || "Server error",
-//       status: 500,
-//     });
-//   }
-// });
+      return {
+        comments: result.result,
+        message: result.message,
+      };
+    } catch (error: any) {
+      return rejectWithValue({
+        message: error.message || "Server error",
+        status: 500,
+      });
+    }
+  },
+);
 
 // Slice
 const commentSlice = createSlice({
@@ -303,52 +257,66 @@ const commentSlice = createSlice({
       .addCase(getCommentWithId.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as any)?.message || "Lỗi không xác định";
-      });
+      })
 
-    // // Xử lý postCreate
-    // .addCase(postCreate.pending, (state) => {
-    //   state.loading = true;
-    //   state.error = null;
-    // })
-    // .addCase(postCreate.fulfilled, (state, action) => {
-    //   state.loading = false;
-    //   state.posts = action.payload.post;
-    //   state.error = null;
-    // })
-    // .addCase(postCreate.rejected, (state, action) => {
-    //   state.loading = false;
-    //   state.error = action.payload as string;
-    // })
-    // // Xử lý updatePost
-    // .addCase(updatePost.pending, (state) => {
-    //   state.loading = true;
-    //   state.error = null;
-    // })
-    // .addCase(updatePost.fulfilled, (state, action) => {
-    //   state.loading = false;
-    //   state.posts = action.payload.post;
-    //   state.error = null;
-    // })
-    // .addCase(updatePost.rejected, (state, action) => {
-    //   state.loading = false;
-    //   state.error = action.payload as string;
-    // })
-    //   //Xử lý PostDetail
-    //   .addCase(getPostDetailWithId.pending, (state) => {
-    //   state.loading = true;
-    //   state.error = null;
-    //   state.currentPost = null; // Reset current post khi fetch mới
-    // })
-    // .addCase(getPostDetailWithId.fulfilled, (state, action) => {
-    //   state.loading = false;
-    //   state.currentPost = action.payload.post; // Lưu vào currentPost
-    //   state.error = null;
-    // })
-    // .addCase(getPostDetailWithId.rejected, (state, action) => {
-    //   state.loading = false;
-    //   state.error = (action.payload as any)?.message || "Lỗi không xác định";
-    //   state.currentPost = null;
-    // });
+      // // Xử lý postCreate
+      // .addCase(postCreate.pending, (state) => {
+      //   state.loading = true;
+      //   state.error = null;
+      // })
+      // .addCase(postCreate.fulfilled, (state, action) => {
+      //   state.loading = false;
+      //   state.posts = action.payload.post;
+      //   state.error = null;
+      // })
+      // .addCase(postCreate.rejected, (state, action) => {
+      //   state.loading = false;
+      //   state.error = action.payload as string;
+      // })
+      // // Xử lý updatePost
+      // .addCase(updatePost.pending, (state) => {
+      //   state.loading = true;
+      //   state.error = null;
+      // })
+      // .addCase(updatePost.fulfilled, (state, action) => {
+      //   state.loading = false;
+      //   state.posts = action.payload.post;
+      //   state.error = null;
+      // })
+      // .addCase(updatePost.rejected, (state, action) => {
+      //   state.loading = false;
+      //   state.error = action.payload as string;
+      // })
+      .addCase(updateComment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateComment.fulfilled, (state, action) => {
+        state.loading = false;
+        // state.comments = action.payload.comment; // Cập nhật danh sách comment
+        state.currentComment = action.payload.comment; // Cập nhật luôn
+        state.error = null;
+      })
+      .addCase(updateComment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      //   //Xử lý PostDetail
+      .addCase(getCommentDetailWithId.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.currentComment = null; // Reset current post khi fetch mới
+      })
+      .addCase(getCommentDetailWithId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentComment = action.payload.comments; // Lưu vào currentComment
+        state.error = null;
+      })
+      .addCase(getCommentDetailWithId.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as any)?.message || "Lỗi không xác định";
+        state.currentComment = null;
+      });
     // Xử lý getPostDetailWithId (chi tiết)
     // .addCase(getPostDetailWithId.pending, (state) => {
     //   state.loading = true;
