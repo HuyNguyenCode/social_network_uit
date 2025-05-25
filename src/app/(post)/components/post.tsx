@@ -75,7 +75,7 @@ const Post = ({ post }: PostProps) => {
     setVote((prev) => (prev === 0 ? null : 0));
   };
   dayjs.extend(relativeTime);
-  console.log(post);
+  // console.log(post);
 
   const countTotalComments = (comments: any[]) => {
     let count = 0;

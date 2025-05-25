@@ -16,12 +16,31 @@ import { getPostDetailWithId } from "@/redux/postSlice";
 import { AppDispatch, RootState } from "@/redux/store";
 import Comment from "@/app/(post)/components/Comment";
 import OutputFiles from "@/app/(post)/create-post/outputFiles";
+import { commentCreate } from "@/redux/commentSlice";
+import { toast } from "sonner";
 const cx = classNames.bind(styles);
 
 const InputComment = () => {
   const [isFormat, setIsFormat] = useState(false);
   const [content, setContent] = useState("");
-
+  const dispatch = useDispatch<AppDispatch>();
+  const handleSubmitReply = async () => {
+    // const tempDiv = document.createElement("div");
+    // tempDiv.innerHTML = content;
+    // const plainText = tempDiv.textContent || tempDiv.innerText || "";
+    // const commentData = {
+    //   postId: postMessage.pos, // ID của bài viết gốc
+    //   content: plainText, // nội dung đã chỉnh sửa
+    //   parentCommentId: comment.parentCommentId, // ID của bình luận cha
+    // };
+    // const result = await dispatch(commentCreate(commentData));
+    // if (commentCreate.fulfilled.match(result)) {
+    //   toast.success("Commented!");
+    //   window.location.reload();
+    // } else {
+    //   toast.error("Failed to comment!");
+    // }
+  };
   return (
     <div className="border border-gray-300 rounded-2xl comment-input mt-5">
       {!isFormat ? (
@@ -47,13 +66,33 @@ const InputComment = () => {
         </button>
         <div className="flex flex-row gap-2 text-xs font-semibold">
           <button className="bg-gray-500 text-white rounded-full px-[10px]">Cancel</button>
-          <button className="bg-gray-600 text-white rounded-full px-[10px]">Comment</button>
+          <button className="bg-gray-600 text-white rounded-full px-[10px]" onClick={handleSubmitReply}>
+            Comment
+          </button>
         </div>
       </div>
     </div>
   );
 };
+const countTotalComments = (comments: any[]) => {
+  let count = 0;
+  const visited = new Set();
 
+  const dfs = (commentList: any[]) => {
+    for (const comment of commentList) {
+      if (!visited.has(comment.id)) {
+        visited.add(comment.id);
+        count++;
+        if (comment.childComments?.length) {
+          dfs(comment.childComments);
+        }
+      }
+    }
+  };
+
+  dfs(comments);
+  return count;
+};
 const PostMenu = ({ isOpen, onEdit, onDelete }: { isOpen: boolean; onEdit: () => void; onDelete: () => void }) => {
   if (!isOpen) return null;
 
@@ -376,7 +415,7 @@ const Page = () => {
                       <path d="M10 19H1.871a.886.886 0 0 1-.798-.52.886.886 0 0 1 .158-.941L3.1 15.771A9 9 0 1 1 10 19Zm-6.549-1.5H10a7.5 7.5 0 1 0-5.323-2.219l.54.545L3.451 17.5Z"></path>
                     </svg>
                     <span className="text-gray-900 text-xs font-semibold">
-                      {currentPost.comments && currentPost.comments.length}
+                      {currentPost.comments && currentPost.comments.length && countTotalComments(currentPost.comments)}
                     </span>
                   </a>
                   <button className="bg-gray-200 hover:bg-gray-300 flex flex-row items-center justify-center rounded-full px-3 active:bg-gray-100">

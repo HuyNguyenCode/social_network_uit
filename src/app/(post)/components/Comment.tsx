@@ -10,7 +10,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { updateComment, getCommentDetailWithId } from "@/redux/commentSlice";
+import { updateComment, getCommentDetailWithId, commentCreate, commentDelete } from "@/redux/commentSlice";
 type CommentType = {
   id: number;
   user: { avatarId: string; userName: string; id: string };
@@ -43,8 +43,10 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
+  const [isReply, setIsReply] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [content, setContent] = useState("");
+  const [contentReply, setContentReply] = useState("");
   const [commentId, setCommentId] = useState("");
   const dispatch = useDispatch<AppDispatch>();
   const CommentMenu = ({ isOpen, onEdit, onDelete }: { isOpen: boolean; onEdit: () => void; onDelete: () => void }) => {
@@ -93,9 +95,19 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
     setIsEdit(true);
     setIsMenuOpen(false);
   };
-  const handleConfirmDelete = () => {
-    // Xử lý logic xóa bài viết ở đây
-    setIsDeleteConfirmOpen(false);
+
+  const handleReplyComment = () => {
+    setIsReply(true);
+  };
+  const handleConfirmDelete = async () => {
+    const result = await dispatch(commentDelete(commentId));
+    if (commentDelete.fulfilled.match(result)) {
+      setIsDeleteConfirmOpen(false);
+      toast.success("Comment deleted!");
+      window.location.reload();
+    } else {
+      toast.error("Failed to delete comment!");
+    }
   };
   const DeleteConfirmation = ({
     isOpen,
@@ -137,12 +149,32 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
     if (updateComment.fulfilled.match(result)) {
       setIsEdit(false);
       setContent(plainText);
-      toast.success("Đã lưu chỉnh sửa!");
+      toast.success("Comment edited!");
       // Có thể reload lại chi tiết bài viết nếu muốn
       dispatch(getCommentDetailWithId(commentId));
       // window.location.reload();
     } else {
-      toast.error("Cập nhật thất bại!");
+      toast.error("Failed to edit comment!");
+    }
+  };
+
+  const handleSubmitReply = async () => {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = contentReply;
+    const plainText = tempDiv.textContent || tempDiv.innerText || "";
+    const commentData = {
+      postId: comment.postId, // ID của bài viết gốc
+      content: plainText, // nội dung đã chỉnh sửa
+      parentCommentId: comment.parentCommentId, // ID của bình luận cha
+    };
+    const result = await dispatch(commentCreate(commentData));
+    if (commentCreate.fulfilled.match(result)) {
+      setIsEdit(false);
+      toast.success("Commented!");
+      // Có thể reload lại chi tiết bài viết nếu muốn
+      // window.location.reload();
+    } else {
+      toast.error("Failed to comment!");
     }
   };
   useEffect(() => {
@@ -298,7 +330,9 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
             >
               <path d="M10 19H1.871a.886.886 0 0 1-.798-.52.886.886 0 0 1 .158-.941L3.1 15.771A9 9 0 1 1 10 19Zm-6.549-1.5H10a7.5 7.5 0 1 0-5.323-2.219l.54.545L3.451 17.5Z"></path>
             </svg>
-            <span className="text-black text-xs font-semibold">Reply</span>
+            <span className="text-black text-xs font-semibold" onClick={handleReplyComment}>
+              Reply
+            </span>
           </a>
           <button className="border-gray-200 bg-[#e5ebee] hover:bg-[#f7f9fa] flex flex-row items-center justify-center rounded-full h-8 px-3 py-2 text-sm active:bg-[#FFFFFF26]">
             <svg
@@ -334,6 +368,19 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
             <CommentMenu isOpen={isMenuOpen} onEdit={handleEditComment} onDelete={handleDeleteComment} />
           </div>
         </div>
+        {isReply && (
+          <div className="border border-gray-300 rounded-2xl h-40" style={{ width: "99%", marginTop: "8px" }}>
+            <TextEditor editorData={contentReply} setEditorData={setContentReply} />
+            <div className="flex justify-end gap-2 mt-6 pr-2">
+              <button className="bg-gray-500 text-white rounded-full px-4 py-1 text-sm" onClick={() => setIsReply(false)}>
+                Cancel
+              </button>
+              <button className="bg-blue-600 text-white rounded-full px-4 py-1 text-sm" onClick={handleSubmitReply}>
+                Comment
+              </button>
+            </div>
+          </div>
+        )}
         <DeleteConfirmation
           isOpen={isDeleteConfirmOpen}
           onClose={() => setIsDeleteConfirmOpen(false)}

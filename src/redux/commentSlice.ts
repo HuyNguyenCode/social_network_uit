@@ -28,55 +28,51 @@ const initialState: CommentState = {
 
 // const user = Cookies.get("userName");
 
-// // Thunk xử lý create post
-// export const postCreate = createAsyncThunk(
-//   "post/create",
-//   async (
-//     postData: {
-//       title: string;
-//       content: string;
-//       category: string;
-//       postImages?: string[];
-//     },
-//     { rejectWithValue },
-//   ) => {
-//     try {
-//       const token = Cookies.get("sessionToken"); // Lấy token từ cookie
-//       console.log("Token lấy từ cookie:", token); // Thêm dòng này để kiểm tra
-//       console.log("postData:", postData); // Thêm dòng này để kiểm tra
+// Thunk xử lý create comment
+export const commentCreate = createAsyncThunk(
+  "post/create",
+  async (
+    commentData: {
+      postId: string;
+      content: string;
+      parentCommentId: string | null;
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      const token = Cookies.get("sessionToken"); // Lấy token từ cookie
+      const response = await fetch("http://103.82.194.197:8080/api/comments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(commentData),
+      });
 
-//       const response = await fetch("http://103.82.194.197:8080/api/posts", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${token}`,
-//         },
-//         body: JSON.stringify(postData),
-//       });
+      const data = await response.json();
+      console.log("📢 API Response:", data);
 
-//       const data = await response.json();
-//       console.log("📢 API Response:", data);
+      if (!response.ok || !data.succeeded) {
+        // Xử lý lỗi từ server
+        const errorMessage = data.message || data.errors?.join(", ") || "Đăng bài viết thất bại";
+        return rejectWithValue({
+          message: errorMessage,
+          status: response.status,
+        });
+      }
 
-//       if (!response.ok || !data.succeeded) {
-//         // Xử lý lỗi từ server
-//         const errorMessage = data.message || data.errors?.join(", ") || "Đăng bài viết thất bại";
-//         return rejectWithValue({
-//           message: errorMessage,
-//           status: response.status,
-//         });
-//       }
-
-//       console.log("✅ Đăng bài viết thành công:", data);
-//       return data.result; // Trả về toàn bộ response data nếu API không có nested 'result'
-//     } catch (error: any) {
-//       console.error("❌ Lỗi ngoại lệ:", error);
-//       return rejectWithValue({
-//         message: error.message || "Lỗi kết nối đến server",
-//         status: 500,
-//       });
-//     }
-//   },
-// );
+      console.log("✅ Đăng bài viết thành công:", data);
+      return data.result; // Trả về toàn bộ response data nếu API không có nested 'result'
+    } catch (error: any) {
+      console.error("❌ Lỗi ngoại lệ:", error);
+      return rejectWithValue({
+        message: error.message || "Lỗi kết nối đến server",
+        status: 500,
+      });
+    }
+  },
+);
 
 // //votePost
 // export const votePost = createAsyncThunk(
@@ -197,7 +193,47 @@ export const getCommentWithId = createAsyncThunk(
   },
 );
 
-// //Get downvoted post
+export const commentDelete = createAsyncThunk("post/delete", async (commentId: string, { rejectWithValue }) => {
+  try {
+    const token = Cookies.get("sessionToken");
+    console.log("Token lấy từ cookie:", token);
+
+    const response = await fetch(`http://103.82.194.197:8080/api/comments/${commentId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // Nếu status là 204 (No Content), không được gọi .json()
+    let data: any = {};
+    const contentType = response.headers.get("content-type");
+
+    if (response.status !== 204 && contentType?.includes("application/json")) {
+      data = await response.json();
+    }
+
+    console.log("📢 API Response:", data);
+
+    if (!response.ok || data?.succeeded === false) {
+      const errorMessage = data?.message || data?.errors?.join(", ") || "Xóa bài viết thất bại";
+      return rejectWithValue({
+        message: errorMessage,
+        status: response.status,
+      });
+    }
+
+    console.log("✅ Xóa bài viết thành công:", data);
+    return { commentId, message: data?.message || "Xóa thành công" };
+  } catch (error: any) {
+    console.error("❌ Lỗi ngoại lệ:", error);
+    return rejectWithValue({
+      message: error.message || "Lỗi kết nối đến server",
+      status: 500,
+    });
+  }
+});
 
 // //Lấy chi tiết bài viết theo ID
 export const getCommentDetailWithId = createAsyncThunk(
