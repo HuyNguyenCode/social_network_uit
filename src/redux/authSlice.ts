@@ -25,7 +25,7 @@ export const loginUser = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await fetch("http://103.82.194.197:8080/api/Auth/login", {
+      const response = await fetch("http://localhost:5108/api/Auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
