@@ -24,7 +24,7 @@ type CommentType = {
 };
 
 function Comment({ comment, level = 0 }: { comment: CommentType; level?: number }) {
-  const { currentComment, loading, error } = useSelector((state: RootState) => state.comment);
+  const { currentComment } = useSelector((state: RootState) => state.comment);
   const [vote, setVote] = useState<null | 0 | 1>(null);
   const getVoteCount = () => {
     if (vote === 0) return comment.votes + 1;
@@ -99,16 +99,7 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
   const handleReplyComment = () => {
     setIsReply(true);
   };
-  const handleConfirmDelete = async () => {
-    const result = await dispatch(commentDelete(commentId));
-    if (commentDelete.fulfilled.match(result)) {
-      setIsDeleteConfirmOpen(false);
-      toast.success("Comment deleted!");
-      window.location.reload();
-    } else {
-      toast.error("Failed to delete comment!");
-    }
-  };
+
   const DeleteConfirmation = ({
     isOpen,
     onClose,
@@ -137,6 +128,7 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
       </div>
     );
   };
+
   const handleSubmitEdit = async () => {
     // Giả sử bạn có state content, title, thumbnailUrl
     const tempDiv = document.createElement("div");
@@ -150,11 +142,20 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
       setIsEdit(false);
       setContent(plainText);
       toast.success("Comment edited!");
-      // Có thể reload lại chi tiết bài viết nếu muốn
       dispatch(getCommentDetailWithId(commentId));
-      // window.location.reload();
     } else {
       toast.error("Failed to edit comment!");
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    const result = await dispatch(commentDelete(commentId));
+    if (commentDelete.fulfilled.match(result)) {
+      setIsDeleteConfirmOpen(false);
+      toast.success("Comment deleted!");
+      dispatch(getCommentDetailWithId(commentId));
+    } else {
+      toast.error("Failed to delete comment!");
     }
   };
 
@@ -171,15 +172,12 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
     if (commentCreate.fulfilled.match(result)) {
       setIsEdit(false);
       toast.success("Commented!");
+      dispatch(getCommentDetailWithId(commentId));
       // Có thể reload lại chi tiết bài viết nếu muốn
-      // window.location.reload();
     } else {
       toast.error("Failed to comment!");
     }
   };
-  useEffect(() => {
-    if (currentComment) setContent(currentComment.content);
-  }, [currentComment]);
 
   const handleDeleteComment = () => {
     setIsDeleteConfirmOpen(true);
@@ -198,7 +196,7 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  console.log("currentComment", currentComment);
+  console.log("comment", comment);
 
   return (
     <div className={cn("flex", level > 0 ? "ml-8" : "", "mb-4")}>
