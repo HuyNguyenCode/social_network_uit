@@ -25,7 +25,7 @@ export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (credentials: { username: string; password: string }, { rejectWithValue }) => {
     try {
-      const response = await fetch("http://103.82.194.197:8080/api/Auth/login", {
+      const response = await fetch("http://localhost:5108/api/Auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -71,7 +71,7 @@ export const registerUser = createAsyncThunk(
     console.log(credentials);
 
     try {
-      const response = await fetch("http://103.82.194.197:8080/api/Auth/register", {
+      const response = await fetch("http://localhost:5108/api/Auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -103,7 +103,7 @@ export const registerUser = createAsyncThunk(
 // Thunk xử lý đăng xuất
 export const logoutUser = createAsyncThunk("auth/logoutUser", async (_, { rejectWithValue }) => {
   try {
-    const response = await fetch("http://localhost:8080/api/Auth/logout", {
+    const response = await fetch("http://localhost:5108/api/Auth/logout", {
       method: "POST",
       body: JSON.stringify({}),
       headers: {
@@ -130,7 +130,7 @@ export const changePassword = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await fetch(`http://103.82.194.197:8080/api/Auth/${userId}/changePassword`, {
+      const response = await fetch(`http://localhost:5108/api/Auth/${userId}/changePassword`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ oldPassword, newPassword }),

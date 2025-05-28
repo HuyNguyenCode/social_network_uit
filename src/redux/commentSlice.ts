@@ -9,6 +9,7 @@ interface Comment {
   parentCommentId: number;
   score: number;
   createdOn: string;
+  user: { avatarId: string; userName: string; id: string };
   replies: Comment[];
 }
 
@@ -41,7 +42,7 @@ export const commentCreate = createAsyncThunk(
   ) => {
     try {
       const token = Cookies.get("sessionToken"); // Lấy token từ cookie
-      const response = await fetch("http://103.82.194.197:8080/api/comments", {
+      const response = await fetch("http://localhost:5108/api/comments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,7 +52,7 @@ export const commentCreate = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API Response:", data);
+      // console.log("📢 API Response:", data);
 
       if (!response.ok || !data.succeeded) {
         // Xử lý lỗi từ server
@@ -79,7 +80,7 @@ export const commentCreate = createAsyncThunk(
 //   "post/vote",
 //   async ({ postId, voteData }: { postId: string; voteData: { userId: string; voteType: number } }, { rejectWithValue }) => {
 //     try {
-//       const response = await fetch(`http://103.82.194.197:8080/api/posts/user/${userId}/${getBy}`, {
+//       const response = await fetch(`http://localhost:5108/api/posts/user/${userId}/${getBy}`, {
 //         method: "POST",
 //         headers: { "Content-Type": "application/json" },
 //         body: JSON.stringify(voteData),
@@ -112,7 +113,7 @@ export const updateComment = createAsyncThunk(
   async ({ commentId, commentData }: { commentId: string; commentData: { content: string } }, { rejectWithValue }) => {
     try {
       const token = Cookies.get("sessionToken"); // Lấy token từ cookie
-      const response = await fetch(`http://103.82.194.197:8080/api/comments/${commentId}`, {
+      const response = await fetch(`http://localhost:5108/api/comments/${commentId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
 
@@ -152,12 +153,13 @@ export const getCommentWithId = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const url = new URL(`http://103.82.194.197:8080/api/comments/user/${userId}`);
-
+      const url = new URL(`http://localhost:5108/api/comments/user/${userId}`);
+      const token = Cookies.get("sessionToken"); // Lấy token từ cookie
       const response = await fetch(url.toString(), {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -198,7 +200,7 @@ export const commentDelete = createAsyncThunk("post/delete", async (commentId: s
     const token = Cookies.get("sessionToken");
     console.log("Token lấy từ cookie:", token);
 
-    const response = await fetch(`http://103.82.194.197:8080/api/comments/${commentId}`, {
+    const response = await fetch(`http://localhost:5108/api/comments/${commentId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -241,13 +243,11 @@ export const getCommentDetailWithId = createAsyncThunk(
   async (commentId: string, { rejectWithValue }) => {
     try {
       const token = Cookies.get("sessionToken"); // Lấy token từ cookie
-      const response = await fetch(`http://103.82.194.197:8080/api/comments/${commentId}`, {
+      const response = await fetch(`http://localhost:5108/api/comments/${commentId}`, {
         method: "GET",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       });
       const result = await response.json();
-      // console.log("result: ");
-      // console.log(result);
 
       if (!response.ok || !result.succeeded) {
         return rejectWithValue({

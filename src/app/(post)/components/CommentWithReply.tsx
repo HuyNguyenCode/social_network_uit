@@ -3,14 +3,17 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
-import TextEditor from "../create-post/ckEditor";
+
 import OutputFile from "@/app/(post)/create-post/outputFile";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { toast } from "sonner";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/redux/store";
-import { updateComment, getCommentDetailWithId, commentCreate, commentDelete } from "@/redux/commentSlice";
+
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { getCommentDetailWithId, commentDelete } from "@/redux/commentSlice";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 type CommentType = {
   id: number;
   user: { avatarId: string; userName: string; id: string };
@@ -22,8 +25,23 @@ type CommentType = {
   votes: number;
   childComments: CommentType[];
 };
+function CommentWithReply({ comment }: { comment: CommentType }) {
+  const dispatch = useDispatch<AppDispatch>();
+  const { currentComment } = useSelector((state: RootState) => state.comment);
+  const [userReply, setUserReply] = useState<any>(null);
+  useEffect(() => {
+    dispatch(getCommentDetailWithId(comment.parentCommentId));
+    if (currentComment) {
+      setUserReply(currentComment);
+    }
+  }, [dispatch]);
+  useEffect(() => {
+    if (currentComment) {
+      setUserReply(currentComment.user);
+    }
+  }, [currentComment]);
 
-function Comment({ comment, level = 0 }: { comment: CommentType; level?: number }) {
+  dayjs.extend(relativeTime);
 
   const [vote, setVote] = useState<null | 0 | 1>(null);
   const getVoteCount = () => {
@@ -37,18 +55,10 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
   const handleDownVote = () => {
     setVote((prev) => (prev === 1 ? null : 1));
   };
-
-  dayjs.extend(relativeTime);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
-  const [isReply, setIsReply] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [content, setContent] = useState("");
-  const [contentReply, setContentReply] = useState("");
-  const [commentId, setCommentId] = useState("");
-  const dispatch = useDispatch<AppDispatch>();
   const CommentMenu = ({ isOpen, onEdit, onDelete }: { isOpen: boolean; onEdit: () => void; onDelete: () => void }) => {
     if (!isOpen) return null;
 
@@ -90,16 +100,27 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
       </div>
     );
   };
-
+  const router = useRouter();
   const handleEditComment = () => {
-    setIsEdit(true);
+    router.push(`/post/${comment.postId}`);
+  };
+
+  const handleConfirmDelete = async () => {
+    const result = await dispatch(commentDelete(String(comment.id)));
+    if (commentDelete.fulfilled.match(result)) {
+      setIsDeleteConfirmOpen(false);
+      toast.success("Comment deleted!");
+      window.location.reload();
+      dispatch(getCommentDetailWithId(String(comment.id)));
+    } else {
+      toast.error("Failed to delete comment!");
+    }
+  };
+
+  const handleDeleteComment = () => {
+    setIsDeleteConfirmOpen(true);
     setIsMenuOpen(false);
   };
-
-  const handleReplyComment = () => {
-    setIsReply(true);
-  };
-
   const DeleteConfirmation = ({
     isOpen,
     onClose,
@@ -128,113 +149,34 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
       </div>
     );
   };
-
-  const handleSubmitEdit = async () => {
-    // Giả sử bạn có state content, title, thumbnailUrl
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = content;
-    const plainText = tempDiv.textContent || tempDiv.innerText || "";
-    const commentData = {
-      content: plainText, // nội dung đã chỉnh sửa
-    };
-    const result = await dispatch(updateComment({ commentId, commentData }));
-    if (updateComment.fulfilled.match(result)) {
-      setIsEdit(false);
-      setContent(plainText);
-      toast.success("Comment edited!");
-      dispatch(getCommentDetailWithId(commentId));
-    } else {
-      toast.error("Failed to edit comment!");
-    }
-  };
-
-  const handleConfirmDelete = async () => {
-    const result = await dispatch(commentDelete(commentId));
-    if (commentDelete.fulfilled.match(result)) {
-      setIsDeleteConfirmOpen(false);
-      toast.success("Comment deleted!");
-      dispatch(getCommentDetailWithId(commentId));
-    } else {
-      toast.error("Failed to delete comment!");
-    }
-  };
-
-  const handleSubmitReply = async () => {
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = contentReply;
-    const plainText = tempDiv.textContent || tempDiv.innerText || "";
-    const commentData = {
-      postId: comment.postId, // ID của bài viết gốc
-      content: plainText, // nội dung đã chỉnh sửa
-      parentCommentId: commentId, // ID của bình luận cha
-    };
-    
-    const result = await dispatch(commentCreate(commentData));
-    if (commentCreate.fulfilled.match(result)) {
-      setIsEdit(false);
-      toast.success("Commented!");
-      dispatch(getCommentDetailWithId(commentId));
-      // Có thể reload lại chi tiết bài viết nếu muốn
-    } else {
-      toast.error("Failed to comment!");
-    }
-  };
-
-  const handleDeleteComment = () => {
-    setIsDeleteConfirmOpen(true);
-    setIsMenuOpen(false);
-  };
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-    setContent(comment.content);
-    setCommentId(String(comment.id));
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-  console.log("comment", comment);
-
   return (
-    <div className={cn("flex", level > 0 ? "ml-8" : "", "mb-4")}>
-      {comment?.user.avatarId ? (
-        <div className="w-8 h-8 rounded-full border border-gray-300" style={{ position: "relative" }}>
-          <OutputFile imageID={comment?.user?.avatarId ?? ""} />
-        </div>
-      ) : (
-        <Image
-          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZw4HYx8PHlE8ZniW1hqck5nZeKaYZSqG56g&s"
-          alt="avatar"
-          className="w-8 h-8 rounded-full border border-gray-300"
-          width={32}
-          height={32}
-          style={{ height: "100%" }}
-        />
-      )}
-      <div className="ml-3 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-gray-900">{comment.user.userName}</span>
-          <span className="text-xs text-gray-500">• {dayjs(comment.createdOn).fromNow()}</span>
-        </div>
-        {isEdit ? (
-          <div className="border border-gray-300 rounded-2xl h-40" style={{ width: "99%", marginTop: "8px" }}>
-            <TextEditor editorData={content} setEditorData={setContent} />
-            <div className="flex justify-end gap-2 mt-6 pr-2">
-              <button className="bg-gray-500 text-white rounded-full px-4 py-1 text-sm" onClick={() => setIsEdit(false)}>
-                Cancel
-              </button>
-              <button className="bg-blue-600 text-white rounded-full px-4 py-1 text-sm" onClick={handleSubmitEdit}>
-                Save edit
-              </button>
+    <div key={comment.id} className="border rounded-lg border-border p-4">
+      <div className="mt-4 pl-4 border-l-2 border-border">
+        <div className="" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {comment?.user.avatarId ? (
+            <div className="w-8 h-8 rounded-full border border-gray-300" style={{ position: "relative" }}>
+              <OutputFile imageID={comment?.user?.avatarId ?? ""} />
             </div>
-          </div>
-        ) : (
-          <div className="mt-1 text-gray-900">{comment.content} </div>
-        )}
+          ) : (
+            <Image
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZw4HYx8PHlE8ZniW1hqck5nZeKaYZSqG56g&s"
+              alt="avatar"
+              className="w-8 h-8 rounded-full border border-gray-300"
+              width={32}
+              height={32}
+              style={{ height: "100%" }}
+            />
+          )}
+          {comment && comment.user.userName}
+          {comment.childComments.length > 0 ? (
+            <div className="text-sm text-muted-foreground">
+              Replied to @{userReply && userReply.userName} • {dayjs(comment.createdOn).fromNow()}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground">Commented {dayjs(comment.createdOn).fromNow()}</div>
+          )}
+        </div>
+        <div className="mt-2 text-sm">{comment.content}</div>
         <div className="flex items-center gap-2 mt-2 text-gray-500 text-sm">
           <div
             className={cn(
@@ -329,9 +271,9 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
             >
               <path d="M10 19H1.871a.886.886 0 0 1-.798-.52.886.886 0 0 1 .158-.941L3.1 15.771A9 9 0 1 1 10 19Zm-6.549-1.5H10a7.5 7.5 0 1 0-5.323-2.219l.54.545L3.451 17.5Z"></path>
             </svg>
-            <span className="text-black text-xs font-semibold" onClick={handleReplyComment}>
-              Reply
-            </span>
+            <Link href={`/post/${comment.postId}`}>
+              <span className="text-black text-xs font-semibold">Reply</span>
+            </Link>
           </a>
           <button className="border-gray-200 bg-[#e5ebee] hover:bg-[#f7f9fa] flex flex-row items-center justify-center rounded-full h-8 px-3 py-2 text-sm active:bg-[#FFFFFF26]">
             <svg
@@ -350,8 +292,8 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
           </button>
           <div ref={menuRef} className="relative">
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="hover:bg-gray-300 flex flex-row items-center justify-center rounded-full w-8 h-8 active:bg-gray-100"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               <svg
                 fill="currentColor"
@@ -365,36 +307,15 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
               </svg>
             </button>
             <CommentMenu isOpen={isMenuOpen} onEdit={handleEditComment} onDelete={handleDeleteComment} />
+            <DeleteConfirmation
+              isOpen={isDeleteConfirmOpen}
+              onClose={() => setIsDeleteConfirmOpen(false)}
+              onConfirm={handleConfirmDelete}
+            />
           </div>
         </div>
-        {isReply && (
-          <div className="border border-gray-300 rounded-2xl h-40" style={{ width: "99%", marginTop: "8px" }}>
-            <TextEditor editorData={contentReply} setEditorData={setContentReply} />
-            <div className="flex justify-end gap-2 mt-6 pr-2">
-              <button className="bg-gray-500 text-white rounded-full px-4 py-1 text-sm" onClick={() => setIsReply(false)}>
-                Cancel
-              </button>
-              <button className="bg-blue-600 text-white rounded-full px-4 py-1 text-sm" onClick={handleSubmitReply}>
-                Comment
-              </button>
-            </div>
-          </div>
-        )}
-        <DeleteConfirmation
-          isOpen={isDeleteConfirmOpen}
-          onClose={() => setIsDeleteConfirmOpen(false)}
-          onConfirm={handleConfirmDelete}
-        />
-        {comment.childComments && comment.childComments.length > 0 && (
-          <div className="mt-3">
-            {comment.childComments.map((child: CommentType) => (
-              <Comment key={child.id} comment={child} level={level + 1} />
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
 }
-
-export default Comment;
+export default CommentWithReply;

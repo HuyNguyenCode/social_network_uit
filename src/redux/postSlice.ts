@@ -121,7 +121,7 @@ export const postCreate = createAsyncThunk(
       console.log("Token lấy từ cookie:", token); // Thêm dòng này để kiểm tra
       console.log("postData:", postData); // Thêm dòng này để kiểm tra
 
-      const response = await fetch("http://103.82.194.197:8080/api/posts", {
+      const response = await fetch("http://localhost:5108/api/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,7 +159,7 @@ export const votePost = createAsyncThunk(
   "post/vote",
   async ({ postId, voteData }: { postId: string; voteData: { userId: string; voteType: number } }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://103.82.194.197:8080/api/posts/user/${userId}/${getBy}`, {
+      const response = await fetch(`http://localhost:5108/api/posts/user/${userId}/${getBy}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(voteData),
@@ -194,7 +194,7 @@ export const updatePost = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await fetch(`http://103.82.194.197:8080/api/posts/${id}/update`, {
+      const response = await fetch(`http://localhost:5108/api/posts/${id}/update`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(postData),
@@ -237,7 +237,7 @@ export const getPostWithId = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const url = new URL(`http://103.82.194.197:8080/api/posts/user/${userId}/paginated`);
+      const url = new URL(`http://localhost:5108/api/posts/user/${userId}/paginated`);
       url.searchParams.append("page", page.toString());
       url.searchParams.append("pageSize", pageSize.toString());
 
@@ -283,7 +283,7 @@ export const getPostWithId = createAsyncThunk(
 // Thunk xử lý lấy danh sách bài viết theo userID (có phân trang)
 export const getHomePost = createAsyncThunk("post/getHomePost", async (_, { rejectWithValue }) => {
   try {
-    const response = await fetch("http://103.82.194.197:8080/api/posts/home", {
+    const response = await fetch("http://localhost:5108/api/posts/home", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -330,7 +330,7 @@ export const getPopularPost = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const url = new URL(`http://103.82.194.197:8080/api/posts/popular`);
+      const url = new URL(`http://localhost:5108/api/posts/popular`);
       url.searchParams.append("page", page.toString());
       url.searchParams.append("pageSize", pageSize.toString());
 
@@ -375,7 +375,7 @@ export const getPopularPost = createAsyncThunk(
 //Get upvoted post
 export const getUpVotePostById = createAsyncThunk("post/upvoted", async (userId: string, { rejectWithValue }) => {
   try {
-    const response = await fetch(`http://103.82.194.197:8080/api/posts/user/${userId}/upvote`, {
+    const response = await fetch(`http://localhost:5108/api/posts/user/${userId}/upvote`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
@@ -403,7 +403,7 @@ export const getUpVotePostById = createAsyncThunk("post/upvoted", async (userId:
 //Get downvoted post
 export const getDownVotePostById = createAsyncThunk("post/downvoted", async (userId: string, { rejectWithValue }) => {
   try {
-    const response = await fetch(`http://103.82.194.197:8080/api/posts/user/${userId}/downvote`, {
+    const response = await fetch(`http://localhost:5108/api/posts/user/${userId}/downvote`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
@@ -431,7 +431,7 @@ export const getDownVotePostById = createAsyncThunk("post/downvoted", async (use
 //Lấy chi tiết bài viết theo ID
 export const getPostDetailWithId = createAsyncThunk("post/getPostDetail", async (postId: string, { rejectWithValue }) => {
   try {
-    const response = await fetch(`http://103.82.194.197:8080/api/posts/${postId}`);
+    const response = await fetch(`http://localhost:5108/api/posts/${postId}`);
     const result = await response.json();
 
     if (!response.ok || !result.succeeded) {
