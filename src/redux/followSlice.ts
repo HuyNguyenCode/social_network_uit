@@ -1,10 +1,13 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
+import { RootState } from "./store";
+import { useSelector } from "react-redux";
 
 // Interface cho trạng thái follow
 interface FollowState {
   followers: any[];
   following: any[];
+  myFollowing: any[];
   blocked: any[];
   loading: boolean;
   error: string | null;
@@ -13,6 +16,7 @@ interface FollowState {
 const initialState: FollowState = {
   followers: [],
   following: [],
+  myFollowing: [],
   blocked: [],
   loading: false,
   error: null,
@@ -22,15 +26,15 @@ export const getFollowers = createAsyncThunk(
   "follow/getFollowers",
   async (
     {
-      userId,
+      username,
     }: {
-      userId: string;
+      username: string;
     },
     { rejectWithValue },
   ) => {
     try {
       const token = Cookies.get("sessionToken");
-      const url = new URL(`http://localhost:5108/api/follows/users/${userId}/followers`);
+      const url = new URL(`http://localhost:5108/api/follows/users/${username}/followers`);
 
       const response = await fetch(url.toString(), {
         method: "GET",
@@ -41,7 +45,7 @@ export const getFollowers = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API Response:", data);
+      console.log("📢 API getFollowers Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.errors?.join(", ") || "Không thể lấy danh sách người theo dõi";
@@ -71,15 +75,15 @@ export const getFollowing = createAsyncThunk(
   "follow/getFollowing",
   async (
     {
-      userId,
+      username,
     }: {
-      userId: string;
+      username: string;
     },
     { rejectWithValue },
   ) => {
     try {
       const token = Cookies.get("sessionToken");
-      const url = new URL(`http://localhost:5108/api/follows/users/${userId}/following`);
+      const url = new URL(`http://localhost:5108/api/follows/users/${username}/following`);
 
       const response = await fetch(url.toString(), {
         method: "GET",
@@ -90,7 +94,7 @@ export const getFollowing = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API Response:", data);
+      console.log("📢 API getFollowing Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.errors?.join(", ") || "Không thể lấy danh sách người đang theo dõi";
@@ -118,7 +122,7 @@ export const getFollowing = createAsyncThunk(
 // Thunk để follow một người dùng
 export const followUser = createAsyncThunk(
   "follow/followUser",
-  async ({ targetUserId }: { targetUserId: string }, { rejectWithValue }) => {
+  async ({ targetUsername }: { targetUsername: string }, { rejectWithValue }) => {
     try {
       const token = Cookies.get("sessionToken");
       if (!token) {
@@ -128,17 +132,19 @@ export const followUser = createAsyncThunk(
         });
       }
 
+      console.log("Đang follow người dùng:", targetUsername);
+
       const response = await fetch(`http://localhost:5108/api/follows`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ followingId: targetUserId }),
+        body: JSON.stringify({ followingName: targetUsername }),
       });
 
       const data = await response.json();
-      console.log("📢 API Response:", data);
+      console.log("📢 API followUser Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.errors?.join(", ") || "Không thể theo dõi người dùng";
@@ -163,7 +169,7 @@ export const followUser = createAsyncThunk(
 // Thunk để xóa following
 export const removeFollowing = createAsyncThunk(
   "follow/removeFollowing",
-  async ({ followingId }: { followingId: string }, { rejectWithValue }) => {
+  async ({ followingName }: { followingName: string }, { rejectWithValue }) => {
     try {
       const token = Cookies.get("sessionToken");
       if (!token) {
@@ -173,7 +179,7 @@ export const removeFollowing = createAsyncThunk(
         });
       }
 
-      const response = await fetch(`http://localhost:5108/api/follows/${followingId}`, {
+      const response = await fetch(`http://localhost:5108/api/follows/${followingName}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -182,7 +188,7 @@ export const removeFollowing = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API Response:", data);
+      console.log("📢 API removeFollowing Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.errors?.join(", ") || "Không thể hủy theo dõi người dùng";
@@ -192,10 +198,8 @@ export const removeFollowing = createAsyncThunk(
         });
       }
 
-      console.log("✅ Hủy theo dõi người dùng thành công:", data);
-      return { followingId };
+      return { followingName };
     } catch (error: any) {
-      console.error("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({
         message: error.message || "Lỗi kết nối đến server",
         status: 500,
@@ -207,7 +211,7 @@ export const removeFollowing = createAsyncThunk(
 // Thunk để xóa follower
 export const removeFollower = createAsyncThunk(
   "follow/removeFollower",
-  async ({ followerId }: { followerId: string }, { rejectWithValue }) => {
+  async ({ followerName }: { followerName: string }, { rejectWithValue }) => {
     try {
       const token = Cookies.get("sessionToken");
       if (!token) {
@@ -217,7 +221,7 @@ export const removeFollower = createAsyncThunk(
         });
       }
 
-      const response = await fetch(`http://localhost:5108/api/follows/followers/${followerId}`, {
+      const response = await fetch(`http://localhost:5108/api/follows/followers/${followerName}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -226,7 +230,7 @@ export const removeFollower = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API Response:", data);
+      console.log("📢 API removeFollower Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.errors?.join(", ") || "Không thể xóa người theo dõi";
@@ -237,7 +241,7 @@ export const removeFollower = createAsyncThunk(
       }
 
       console.log("✅ Xóa người theo dõi thành công:", data);
-      return { followerId };
+      return { followerName };
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({
@@ -251,7 +255,7 @@ export const removeFollower = createAsyncThunk(
 // Thunk để block người dùng
 export const blockUser = createAsyncThunk(
   "follow/blockUser",
-  async ({ userToBlockId }: { userToBlockId: string }, { rejectWithValue }) => {
+  async ({ userToBlockName }: { userToBlockName: string }, { rejectWithValue }) => {
     try {
       const token = Cookies.get("sessionToken");
       if (!token) {
@@ -267,11 +271,11 @@ export const blockUser = createAsyncThunk(
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ userToBlockId }),
+        body: JSON.stringify({ userToBlockName }),
       });
 
       const data = await response.json();
-      console.log("📢 API Response:", data);
+      console.log("📢 API blockUser Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.errors?.join(", ") || "Không thể chặn người dùng";
@@ -282,7 +286,7 @@ export const blockUser = createAsyncThunk(
       }
 
       console.log("✅ Chặn người dùng thành công:", data);
-      return data;
+      return { data };
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({
@@ -296,7 +300,7 @@ export const blockUser = createAsyncThunk(
 // Thunk để unblock người dùng
 export const unblockUser = createAsyncThunk(
   "follow/unblockUser",
-  async ({ userToUnblockId }: { userToUnblockId: string }, { rejectWithValue }) => {
+  async ({ userToUnblockName }: { userToUnblockName: string }, { rejectWithValue }) => {
     try {
       const token = Cookies.get("sessionToken");
       if (!token) {
@@ -306,7 +310,7 @@ export const unblockUser = createAsyncThunk(
         });
       }
 
-      const response = await fetch(`http://localhost:5108/api/follows/block/${userToUnblockId}`, {
+      const response = await fetch(`http://localhost:5108/api/follows/block/${userToUnblockName}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -315,7 +319,7 @@ export const unblockUser = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API Response:", data);
+      console.log("📢 API unblockUser Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.errors?.join(", ") || "Không thể bỏ chặn người dùng";
@@ -326,7 +330,7 @@ export const unblockUser = createAsyncThunk(
       }
 
       console.log("✅ Bỏ chặn người dùng thành công:", data);
-      return { userToUnblockId };
+      return { userToUnblockName };
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({
@@ -338,55 +342,52 @@ export const unblockUser = createAsyncThunk(
 );
 
 // Thunk để lấy danh sách người dùng bị chặn
-export const getBlockedUsers = createAsyncThunk(
-  "follow/getBlockedUsers",
-  async (_, { rejectWithValue }) => {
-    try {
-      const token = Cookies.get("sessionToken");
-      if (!token) {
-        return rejectWithValue({
-          message: "Bạn cần đăng nhập để thực hiện thao tác này",
-          status: 401,
-        });
-      }
-
-      const response = await fetch(`http://localhost:5108/api/follows/blocked`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-      console.log("📢 API Response:", data);
-
-      if (!response.ok) {
-        const errorMessage = data.message || data.errors?.join(", ") || "Không thể lấy danh sách người bị chặn";
-        return rejectWithValue({
-          message: errorMessage,
-          status: response.status,
-        });
-      }
-
-      console.log("✅ Lấy danh sách người bị chặn thành công:", data);
-      return {
-        items: data.items || data.result?.items || [],
-        total: data.total || data.result?.total || 0,
-      };
-    } catch (error: any) {
-      console.error("❌ Lỗi ngoại lệ:", error);
+export const getBlockedUsers = createAsyncThunk("follow/getBlockedUsers", async (_, { rejectWithValue }) => {
+  try {
+    const token = Cookies.get("sessionToken");
+    if (!token) {
       return rejectWithValue({
-        message: error.message || "Lỗi kết nối đến server",
-        status: 500,
+        message: "Bạn cần đăng nhập để thực hiện thao tác này",
+        status: 401,
       });
     }
-  },
-);
+
+    const response = await fetch(`http://localhost:5108/api/follows/blocked`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+    console.log("📢 API getBlockedUsers Response:", data);
+
+    if (!response.ok) {
+      const errorMessage = data.message || data.errors?.join(", ") || "Không thể lấy danh sách người bị chặn";
+      return rejectWithValue({
+        message: errorMessage,
+        status: response.status,
+      });
+    }
+
+    console.log("✅ Lấy danh sách người bị chặn thành công:", data);
+    return {
+      items: data.items || data.result?.items || [],
+      total: data.total || data.result?.total || 0,
+    };
+  } catch (error: any) {
+    console.error("❌ Lỗi ngoại lệ:", error);
+    return rejectWithValue({
+      message: error.message || "Lỗi kết nối đến server",
+      status: 500,
+    });
+  }
+});
 
 export const unfollowUser = createAsyncThunk(
   "follow/unfollowUser",
-  async ({ targetUserId }: { targetUserId: string }, { rejectWithValue }) => {
+  async ({ targetUsername }: { targetUsername: string }, { rejectWithValue }) => {
     try {
       const token = Cookies.get("sessionToken");
       if (!token) {
@@ -396,7 +397,7 @@ export const unfollowUser = createAsyncThunk(
         });
       }
 
-      const response = await fetch(`http://localhost:5108/api/follows/users/${targetUserId}/unfollow`, {
+      const response = await fetch(`http://localhost:5108/api/follows/${targetUsername}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -405,7 +406,7 @@ export const unfollowUser = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API Response:", data);
+      console.log("📢 API unfollowUser Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.errors?.join(", ") || "Không thể hủy theo dõi người dùng";
@@ -427,6 +428,44 @@ export const unfollowUser = createAsyncThunk(
   },
 );
 
+export const getMyFollowing = createAsyncThunk("follow/getMyFollowing", async (_, { rejectWithValue }) => {
+  try {
+    const token = Cookies.get("sessionToken");
+    const url = new URL(`http://localhost:5108/api/follows/following`);
+
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
+    const data = await response.json();
+    console.log("📢 API getMyFollowing Response:", data);
+
+    if (!response.ok) {
+      const errorMessage = data.message || data.errors?.join(", ") || "Không thể lấy danh sách người theo dõi";
+      return rejectWithValue({
+        message: errorMessage,
+        status: response.status,
+      });
+    }
+
+    console.log("✅ Lấy danh sách người theo dõi thành công:", data);
+    return {
+      items: data.items || data.result?.items || [],
+      total: data.total || data.result?.total || 0,
+    };
+  } catch (error: any) {
+    console.error("❌ Lỗi ngoại lệ:", error);
+    return rejectWithValue({
+      message: error.message || "Lỗi kết nối đến server",
+      status: 500,
+    });
+  }
+});
+
 // Slice
 const followSlice = createSlice({
   name: "follow",
@@ -438,6 +477,10 @@ const followSlice = createSlice({
     },
     clearFollowing(state) {
       state.following = [];
+      state.error = null;
+    },
+    clearMyFollowing(state) {
+      state.myFollowing = [];
       state.error = null;
     },
     clearBlocked(state) {
@@ -509,9 +552,7 @@ const followSlice = createSlice({
       .addCase(removeFollower.fulfilled, (state, action) => {
         state.loading = false;
         // Lọc ra người theo dõi đã bị xóa khỏi danh sách
-        state.followers = state.followers.filter(
-          (follower) => follower.id !== action.payload.followerId
-        );
+        state.followers = state.followers.filter((follower) => follower.username !== action.payload.followerName);
         state.error = null;
       })
       .addCase(removeFollower.rejected, (state, action: PayloadAction<any>) => {
@@ -526,9 +567,7 @@ const followSlice = createSlice({
       .addCase(removeFollowing.fulfilled, (state, action) => {
         state.loading = false;
         // Lọc ra người đang theo dõi đã bị xóa khỏi danh sách
-        state.following = state.following.filter(
-          (following) => following.id !== action.payload.followingId
-        );
+        state.following = state.following.filter((following) => following.username !== action.payload.followingName);
         state.error = null;
       })
       .addCase(removeFollowing.rejected, (state, action: PayloadAction<any>) => {
@@ -556,9 +595,7 @@ const followSlice = createSlice({
       .addCase(unblockUser.fulfilled, (state, action) => {
         state.loading = false;
         // Lọc ra người dùng đã được bỏ chặn
-        state.blocked = state.blocked.filter(
-          (user) => user.id !== action.payload.userToUnblockId
-        );
+        state.blocked = state.blocked.filter((user) => user.username !== action.payload.userToUnblockName);
         state.error = null;
       })
       .addCase(unblockUser.rejected, (state, action: PayloadAction<any>) => {
@@ -576,6 +613,19 @@ const followSlice = createSlice({
         state.error = null;
       })
       .addCase(getBlockedUsers.rejected, (state, action: PayloadAction<any>) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Lỗi không xác định";
+      })
+      .addCase(getMyFollowing.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getMyFollowing.fulfilled, (state, action) => {
+        state.loading = false;
+        state.myFollowing = action.payload.items;
+        state.error = null;
+      })
+      .addCase(getMyFollowing.rejected, (state, action: PayloadAction<any>) => {
         state.loading = false;
         state.error = action.payload?.message || "Lỗi không xác định";
       });

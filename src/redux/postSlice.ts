@@ -34,7 +34,7 @@ export const postCreate = createAsyncThunk(
     try {
       const token = Cookies.get("sessionToken"); // Lấy token từ cookie
 
-      const response = await fetch("http://103.82.194.197:8080/api/posts", {
+      const response = await fetch("http://localhost:5108/api/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -77,7 +77,7 @@ export const votePost = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await fetch(`http://103.82.194.197:8080/api/posts/user/${userId}/${getBy}`, {
+      const response = await fetch(`http://localhost:5108/api/posts/user/${userId}/${getBy}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(voteData),
@@ -112,7 +112,7 @@ export const updatePost = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await fetch(`http://103.82.194.197:8080/api/posts/${id}/update`, {
+      const response = await fetch(`http://localhost:5108/api/posts/${id}/update`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(postData),
@@ -156,7 +156,7 @@ export const getPostWithId = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const url = new URL(`http://103.82.194.197:8080/api/posts/user/${userId}/paginated`);
+      const url = new URL(`http://localhost:5108/api/posts/user/${userId}/paginated`);
       url.searchParams.append('page', page.toString());
       url.searchParams.append('pageSize', pageSize.toString());
 

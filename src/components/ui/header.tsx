@@ -32,7 +32,6 @@ export default function Header() {
     if (logoutUser.fulfilled.match(result)) {
       Cookies.remove("sessionToken", { path: "/" });
       Cookies.remove("userName", { path: "/" });
-      console.log("Get into fulfilled");
       toast.success("✅ Logout Successfully!");
       router.push("/auth");
     } else {
@@ -40,9 +39,7 @@ export default function Header() {
       toast.error(`❌ ${errorMessage}`);
     }
   };
-  const { userId, username } = useUserStore(); // Lấy thông tin từ store
-  console.log("username: ", username);
-  console.log("userId: ", userId);
+  const { userId, username } = useUserStore();
   return (
     <div className={cx("header-wrapper")}>
       <div className={cx("container")}>
@@ -125,6 +122,11 @@ export default function Header() {
                   <Link href={"/settings/settings"}>
                     <DropdownMenu.Item className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer">
                       <span>Settings</span>
+                    </DropdownMenu.Item>
+                  </Link>
+                  <Link href={`/user/${username}`}>
+                    <DropdownMenu.Item className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                      <span>Block list</span>
                     </DropdownMenu.Item>
                   </Link>
                   <DropdownMenu.Item className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer">

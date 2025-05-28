@@ -3,11 +3,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 interface RecommendationsProps {
-  username: string;
+  userInfo: {
+    username: string;
+    userId: string;
+  };
   avatar_url: string;
 }
 
-const Recommendations = ({ username, avatar_url }: RecommendationsProps) => {
+const Recommendations = ({ userInfo, avatar_url }: RecommendationsProps) => {
   const router = useRouter();
 
   const handleNavigate = () => {
@@ -22,9 +25,9 @@ const Recommendations = ({ username, avatar_url }: RecommendationsProps) => {
         {/* IMAGE AND USER INFO */}
         <div className='flex items-center gap-2'>
           <div className='relative rounded-full overflow-hidden w-10 border h-10'>
-            <Image 
+            <Image
               src={avatar_url || "/general/image.png"}
-              alt={username}
+              alt={userInfo.username}
               width={40}
               height={40}
               className="object-cover w-full h-full"
@@ -69,7 +72,7 @@ const Recommendations = ({ username, avatar_url }: RecommendationsProps) => {
       <h2 className="font-bold text-gray-600">Links</h2>
 
       <div className="flex pb-3">
-        <button 
+        <button
           onClick={handleNavigate}
           className="py-1 px-4 gap-2 font-thin hover:bg-gray-100 bg-gray-200 text-black text-[12px] rounded-full border-[1px] flex items-center"
         >

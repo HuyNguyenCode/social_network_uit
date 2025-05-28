@@ -15,50 +15,73 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { fetchUserById } from "@/redux/userSlice";
 import { useUserStore } from "@/store/useUserStore";
+import { getBlockedUsers, getFollowers, getFollowing, getMyFollowing } from "@/redux/followSlice";
 
 const cx = classNames.bind(styles);
 
 export default function UserPageLayout({ children }: { children: React.ReactNode }) {
   const params = useParams();
-  // const username = params.username as string;
+  const currentUsername = params.username as string;
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const { userId, username } = useUserStore(); // Lấy thông tin từ store
+  const { userId, username } = useUserStore();
+  const [isAllReady, setIsAllReady] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
   const { userInfor, loading } = useSelector((state: RootState) => state.user);
+  const { blocked } = useSelector((state: RootState) => state.follow);
 
-  useEffect(() => {
+  console.log("layout")
+
+  const fetchData = async () => {
     if (userId) {
-      dispatch(fetchUserById(userId));
+      await Promise.all([
+        dispatch(fetchUserById(userId)),
+        dispatch(getBlockedUsers() as any),
+        dispatch(getFollowers({ username: currentUsername }) as any),
+        dispatch(getFollowing({ username: currentUsername }) as any),
+        dispatch(getMyFollowing() as any),
+      ]);
+      setIsAllReady(true);
     } else {
       setError("User ID is missing");
     }
-  }, [userId, dispatch]);
+  }
 
   useEffect(() => {
-    if (loading) return; // đợi redux fetch xong đã
+    fetchData();
+  }, [userId, currentUsername]);
 
-    if (userInfor) {
-      console.log("userInfor: ", userInfor);
-      setUser(userInfor);
-      setError(null);
-    } else {
+  useEffect(() => {
+    if (loading) return;
+
+    if (!userInfor && isAllReady) {
       setError("User nickname not found");
+    } else {
+      const isBlocked = blocked.some(blockedUser => blockedUser.username === currentUsername);
+
+      if (isBlocked) {
+        setUser(undefined);
+        setError("Không thể xem trang này");
+      } else {
+        setUser(userInfor);
+        setError(null);
+      }
     }
-  }, [userInfor, loading]);
+  }, [userInfor, loading, blocked, currentUsername]);
 
-  // If user doesn't exist, show error
-  // if (error) {
-  //   return (
-  //     <div className="container mx-auto p-4">
-  //       <div className="text-red-500">{error || "User not found"}</div>
-  //     </div>
-  //   );
-  // }
+  if (error) {
+    return (
+      <div className="container mx-auto p-4">
+        <div className="text-red-500 text-center py-8">
+          <h2 className="text-xl font-bold mb-2">Không thể truy cập</h2>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
-  // Don't redirect, just show loading state if needed
-  if (!user) {
+  if (!isAllReady) {
     return (
       <div className="container mx-auto p-4">
         <div>Loading...</div>
@@ -126,7 +149,7 @@ export default function UserPageLayout({ children }: { children: React.ReactNode
             </div>
 
             <div className="text-black w-1/4 pr-6">
-              <RightBar username={user.userName} avatar_url={user.avatar_url} />
+              <RightBar userInfo={{ userId: userId as string, username: username as string }} avatar_url={user.avatar_url} />
             </div>
           </div>
 

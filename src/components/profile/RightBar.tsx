@@ -1,20 +1,24 @@
-import Recommendations from "./Recommendations"; 
-import PopularTags from "./PopularTags"; 
+import Recommendations from "./Recommendations";
+import PopularTags from "./PopularTags";
 
 interface RightBarProps {
-  username: string;
+  userInfo: {
+    userId: string;
+    username: string;
+  };
   avatar_url: string;
 }
 
-const RightBar = ({ username, avatar_url }: RightBarProps) => {
+const RightBar = ({ userInfo, avatar_url }: RightBarProps) => {
+  console.log("rightbar")
   return (
     <div className="py-4 space-y-4">
-      <PopularTags 
-        username={username}
+      <PopularTags
+        userInfo={userInfo}
         avatar_url={avatar_url}
       />
-      <Recommendations 
-        username={username}
+      <Recommendations
+        userInfo={userInfo}
         avatar_url={avatar_url}
       />
     </div>

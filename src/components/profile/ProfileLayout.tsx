@@ -8,243 +8,164 @@ import classNames from "classnames/bind";
 import Sidebar from "@/app/(home)/sidebar";
 import RightBar from "@/components/profile/RightBar";
 import SortDropDown from "@/components/profile/SortDropDown";
-import ScrollBar from "@/components/profile/ScrollBar";
-  
+import { useEffect, useState } from "react";
+import { fetchUserById } from "@/redux/userSlice";
+import { useDispatch } from "react-redux";
+import { RootState } from "@/redux/store";
+import { AppDispatch } from "@/redux/store";
+import { useParams } from "next/navigation";
+import { useUserStore } from "@/store/useUserStore";
+import { useSelector } from "react-redux";
+
 const cx = classNames.bind(styles);
- 
+
 
 const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
 
-    return (
-        <div className="">
-            <Header />
-            <div className={cx("home-wrapper")}>
-                <div className={cx("container")}>
-                    <div className={cx("home-content")} >
-                        <Sidebar />
-                        {/*INFORMATION*/}
-                        <div className="flex gap-2 w-1/2 px-4">
-                            <div className="w-full py-4">
-                                {/*COVER AND AVATAR*/}
-                                <div className="w-full flex gap-4">
-                                    {/*AVATAR*/}
 
-                                    <div className="w-1/6 relative">
-                                        <div className="aspect-square rounded-full overflow-hidden border-4 border-gray-200 bg-gray-300">
-                                            <Image src="/general/image.png" alt="" width={100} height={100} />
-                                        </div>
-                                        <Link href="/" className="absolute bottom-0 right-0 translate-y-1/5 z-20">
-                                            <div className="w-8 h-8 flex items-center justify-center rounded-full border-[1px] cursor-pointer bg-gray-200">
-                                                <Image className="" src="icons/camera-svgrepo-com.svg" alt="more" width={15} height={15} />
+    const params = useParams();
+    // const username = params.username as string;
+    const [user, setUser] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
+    const { userId, username } = useUserStore();
+
+    const dispatch = useDispatch<AppDispatch>();
+    const { userInfor, loading } = useSelector((state: RootState) => state.user);
+    console.log("profile layout")
+
+    useEffect(() => {
+        if (userId) {
+            dispatch(fetchUserById(userId));
+        } else {
+            setError("User ID is missing");
+        }
+    }, [userId, dispatch]);
+
+    useEffect(() => {
+        if (loading) return; // đợi redux fetch xong đã
+
+        if (userInfor) {
+            console.log("userInfor: ", userInfor);
+            setUser(userInfor);
+            setError(null);
+        } else {
+            setError("User nickname not found");
+        }
+    }, [userInfor, loading]);
+
+    if (loading) {
+        return <div>Loading...</div>
+    } else {
+        return (
+            <div className="">
+                <Header />
+                <div className={cx("home-wrapper")}>
+                    <div className={cx("container")}>
+                        <div className={cx("home-content")} >
+                            <Sidebar />
+                            {/*INFORMATION*/}
+                            <div className="flex gap-2 w-1/2 px-4">
+                                <div className="w-full py-4">
+                                    {/*COVER AND AVATAR*/}
+                                    <div className="w-full flex gap-4">
+                                        {/*AVATAR*/}
+
+                                        <div className="w-1/6 relative">
+                                            <div className="aspect-square rounded-full overflow-hidden border-4 border-gray-200 bg-gray-300">
+                                                <Image src="/general/image.png" alt="" width={100} height={100} />
                                             </div>
-                                        </Link>
-                                    </div>
-
-                                    <div className="flex flex-col justify-center">
-                                        <h1 className="text-2xl font-bold">Wonderful_Law_0612</h1>
-                                        <span className=" text-sm">@Wonderful_Law_0612</span>
-                                    </div>
-
-                                </div>
-
-
-                                {/*OVERVIEW*/}
-
-
-                                <div className="w-full pb-4 pt-8">
-                                    <ScrollBar />
-                                </div>
-
-                                <div>{children}</div>
-
-
-                                <div className="flex border-b pb-3">
-                                    <button className="py-1 px-4 gap-2 font-thin bg-white text-black text-sm rounded-full border-[1px] flex items-center hover:border-black">
-                                        <span className="text-xl">+</span>
-                                        <span>Create Post</span>
-                                    </button>
-
-                                    <SortDropDown />
-                                </div>
-
-
-                                {/*POST*/}
-                                <div className="w-full px-2 py-4">
-
-                                    {/*Post User*/}
-                                    <div className="" >
-
-                                        {/*User*/}
-
-                                        <div className="flex justify-between">
-                                            <div className="flex gap-x-2 items-center">
-                                                <div className="aspect-square rounded-full overflow-hidden border-1 border-white bg-gray-300">
-                                                    <Image src="/general/image.png" alt="" width={24} height={24} />
+                                            <Link href="/" className="absolute bottom-0 right-0 translate-y-1/5 z-20">
+                                                <div className="w-8 h-8 flex items-center justify-center rounded-full border-[1px] cursor-pointer bg-gray-200">
+                                                    <Image className="" src="icons/camera-svgrepo-com.svg" alt="more" width={15} height={15} />
                                                 </div>
-                                                <h5 className="font-bold text-sm">u/Wonderful_Law_0612</h5>
-                                                <h6 className="text-gray-500 text-sm">2 days ago</h6>
-                                            </div>
-                                            <div className="">
-                                                <button className="">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="20"
-                                                        height="20"
-                                                        viewBox="0 0 20 20"
-                                                        fill="white"
-                                                    >
-                                                        <path
-                                                            d="M12.1875 10C12.1875 10.4326 12.0592 10.8556 11.8188 11.2153C11.5785 11.575 11.2368 11.8554 10.8371 12.021C10.4374 12.1866 9.99757 12.2299 9.57324 12.1455C9.14891 12.0611 8.75913 11.8527 8.45321 11.5468C8.14728 11.2409 7.93894 10.8511 7.85453 10.4268C7.77013 10.0024 7.81345 9.56259 7.97901 9.16288C8.14458 8.76317 8.42496 8.42153 8.78469 8.18116C9.14442 7.94079 9.56735 7.8125 10 7.8125C10.5802 7.8125 11.1366 8.04297 11.5468 8.4532C11.957 8.86344 12.1875 9.41984 12.1875 10ZM3.75 7.8125C3.31735 7.8125 2.89442 7.94079 2.53469 8.18116C2.17496 8.42153 1.89458 8.76317 1.72901 9.16288C1.56345 9.56259 1.52013 10.0024 1.60453 10.4268C1.68894 10.8511 1.89728 11.2409 2.2032 11.5468C2.50913 11.8527 2.89891 12.0611 3.32324 12.1455C3.74757 12.2299 4.18741 12.1866 4.58712 12.021C4.98683 11.8554 5.32848 11.575 5.56884 11.2153C5.80921 10.8556 5.9375 10.4326 5.9375 10C5.9375 9.41984 5.70703 8.86344 5.2968 8.4532C4.88656 8.04297 4.33016 7.8125 3.75 7.8125ZM16.25 7.8125C15.8174 7.8125 15.3944 7.94079 15.0347 8.18116C14.675 8.42153 14.3946 8.76317 14.229 9.16288C14.0634 9.56259 14.0201 10.0024 14.1045 10.4268C14.1889 10.8511 14.3973 11.2409 14.7032 11.5468C15.0091 11.8527 15.3989 12.0611 15.8232 12.1455C16.2476 12.2299 16.6874 12.1866 17.0871 12.021C17.4868 11.8554 17.8285 11.575 18.0688 11.2153C18.3092 10.8556 18.4375 10.4326 18.4375 10C18.4375 9.71273 18.3809 9.42828 18.271 9.16288C18.1611 8.89748 17.9999 8.65633 17.7968 8.4532C17.5937 8.25008 17.3525 8.08895 17.0871 7.97901C16.8217 7.86908 16.5373 7.8125 16.25 7.8125Z"
-                                                            fill="black"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </div>
+                                            </Link>
                                         </div>
 
-                                        {/*Post of User*/}
+                                        <div className="flex flex-col justify-center">
+                                            <h1 className="text-2xl font-bold">Wonderful_Law_0612</h1>
+                                            <span className=" text-sm">@Wonderful_Law_0612</span>
+                                        </div>
 
-                                        <div className="py-3 border-b">
+                                    </div>
 
-                                            {/*Post*/}
+                                    <div>{children}</div>
 
-                                            <div className="">
+
+                                    <div className="flex border-b pb-3">
+                                        <button className="py-1 px-4 gap-2 font-thin bg-white text-black text-sm rounded-full border-[1px] flex items-center hover:border-black">
+                                            <span className="text-xl">+</span>
+                                            <span>Create Post</span>
+                                        </button>
+
+                                        <SortDropDown />
+                                    </div>
+
+
+                                    {/*POST*/}
+                                    <div className="w-full px-2 py-4">
+
+                                        {/*Post User*/}
+                                        <div className="" >
+
+                                            {/*User*/}
+
+                                            <div className="flex justify-between">
+                                                <div className="flex gap-x-2 items-center">
+                                                    <div className="aspect-square rounded-full overflow-hidden border-1 border-white bg-gray-300">
+                                                        <Image src="/general/image.png" alt="" width={24} height={24} />
+                                                    </div>
+                                                    <h5 className="font-bold text-sm">u/Wonderful_Law_0612</h5>
+                                                    <h6 className="text-gray-500 text-sm">2 days ago</h6>
+                                                </div>
                                                 <div className="">
-                                                    <h4 className="font-bold pb-2">
-                                                        How I set up my Immich and got rid of iCloud{" "}
-                                                    </h4>
-                                                    <p className="">
-                                                        With my ever-growing videos and photos, I really got fed up with cloud storages like Google Photos or iCloud. Also, didn't want my naked pictures to be leaked from iCloud 😆, so I switched to self-hosting the Immich.
-                                                        Here is my setup:
-
-                                                        💻 Server: Beelink Mini PC N100
-
-                                                        Initially, I tested everything on a Raspberry Pi 4, which worked fine, but since I needed to host other services, I opted for a more powerful machine. If you're running only Immich, a Raspber...
-                                                    </p>
-                                                </div>
-                                                <div className="py-3">
-                                                    <Image
-                                                        className=""
-                                                        aria-hidden
-                                                        src="/post-img.jpg"
-                                                        alt="File icon"
-                                                        width={200}
-                                                        height={200}
-                                                    ></Image>
+                                                    <button className="">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="20"
+                                                            height="20"
+                                                            viewBox="0 0 20 20"
+                                                            fill="white"
+                                                        >
+                                                            <path
+                                                                d="M12.1875 10C12.1875 10.4326 12.0592 10.8556 11.8188 11.2153C11.5785 11.575 11.2368 11.8554 10.8371 12.021C10.4374 12.1866 9.99757 12.2299 9.57324 12.1455C9.14891 12.0611 8.75913 11.8527 8.45321 11.5468C8.14728 11.2409 7.93894 10.8511 7.85453 10.4268C7.77013 10.0024 7.81345 9.56259 7.97901 9.16288C8.14458 8.76317 8.42496 8.42153 8.78469 8.18116C9.14442 7.94079 9.56735 7.8125 10 7.8125C10.5802 7.8125 11.1366 8.04297 11.5468 8.4532C11.957 8.86344 12.1875 9.41984 12.1875 10ZM3.75 7.8125C3.31735 7.8125 2.89442 7.94079 2.53469 8.18116C2.17496 8.42153 1.89458 8.76317 1.72901 9.16288C1.56345 9.56259 1.52013 10.0024 1.60453 10.4268C1.68894 10.8511 1.89728 11.2409 2.2032 11.5468C2.50913 11.8527 2.89891 12.0611 3.32324 12.1455C3.74757 12.2299 4.18741 12.1866 4.58712 12.021C4.98683 11.8554 5.32848 11.575 5.56884 11.2153C5.80921 10.8556 5.9375 10.4326 5.9375 10C5.9375 9.41984 5.70703 8.86344 5.2968 8.4532C4.88656 8.04297 4.33016 7.8125 3.75 7.8125ZM16.25 7.8125C15.8174 7.8125 15.3944 7.94079 15.0347 8.18116C14.675 8.42153 14.3946 8.76317 14.229 9.16288C14.0634 9.56259 14.0201 10.0024 14.1045 10.4268C14.1889 10.8511 14.3973 11.2409 14.7032 11.5468C15.0091 11.8527 15.3989 12.0611 15.8232 12.1455C16.2476 12.2299 16.6874 12.1866 17.0871 12.021C17.4868 11.8554 17.8285 11.575 18.0688 11.2153C18.3092 10.8556 18.4375 10.4326 18.4375 10C18.4375 9.71273 18.3809 9.42828 18.271 9.16288C18.1611 8.89748 17.9999 8.65633 17.7968 8.4532C17.5937 8.25008 17.3525 8.08895 17.0871 7.97901C16.8217 7.86908 16.5373 7.8125 16.25 7.8125Z"
+                                                                fill="black"
+                                                            />
+                                                        </svg>
+                                                    </button>
                                                 </div>
                                             </div>
 
-                                            {/*4 Icon*/}
+                                            {/*Post of User*/}
 
-                                            <div className="flex items-center gap-x-3">
-
-                                                {/*Upvote Downvote*/}
-
-                                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-[#d93a00]">
-                                                    <div>
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="14"
-                                                            height="14"
-                                                            viewBox="0 0 14 14"
-                                                            fill="white"  // Thiết lập màu trắng cho toàn bộ SVG
-                                                        >
-                                                            <path
-                                                                d="M12.714 6.0982L7.46396 0.848199C7.40299 0.787019 7.33054 0.738476 7.25078 0.705354C7.17101 0.672232 7.08549 0.655182 6.99911 0.655182C6.91274 0.655182 6.82722 0.672232 6.74745 0.705354C6.66768 0.738476 6.59524 0.787019 6.53427 0.848199L1.28427 6.0982C1.19229 6.19008 1.12967 6.30721 1.10436 6.43473C1.07904 6.56225 1.09218 6.69442 1.14209 6.81446C1.19201 6.93451 1.27646 7.03702 1.38473 7.109C1.49299 7.18098 1.6202 7.21917 1.75021 7.21875H3.71896V11.375C3.71896 11.6651 3.83419 11.9433 4.03931 12.1484C4.24443 12.3535 4.52263 12.4687 4.81271 12.4687H9.18771C9.47779 12.4687 9.75599 12.3535 9.96111 12.1484C10.1662 11.9433 10.2815 11.6651 10.2815 11.375V7.21875H12.2502C12.38 7.21874 12.5069 7.18023 12.6149 7.10809C12.7228 7.03594 12.8069 6.93341 12.8565 6.81345C12.9062 6.69349 12.9191 6.56151 12.8938 6.43419C12.8684 6.30688 12.8058 6.18995 12.714 6.0982ZM9.62521 5.90625C9.45116 5.90625 9.28424 5.97539 9.16117 6.09846C9.0381 6.22153 8.96896 6.38845 8.96896 6.5625V11.1562H5.03146V6.5625C5.03146 6.38845 4.96232 6.22153 4.83925 6.09846C4.71618 5.97539 4.54926 5.90625 4.37521 5.90625H3.33615L7.00021 2.24218L10.6643 5.90625H9.62521Z"
-                                                                fill="white"  // Thiết lập màu trắng cho phần đường vẽ bên trong
-                                                            />
-                                                        </svg>
-                                                    </div>
-
-                                                    <span className="text-white text-sm">-161</span>
-                                                    <div className="">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="14"
-                                                            height="14"
-                                                            viewBox="0 0 16 16"
-                                                            fill="none"
-                                                        >
-                                                            <path
-                                                                d="M14.6931 8.21313C14.6363 8.07602 14.5402 7.95883 14.4168 7.8764C14.2934 7.79396 14.1484 7.74997 14 7.75H11.75V3C11.75 2.66848 11.6183 2.35054 11.3838 2.11612C11.1494 1.8817 10.8315 1.75 10.5 1.75H5.49997C5.16844 1.75 4.8505 1.8817 4.61608 2.11612C4.38166 2.35054 4.24997 2.66848 4.24997 3V7.75H1.99997C1.8516 7.75001 1.70656 7.79402 1.58321 7.87647C1.45986 7.95892 1.36374 8.07611 1.307 8.2132C1.25027 8.35029 1.23547 8.50113 1.26447 8.64663C1.29348 8.79214 1.36499 8.92577 1.46997 9.03063L7.46996 15.0306C7.53964 15.1005 7.62244 15.156 7.7136 15.1939C7.80476 15.2317 7.9025 15.2512 8.00122 15.2512C8.09993 15.2512 8.19767 15.2317 8.28883 15.1939C8.37999 15.156 8.46279 15.1005 8.53247 15.0306L14.5325 9.03063C14.6371 8.9255 14.7081 8.79174 14.7367 8.64623C14.7653 8.50072 14.7501 8.35 14.6931 8.21313ZM7.99997 13.4375L3.81247 9.25H4.99997C5.19888 9.25 5.38964 9.17098 5.5303 9.03033C5.67095 8.88968 5.74997 8.69891 5.74997 8.5V3.25H10.25V8.5C10.25 8.69891 10.329 8.88968 10.4696 9.03033C10.6103 9.17098 10.8011 9.25 11 9.25H12.1875L7.99997 13.4375Z"
-                                                                fill="white"
-                                                            />
-                                                        </svg>
-                                                    </div>
-                                                </div>
-
-                                                {/*Comments*/}
-
-                                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200 bg-[#e5ebee]">
-                                                    <div className="">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="14"
-                                                            height="14"
-                                                            viewBox="0 0 14 14"
-                                                            fill="none"
-                                                        >
-                                                            <path
-                                                                d="M7.21875 1.09375C5.71082 1.09534 4.26511 1.69507 3.19884 2.76134C2.13257 3.82761 1.53284 5.27332 1.53125 6.78125V11.375C1.53125 11.6651 1.64648 11.9433 1.8516 12.1484C2.05672 12.3535 2.33492 12.4688 2.625 12.4688H7.21875C8.72717 12.4688 10.1738 11.8695 11.2404 10.8029C12.307 9.73631 12.9063 8.28967 12.9063 6.78125C12.9063 5.27283 12.307 3.82619 11.2404 2.75958C10.1738 1.69297 8.72717 1.09375 7.21875 1.09375ZM7.21875 11.1563H2.84375V6.78125C2.84375 5.91596 3.10034 5.0701 3.58107 4.35063C4.0618 3.63117 4.74508 3.07041 5.54451 2.73928C6.34394 2.40814 7.2236 2.3215 8.07227 2.49031C8.92094 2.65912 9.70049 3.0758 10.3123 3.68766C10.9242 4.29951 11.3409 5.07906 11.5097 5.92773C11.6785 6.7764 11.5919 7.65606 11.2607 8.45549C10.9296 9.25492 10.3688 9.9382 9.64937 10.4189C8.9299 10.8997 8.08404 11.1563 7.21875 11.1563ZM6.78125 7C6.78125 7.17306 6.72993 7.34223 6.63379 7.48612C6.53764 7.63002 6.40098 7.74217 6.2411 7.80839C6.08121 7.87462 5.90528 7.89195 5.73555 7.85819C5.56581 7.82443 5.4099 7.74109 5.28753 7.61872C5.16516 7.49635 5.08183 7.34044 5.04806 7.1707C5.0143 7.00097 5.03163 6.82504 5.09786 6.66515C5.16408 6.50527 5.27623 6.36861 5.42013 6.27246C5.56402 6.17632 5.73319 6.125 5.90625 6.125C6.13831 6.125 6.36087 6.21719 6.52497 6.38128C6.68906 6.54538 6.78125 6.76794 6.78125 7ZM9.40625 7C9.40625 7.17306 9.35493 7.34223 9.25879 7.48612C9.16264 7.63002 9.02598 7.74217 8.8661 7.80839C8.70621 7.87462 8.53028 7.89195 8.36055 7.85819C8.19081 7.82443 8.0349 7.74109 7.91253 7.61872C7.79016 7.49635 7.70683 7.34044 7.67306 7.1707C7.6393 7.00097 7.65663 6.82504 7.72286 6.66515C7.78908 6.50527 7.90123 6.36861 8.04513 6.27246C8.18902 6.17632 8.35819 6.125 8.53125 6.125C8.76331 6.125 8.98587 6.21719 9.14997 6.38128C9.31406 6.54538 9.40625 6.76794 9.40625 7Z"
-                                                                fill="#475569"
-                                                            />
-                                                        </svg>
-                                                    </div>
-                                                    <span className="text-sm">5</span>
-                                                </div>
-
-                                                {/*Shares*/}
-
-                                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200 bg-[#e5ebee]">
-                                                    <span className="text-sm">Share</span>
-                                                    <div className="">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="16"
-                                                            height="16"
-                                                            viewBox="0 0 16 16"
-                                                            fill="none"
-                                                        >
-                                                            <path
-                                                                d="M15.0304 6.47L10.0304 1.47C9.92553 1.36503 9.7919 1.29351 9.6464 1.2645C9.50089 1.2355 9.35005 1.2503 9.21296 1.30703C9.07587 1.36377 8.95868 1.45989 8.87623 1.58324C8.79378 1.70659 8.74977 1.85163 8.74976 2V4.29625C7.13976 4.49125 5.39601 5.28937 3.95289 6.51312C2.13039 8.05937 0.995386 10.0562 0.756636 12.1381C0.732449 12.347 0.774745 12.5583 0.87751 12.7418C0.980274 12.9253 1.13828 13.0717 1.32904 13.1602C1.51981 13.2487 1.73364 13.2749 1.94012 13.2349C2.14659 13.1949 2.33521 13.0908 2.47914 12.9375C3.13289 12.2412 5.41664 10.0787 8.74976 9.78625V12C8.74989 12.1482 8.79395 12.2931 8.87637 12.4163C8.95879 12.5395 9.07588 12.6356 9.21284 12.6923C9.3498 12.749 9.5005 12.7638 9.6459 12.735C9.7913 12.7061 9.92488 12.6348 10.0298 12.53L15.0298 7.53C15.1703 7.38945 15.2493 7.19888 15.2494 7.00012C15.2495 6.80137 15.1708 6.6107 15.0304 6.47ZM10.2498 10.1875V9C10.2498 8.80108 10.1707 8.61032 10.0301 8.46967C9.88944 8.32901 9.69868 8.25 9.49976 8.25C6.43726 8.25 4.08914 9.5975 2.63789 10.7569C3.08351 9.62187 3.86476 8.55562 4.92351 7.6575C6.33101 6.46312 8.04164 5.75 9.49976 5.75C9.69868 5.75 9.88944 5.67098 10.0301 5.53033C10.1707 5.38967 10.2498 5.19891 10.2498 5V3.8125L13.4373 7L10.2498 10.1875Z"
-                                                                fill="#475569"
-                                                            />
-                                                        </svg>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                        </div>
-
-                                        {/*User's comment*/}
-
-                                        <div className="py-3 border-b">
-
-                                            <div className="flex gap-x-2 items-center">
-                                                <div className="aspect-square rounded-full overflow-hidden border-1 border-white bg-gray-300">
-                                                    <Image src="/general/image2.jpg" alt="" width={24} height={24} />
-                                                </div>
-                                                <h5 className="font-bold text-sm">u/Agencies</h5>
-                                                <h6 className="text-gray-500 text-sm">Commented 1 days ago</h6>
-                                            </div>
-                                            <div className="py-3">
+                                            <div className="py-3 border-b">
 
                                                 {/*Post*/}
 
-                                                <div className="py-2">
-                                                    <div className="text-sm flex gap-2">
+                                                <div className="">
+                                                    <div className="">
+                                                        <h4 className="font-bold pb-2">
+                                                            How I set up my Immich and got rid of iCloud{" "}
+                                                        </h4>
                                                         <p className="">
-                                                            Relied to
+                                                            With my ever-growing videos and photos, I really got fed up with cloud storages like Google Photos or iCloud. Also, didn't want my naked pictures to be leaked from iCloud 😆, so I switched to self-hosting the Immich.
+                                                            Here is my setup:
+
+                                                            💻 Server: Beelink Mini PC N100
+
+                                                            Initially, I tested everything on a Raspberry Pi 4, which worked fine, but since I needed to host other services, I opted for a more powerful machine. If you're running only Immich, a Raspber...
                                                         </p>
-                                                        <p className="font-bold pb-2">
-                                                            Wonderful_Law_0612
-                                                        </p></div>
-
-                                                    <p className="">
-                                                        Is there any Github Repo for this?
-                                                    </p>
+                                                    </div>
+                                                    <div className="py-3">
+                                                        <Image
+                                                            className=""
+                                                            aria-hidden
+                                                            src="/post-img.jpg"
+                                                            alt="File icon"
+                                                            width={200}
+                                                            height={200}
+                                                        ></Image>
+                                                    </div>
                                                 </div>
-
 
                                                 {/*4 Icon*/}
 
@@ -252,23 +173,23 @@ const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
 
                                                     {/*Upvote Downvote*/}
 
-                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border">
+                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-[#d93a00]">
                                                         <div>
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 width="14"
                                                                 height="14"
                                                                 viewBox="0 0 14 14"
-                                                                fill="none"  // Thiết lập màu trắng cho toàn bộ SVG
+                                                                fill="white"  // Thiết lập màu trắng cho toàn bộ SVG
                                                             >
                                                                 <path
                                                                     d="M12.714 6.0982L7.46396 0.848199C7.40299 0.787019 7.33054 0.738476 7.25078 0.705354C7.17101 0.672232 7.08549 0.655182 6.99911 0.655182C6.91274 0.655182 6.82722 0.672232 6.74745 0.705354C6.66768 0.738476 6.59524 0.787019 6.53427 0.848199L1.28427 6.0982C1.19229 6.19008 1.12967 6.30721 1.10436 6.43473C1.07904 6.56225 1.09218 6.69442 1.14209 6.81446C1.19201 6.93451 1.27646 7.03702 1.38473 7.109C1.49299 7.18098 1.6202 7.21917 1.75021 7.21875H3.71896V11.375C3.71896 11.6651 3.83419 11.9433 4.03931 12.1484C4.24443 12.3535 4.52263 12.4687 4.81271 12.4687H9.18771C9.47779 12.4687 9.75599 12.3535 9.96111 12.1484C10.1662 11.9433 10.2815 11.6651 10.2815 11.375V7.21875H12.2502C12.38 7.21874 12.5069 7.18023 12.6149 7.10809C12.7228 7.03594 12.8069 6.93341 12.8565 6.81345C12.9062 6.69349 12.9191 6.56151 12.8938 6.43419C12.8684 6.30688 12.8058 6.18995 12.714 6.0982ZM9.62521 5.90625C9.45116 5.90625 9.28424 5.97539 9.16117 6.09846C9.0381 6.22153 8.96896 6.38845 8.96896 6.5625V11.1562H5.03146V6.5625C5.03146 6.38845 4.96232 6.22153 4.83925 6.09846C4.71618 5.97539 4.54926 5.90625 4.37521 5.90625H3.33615L7.00021 2.24218L10.6643 5.90625H9.62521Z"
-                                                                    fill="#475569"  // Thiết lập màu trắng cho phần đường vẽ bên trong
+                                                                    fill="white"  // Thiết lập màu trắng cho phần đường vẽ bên trong
                                                                 />
                                                             </svg>
                                                         </div>
 
-                                                        <span className="text-sm">2</span>
+                                                        <span className="text-white text-sm">-161</span>
                                                         <div className="">
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -279,7 +200,7 @@ const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
                                                             >
                                                                 <path
                                                                     d="M14.6931 8.21313C14.6363 8.07602 14.5402 7.95883 14.4168 7.8764C14.2934 7.79396 14.1484 7.74997 14 7.75H11.75V3C11.75 2.66848 11.6183 2.35054 11.3838 2.11612C11.1494 1.8817 10.8315 1.75 10.5 1.75H5.49997C5.16844 1.75 4.8505 1.8817 4.61608 2.11612C4.38166 2.35054 4.24997 2.66848 4.24997 3V7.75H1.99997C1.8516 7.75001 1.70656 7.79402 1.58321 7.87647C1.45986 7.95892 1.36374 8.07611 1.307 8.2132C1.25027 8.35029 1.23547 8.50113 1.26447 8.64663C1.29348 8.79214 1.36499 8.92577 1.46997 9.03063L7.46996 15.0306C7.53964 15.1005 7.62244 15.156 7.7136 15.1939C7.80476 15.2317 7.9025 15.2512 8.00122 15.2512C8.09993 15.2512 8.19767 15.2317 8.28883 15.1939C8.37999 15.156 8.46279 15.1005 8.53247 15.0306L14.5325 9.03063C14.6371 8.9255 14.7081 8.79174 14.7367 8.64623C14.7653 8.50072 14.7501 8.35 14.6931 8.21313ZM7.99997 13.4375L3.81247 9.25H4.99997C5.19888 9.25 5.38964 9.17098 5.5303 9.03033C5.67095 8.88968 5.74997 8.69891 5.74997 8.5V3.25H10.25V8.5C10.25 8.69891 10.329 8.88968 10.4696 9.03033C10.6103 9.17098 10.8011 9.25 11 9.25H12.1875L7.99997 13.4375Z"
-                                                                    fill="#475569"
+                                                                    fill="white"
                                                                 />
                                                             </svg>
                                                         </div>
@@ -287,7 +208,7 @@ const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
 
                                                     {/*Comments*/}
 
-                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-400">
+                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200 bg-[#e5ebee]">
                                                         <div className="">
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -298,16 +219,16 @@ const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
                                                             >
                                                                 <path
                                                                     d="M7.21875 1.09375C5.71082 1.09534 4.26511 1.69507 3.19884 2.76134C2.13257 3.82761 1.53284 5.27332 1.53125 6.78125V11.375C1.53125 11.6651 1.64648 11.9433 1.8516 12.1484C2.05672 12.3535 2.33492 12.4688 2.625 12.4688H7.21875C8.72717 12.4688 10.1738 11.8695 11.2404 10.8029C12.307 9.73631 12.9063 8.28967 12.9063 6.78125C12.9063 5.27283 12.307 3.82619 11.2404 2.75958C10.1738 1.69297 8.72717 1.09375 7.21875 1.09375ZM7.21875 11.1563H2.84375V6.78125C2.84375 5.91596 3.10034 5.0701 3.58107 4.35063C4.0618 3.63117 4.74508 3.07041 5.54451 2.73928C6.34394 2.40814 7.2236 2.3215 8.07227 2.49031C8.92094 2.65912 9.70049 3.0758 10.3123 3.68766C10.9242 4.29951 11.3409 5.07906 11.5097 5.92773C11.6785 6.7764 11.5919 7.65606 11.2607 8.45549C10.9296 9.25492 10.3688 9.9382 9.64937 10.4189C8.9299 10.8997 8.08404 11.1563 7.21875 11.1563ZM6.78125 7C6.78125 7.17306 6.72993 7.34223 6.63379 7.48612C6.53764 7.63002 6.40098 7.74217 6.2411 7.80839C6.08121 7.87462 5.90528 7.89195 5.73555 7.85819C5.56581 7.82443 5.4099 7.74109 5.28753 7.61872C5.16516 7.49635 5.08183 7.34044 5.04806 7.1707C5.0143 7.00097 5.03163 6.82504 5.09786 6.66515C5.16408 6.50527 5.27623 6.36861 5.42013 6.27246C5.56402 6.17632 5.73319 6.125 5.90625 6.125C6.13831 6.125 6.36087 6.21719 6.52497 6.38128C6.68906 6.54538 6.78125 6.76794 6.78125 7ZM9.40625 7C9.40625 7.17306 9.35493 7.34223 9.25879 7.48612C9.16264 7.63002 9.02598 7.74217 8.8661 7.80839C8.70621 7.87462 8.53028 7.89195 8.36055 7.85819C8.19081 7.82443 8.0349 7.74109 7.91253 7.61872C7.79016 7.49635 7.70683 7.34044 7.67306 7.1707C7.6393 7.00097 7.65663 6.82504 7.72286 6.66515C7.78908 6.50527 7.90123 6.36861 8.04513 6.27246C8.18902 6.17632 8.35819 6.125 8.53125 6.125C8.76331 6.125 8.98587 6.21719 9.14997 6.38128C9.31406 6.54538 9.40625 6.76794 9.40625 7Z"
-                                                                    fill="black"
+                                                                    fill="#475569"
                                                                 />
                                                             </svg>
                                                         </div>
-                                                        <span className="text-sm">Reply</span>
+                                                        <span className="text-sm">5</span>
                                                     </div>
 
                                                     {/*Shares*/}
 
-                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200">
+                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200 bg-[#e5ebee]">
                                                         <span className="text-sm">Share</span>
                                                         <div className="">
                                                             <svg
@@ -325,52 +246,165 @@ const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
                                                         </div>
                                                     </div>
 
-                                                    {/*More*/}
-
-                                                    <div className="">
-                                                        <button className="">
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                width="14"
-                                                                height="14"
-                                                                viewBox="0 0 20 20"
-                                                                fill="white"
-                                                            >
-                                                                <path
-                                                                    d="M12.1875 10C12.1875 10.4326 12.0592 10.8556 11.8188 11.2153C11.5785 11.575 11.2368 11.8554 10.8371 12.021C10.4374 12.1866 9.99757 12.2299 9.57324 12.1455C9.14891 12.0611 8.75913 11.8527 8.45321 11.5468C8.14728 11.2409 7.93894 10.8511 7.85453 10.4268C7.77013 10.0024 7.81345 9.56259 7.97901 9.16288C8.14458 8.76317 8.42496 8.42153 8.78469 8.18116C9.14442 7.94079 9.56735 7.8125 10 7.8125C10.5802 7.8125 11.1366 8.04297 11.5468 8.4532C11.957 8.86344 12.1875 9.41984 12.1875 10ZM3.75 7.8125C3.31735 7.8125 2.89442 7.94079 2.53469 8.18116C2.17496 8.42153 1.89458 8.76317 1.72901 9.16288C1.56345 9.56259 1.52013 10.0024 1.60453 10.4268C1.68894 10.8511 1.89728 11.2409 2.2032 11.5468C2.50913 11.8527 2.89891 12.0611 3.32324 12.1455C3.74757 12.2299 4.18741 12.1866 4.58712 12.021C4.98683 11.8554 5.32848 11.575 5.56884 11.2153C5.80921 10.8556 5.9375 10.4326 5.9375 10C5.9375 9.41984 5.70703 8.86344 5.2968 8.4532C4.88656 8.04297 4.33016 7.8125 3.75 7.8125ZM16.25 7.8125C15.8174 7.8125 15.3944 7.94079 15.0347 8.18116C14.675 8.42153 14.3946 8.76317 14.229 9.16288C14.0634 9.56259 14.0201 10.0024 14.1045 10.4268C14.1889 10.8511 14.3973 11.2409 14.7032 11.5468C15.0091 11.8527 15.3989 12.0611 15.8232 12.1455C16.2476 12.2299 16.6874 12.1866 17.0871 12.021C17.4868 11.8554 17.8285 11.575 18.0688 11.2153C18.3092 10.8556 18.4375 10.4326 18.4375 10C18.4375 9.71273 18.3809 9.42828 18.271 9.16288C18.1611 8.89748 17.9999 8.65633 17.7968 8.4532C17.5937 8.25008 17.3525 8.08895 17.0871 7.97901C16.8217 7.86908 16.5373 7.8125 16.25 7.8125Z"
-                                                                    fill="#475569"
-                                                                />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-
                                                 </div>
                                             </div>
+
+                                            {/*User's comment*/}
+
+                                            <div className="py-3 border-b">
+
+                                                <div className="flex gap-x-2 items-center">
+                                                    <div className="aspect-square rounded-full overflow-hidden border-1 border-white bg-gray-300">
+                                                        <Image src="/general/image2.jpg" alt="" width={24} height={24} />
+                                                    </div>
+                                                    <h5 className="font-bold text-sm">u/Agencies</h5>
+                                                    <h6 className="text-gray-500 text-sm">Commented 1 days ago</h6>
+                                                </div>
+                                                <div className="py-3">
+
+                                                    {/*Post*/}
+
+                                                    <div className="py-2">
+                                                        <div className="text-sm flex gap-2">
+                                                            <p className="">
+                                                                Relied to
+                                                            </p>
+                                                            <p className="font-bold pb-2">
+                                                                Wonderful_Law_0612
+                                                            </p></div>
+
+                                                        <p className="">
+                                                            Is there any Github Repo for this?
+                                                        </p>
+                                                    </div>
+
+
+                                                    {/*4 Icon*/}
+
+                                                    <div className="flex items-center gap-x-3">
+
+                                                        {/*Upvote Downvote*/}
+
+                                                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border">
+                                                            <div>
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    width="14"
+                                                                    height="14"
+                                                                    viewBox="0 0 14 14"
+                                                                    fill="none"  // Thiết lập màu trắng cho toàn bộ SVG
+                                                                >
+                                                                    <path
+                                                                        d="M12.714 6.0982L7.46396 0.848199C7.40299 0.787019 7.33054 0.738476 7.25078 0.705354C7.17101 0.672232 7.08549 0.655182 6.99911 0.655182C6.91274 0.655182 6.82722 0.672232 6.74745 0.705354C6.66768 0.738476 6.59524 0.787019 6.53427 0.848199L1.28427 6.0982C1.19229 6.19008 1.12967 6.30721 1.10436 6.43473C1.07904 6.56225 1.09218 6.69442 1.14209 6.81446C1.19201 6.93451 1.27646 7.03702 1.38473 7.109C1.49299 7.18098 1.6202 7.21917 1.75021 7.21875H3.71896V11.375C3.71896 11.6651 3.83419 11.9433 4.03931 12.1484C4.24443 12.3535 4.52263 12.4687 4.81271 12.4687H9.18771C9.47779 12.4687 9.75599 12.3535 9.96111 12.1484C10.1662 11.9433 10.2815 11.6651 10.2815 11.375V7.21875H12.2502C12.38 7.21874 12.5069 7.18023 12.6149 7.10809C12.7228 7.03594 12.8069 6.93341 12.8565 6.81345C12.9062 6.69349 12.9191 6.56151 12.8938 6.43419C12.8684 6.30688 12.8058 6.18995 12.714 6.0982ZM9.62521 5.90625C9.45116 5.90625 9.28424 5.97539 9.16117 6.09846C9.0381 6.22153 8.96896 6.38845 8.96896 6.5625V11.1562H5.03146V6.5625C5.03146 6.38845 4.96232 6.22153 4.83925 6.09846C4.71618 5.97539 4.54926 5.90625 4.37521 5.90625H3.33615L7.00021 2.24218L10.6643 5.90625H9.62521Z"
+                                                                        fill="#475569"  // Thiết lập màu trắng cho phần đường vẽ bên trong
+                                                                    />
+                                                                </svg>
+                                                            </div>
+
+                                                            <span className="text-sm">2</span>
+                                                            <div className="">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    width="14"
+                                                                    height="14"
+                                                                    viewBox="0 0 16 16"
+                                                                    fill="none"
+                                                                >
+                                                                    <path
+                                                                        d="M14.6931 8.21313C14.6363 8.07602 14.5402 7.95883 14.4168 7.8764C14.2934 7.79396 14.1484 7.74997 14 7.75H11.75V3C11.75 2.66848 11.6183 2.35054 11.3838 2.11612C11.1494 1.8817 10.8315 1.75 10.5 1.75H5.49997C5.16844 1.75 4.8505 1.8817 4.61608 2.11612C4.38166 2.35054 4.24997 2.66848 4.24997 3V7.75H1.99997C1.8516 7.75001 1.70656 7.79402 1.58321 7.87647C1.45986 7.95892 1.36374 8.07611 1.307 8.2132C1.25027 8.35029 1.23547 8.50113 1.26447 8.64663C1.29348 8.79214 1.36499 8.92577 1.46997 9.03063L7.46996 15.0306C7.53964 15.1005 7.62244 15.156 7.7136 15.1939C7.80476 15.2317 7.9025 15.2512 8.00122 15.2512C8.09993 15.2512 8.19767 15.2317 8.28883 15.1939C8.37999 15.156 8.46279 15.1005 8.53247 15.0306L14.5325 9.03063C14.6371 8.9255 14.7081 8.79174 14.7367 8.64623C14.7653 8.50072 14.7501 8.35 14.6931 8.21313ZM7.99997 13.4375L3.81247 9.25H4.99997C5.19888 9.25 5.38964 9.17098 5.5303 9.03033C5.67095 8.88968 5.74997 8.69891 5.74997 8.5V3.25H10.25V8.5C10.25 8.69891 10.329 8.88968 10.4696 9.03033C10.6103 9.17098 10.8011 9.25 11 9.25H12.1875L7.99997 13.4375Z"
+                                                                        fill="#475569"
+                                                                    />
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+
+                                                        {/*Comments*/}
+
+                                                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-400">
+                                                            <div className="">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    width="14"
+                                                                    height="14"
+                                                                    viewBox="0 0 14 14"
+                                                                    fill="none"
+                                                                >
+                                                                    <path
+                                                                        d="M7.21875 1.09375C5.71082 1.09534 4.26511 1.69507 3.19884 2.76134C2.13257 3.82761 1.53284 5.27332 1.53125 6.78125V11.375C1.53125 11.6651 1.64648 11.9433 1.8516 12.1484C2.05672 12.3535 2.33492 12.4688 2.625 12.4688H7.21875C8.72717 12.4688 10.1738 11.8695 11.2404 10.8029C12.307 9.73631 12.9063 8.28967 12.9063 6.78125C12.9063 5.27283 12.307 3.82619 11.2404 2.75958C10.1738 1.69297 8.72717 1.09375 7.21875 1.09375ZM7.21875 11.1563H2.84375V6.78125C2.84375 5.91596 3.10034 5.0701 3.58107 4.35063C4.0618 3.63117 4.74508 3.07041 5.54451 2.73928C6.34394 2.40814 7.2236 2.3215 8.07227 2.49031C8.92094 2.65912 9.70049 3.0758 10.3123 3.68766C10.9242 4.29951 11.3409 5.07906 11.5097 5.92773C11.6785 6.7764 11.5919 7.65606 11.2607 8.45549C10.9296 9.25492 10.3688 9.9382 9.64937 10.4189C8.9299 10.8997 8.08404 11.1563 7.21875 11.1563ZM6.78125 7C6.78125 7.17306 6.72993 7.34223 6.63379 7.48612C6.53764 7.63002 6.40098 7.74217 6.2411 7.80839C6.08121 7.87462 5.90528 7.89195 5.73555 7.85819C5.56581 7.82443 5.4099 7.74109 5.28753 7.61872C5.16516 7.49635 5.08183 7.34044 5.04806 7.1707C5.0143 7.00097 5.03163 6.82504 5.09786 6.66515C5.16408 6.50527 5.27623 6.36861 5.42013 6.27246C5.56402 6.17632 5.73319 6.125 5.90625 6.125C6.13831 6.125 6.36087 6.21719 6.52497 6.38128C6.68906 6.54538 6.78125 6.76794 6.78125 7ZM9.40625 7C9.40625 7.17306 9.35493 7.34223 9.25879 7.48612C9.16264 7.63002 9.02598 7.74217 8.8661 7.80839C8.70621 7.87462 8.53028 7.89195 8.36055 7.85819C8.19081 7.82443 8.0349 7.74109 7.91253 7.61872C7.79016 7.49635 7.70683 7.34044 7.67306 7.1707C7.6393 7.00097 7.65663 6.82504 7.72286 6.66515C7.78908 6.50527 7.90123 6.36861 8.04513 6.27246C8.18902 6.17632 8.35819 6.125 8.53125 6.125C8.76331 6.125 8.98587 6.21719 9.14997 6.38128C9.31406 6.54538 9.40625 6.76794 9.40625 7Z"
+                                                                        fill="black"
+                                                                    />
+                                                                </svg>
+                                                            </div>
+                                                            <span className="text-sm">Reply</span>
+                                                        </div>
+
+                                                        {/*Shares*/}
+
+                                                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200">
+                                                            <span className="text-sm">Share</span>
+                                                            <div className="">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    width="16"
+                                                                    height="16"
+                                                                    viewBox="0 0 16 16"
+                                                                    fill="none"
+                                                                >
+                                                                    <path
+                                                                        d="M15.0304 6.47L10.0304 1.47C9.92553 1.36503 9.7919 1.29351 9.6464 1.2645C9.50089 1.2355 9.35005 1.2503 9.21296 1.30703C9.07587 1.36377 8.95868 1.45989 8.87623 1.58324C8.79378 1.70659 8.74977 1.85163 8.74976 2V4.29625C7.13976 4.49125 5.39601 5.28937 3.95289 6.51312C2.13039 8.05937 0.995386 10.0562 0.756636 12.1381C0.732449 12.347 0.774745 12.5583 0.87751 12.7418C0.980274 12.9253 1.13828 13.0717 1.32904 13.1602C1.51981 13.2487 1.73364 13.2749 1.94012 13.2349C2.14659 13.1949 2.33521 13.0908 2.47914 12.9375C3.13289 12.2412 5.41664 10.0787 8.74976 9.78625V12C8.74989 12.1482 8.79395 12.2931 8.87637 12.4163C8.95879 12.5395 9.07588 12.6356 9.21284 12.6923C9.3498 12.749 9.5005 12.7638 9.6459 12.735C9.7913 12.7061 9.92488 12.6348 10.0298 12.53L15.0298 7.53C15.1703 7.38945 15.2493 7.19888 15.2494 7.00012C15.2495 6.80137 15.1708 6.6107 15.0304 6.47ZM10.2498 10.1875V9C10.2498 8.80108 10.1707 8.61032 10.0301 8.46967C9.88944 8.32901 9.69868 8.25 9.49976 8.25C6.43726 8.25 4.08914 9.5975 2.63789 10.7569C3.08351 9.62187 3.86476 8.55562 4.92351 7.6575C6.33101 6.46312 8.04164 5.75 9.49976 5.75C9.69868 5.75 9.88944 5.67098 10.0301 5.53033C10.1707 5.38967 10.2498 5.19891 10.2498 5V3.8125L13.4373 7L10.2498 10.1875Z"
+                                                                        fill="#475569"
+                                                                    />
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+
+                                                        {/*More*/}
+
+                                                        <div className="">
+                                                            <button className="">
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    width="14"
+                                                                    height="14"
+                                                                    viewBox="0 0 20 20"
+                                                                    fill="white"
+                                                                >
+                                                                    <path
+                                                                        d="M12.1875 10C12.1875 10.4326 12.0592 10.8556 11.8188 11.2153C11.5785 11.575 11.2368 11.8554 10.8371 12.021C10.4374 12.1866 9.99757 12.2299 9.57324 12.1455C9.14891 12.0611 8.75913 11.8527 8.45321 11.5468C8.14728 11.2409 7.93894 10.8511 7.85453 10.4268C7.77013 10.0024 7.81345 9.56259 7.97901 9.16288C8.14458 8.76317 8.42496 8.42153 8.78469 8.18116C9.14442 7.94079 9.56735 7.8125 10 7.8125C10.5802 7.8125 11.1366 8.04297 11.5468 8.4532C11.957 8.86344 12.1875 9.41984 12.1875 10ZM3.75 7.8125C3.31735 7.8125 2.89442 7.94079 2.53469 8.18116C2.17496 8.42153 1.89458 8.76317 1.72901 9.16288C1.56345 9.56259 1.52013 10.0024 1.60453 10.4268C1.68894 10.8511 1.89728 11.2409 2.2032 11.5468C2.50913 11.8527 2.89891 12.0611 3.32324 12.1455C3.74757 12.2299 4.18741 12.1866 4.58712 12.021C4.98683 11.8554 5.32848 11.575 5.56884 11.2153C5.80921 10.8556 5.9375 10.4326 5.9375 10C5.9375 9.41984 5.70703 8.86344 5.2968 8.4532C4.88656 8.04297 4.33016 7.8125 3.75 7.8125ZM16.25 7.8125C15.8174 7.8125 15.3944 7.94079 15.0347 8.18116C14.675 8.42153 14.3946 8.76317 14.229 9.16288C14.0634 9.56259 14.0201 10.0024 14.1045 10.4268C14.1889 10.8511 14.3973 11.2409 14.7032 11.5468C15.0091 11.8527 15.3989 12.0611 15.8232 12.1455C16.2476 12.2299 16.6874 12.1866 17.0871 12.021C17.4868 11.8554 17.8285 11.575 18.0688 11.2153C18.3092 10.8556 18.4375 10.4326 18.4375 10C18.4375 9.71273 18.3809 9.42828 18.271 9.16288C18.1611 8.89748 17.9999 8.65633 17.7968 8.4532C17.5937 8.25008 17.3525 8.08895 17.0871 7.97901C16.8217 7.86908 16.5373 7.8125 16.25 7.8125Z"
+                                                                        fill="#475569"
+                                                                    />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                         </div>
 
                                     </div>
+                                    {/*USER DETAILS*/}
 
                                 </div>
-                                {/*USER DETAILS*/}
+                            </div>
+                            {/*FEEDS*/}
 
+
+
+                            <div className=" text-black w-1/4 pr-6">
+                                {/*FEEDS*/}
+                                <RightBar userInfo={{ userId: userId as string, username: username as string }} avatar_url={user.avatar_url} />
                             </div>
                         </div>
-                        {/*FEEDS*/}
 
 
-                        {/*RIGHT BAR*/}
-
-                        <div className=" text-black w-1/4 pr-6">
-                            {/*FEEDS*/}
-                            <RightBar />
-                        </div>
                     </div>
-
-
                 </div>
             </div>
-        </div>
-    )
+        )
+    }
+
 }
 
 export default ProfileLayout
