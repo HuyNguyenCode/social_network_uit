@@ -1,11 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState, useEffect } from "react";
-import {
-  HubConnection,
-  HubConnectionBuilder,
-  LogLevel,
-} from "@microsoft/signalr";
+import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import Cookies from "js-cookie";
 import { useUserStore } from "@/store/useUserStore";
 const users = [
@@ -30,9 +26,7 @@ const ChatPage = () => {
   }, [userId, username]);
 
   const [conn, setConnection] = useState<HubConnection | null>(null);
-  const [messages, setMessages] = useState<{ username: string; msg: string }[]>(
-    []
-  );
+  const [messages, setMessages] = useState<{ username: string; msg: string }[]>([]);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState<string>("");
   // const [currentUser] = useState(users[0]);
@@ -42,7 +36,7 @@ const ChatPage = () => {
     if (!currentUser) return;
 
     const connection = new HubConnectionBuilder()
-      .withUrl(`http://localhost:5108/chathub?userId=${currentUser.id}`)
+      .withUrl(`https://localhost:44371/chathub?userId=${currentUser.id}`)
       .configureLogging(LogLevel.Information)
       .withAutomaticReconnect()
       .build();
@@ -56,10 +50,7 @@ const ChatPage = () => {
       setMessages((prev) => [
         ...prev,
         {
-          username:
-            sender === currentUser.id
-              ? currentUser.name
-              : senderUser?.name || "Unknown",
+          username: sender === currentUser.id ? currentUser.name : senderUser?.name || "Unknown",
           msg,
         },
       ]);
@@ -69,10 +60,7 @@ const ChatPage = () => {
       const formattedMessages = loadedMessages.map((m) => {
         const senderUser = users.find((u) => u.id === m.SenderId);
         return {
-          username:
-            m.SenderId === currentUser.id
-              ? currentUser.name
-              : senderUser?.name || "Unknown",
+          username: m.SenderId === currentUser.id ? currentUser.name : senderUser?.name || "Unknown",
           msg: m.Content,
         };
       });
@@ -110,13 +98,7 @@ const ChatPage = () => {
       const receiverId = selectedUser;
       const roomId = [senderId, receiverId].sort().join("-");
 
-      await conn.invoke(
-        "SendMessage",
-        roomId,
-        senderId,
-        receiverId,
-        messageInput
-      );
+      await conn.invoke("SendMessage", roomId, senderId, receiverId, messageInput);
 
       setMessageInput("");
     }
@@ -151,8 +133,7 @@ const ChatPage = () => {
                     color: activeUsers.includes(user.id) ? "green" : "gray",
                   }}
                 >
-                  {user.name}{" "}
-                  {activeUsers.includes(user.id) ? "(Online)" : "(Offline)"}
+                  {user.name} {activeUsers.includes(user.id) ? "(Online)" : "(Offline)"}
                 </li>
               ))}
           </ul>

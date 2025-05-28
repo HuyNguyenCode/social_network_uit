@@ -20,12 +20,9 @@ const initialState: AuthState = {
 // Thunk xử lý đăng nhập
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async (
-    credentials: { username: string; password: string },
-    { rejectWithValue }
-  ) => {
+  async (credentials: { username: string; password: string }, { rejectWithValue }) => {
     try {
-      const response = await fetch("http://localhost:5108/api/Auth/login", {
+      const response = await fetch("https://localhost:44371/api/Auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -52,10 +49,8 @@ export const loginUser = createAsyncThunk(
       console.log("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
     }
-  }
+  },
 );
-
-
 
 // Thunk xử lý đăng ký
 export const registerUser = createAsyncThunk(
@@ -67,13 +62,13 @@ export const registerUser = createAsyncThunk(
       password: string;
       confirmPassword: string;
     },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     console.log("credentials: ");
     console.log(credentials);
 
     try {
-      const response = await fetch("http://103.82.194.197:8080/api/Auth/register", {
+      const response = await fetch("https://localhost:44371/api/Auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -96,64 +91,60 @@ export const registerUser = createAsyncThunk(
       console.log("✅ Đăng nhập thành công:", { token, account });
 
       return { token, expiresAt, user: account, message: result.message };
-
     } catch (error) {
       return rejectWithValue("Lỗi hệ thống");
     }
-  }
+  },
 );
 
 // Thunk xử lý đăng xuất
-export const logoutUser = createAsyncThunk(
-  "auth/logoutUser",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await fetch("http://localhost:8080/api/Auth/logout", {
-        method: "POST",
-        body: JSON.stringify({}),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+export const logoutUser = createAsyncThunk("auth/logoutUser", async (_, { rejectWithValue }) => {
+  try {
+    const response = await fetch("http://localhost:8080/api/Auth/logout", {
+      method: "POST",
+      body: JSON.stringify({}),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (!response.ok) {
-        throw { status: response.status };
-      } else {
-        console.log("Logout successfully!");
-      }
-      return true;
-    } catch (error) {
-      return rejectWithValue("Lỗi hệ thống");
+    if (!response.ok) {
+      throw { status: response.status };
+    } else {
+      console.log("Logout successfully!");
     }
+    return true;
+  } catch (error) {
+    return rejectWithValue("Lỗi hệ thống");
   }
-);
+});
 
 // Thunk xử lý đổi mật khẩu
 export const changePassword = createAsyncThunk(
-  'auth/changePassword',
+  "auth/changePassword",
   async (
     { userId, oldPassword, newPassword }: { userId: number; oldPassword: string; newPassword: string },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       const response = await fetch(`http://localhost:8080/api/Auth/${userId}/changePassword`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ oldPassword, newPassword }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        const errorMessage = result.Errors?.[0] || 'Đổi mật khẩu thất bại!';
+        const errorMessage = result.Errors?.[0] || "Đổi mật khẩu thất bại!";
         return rejectWithValue({ message: errorMessage, status: response.status });
       }
 
       return result; // Trả về kết quả thành công
     } catch (error: any) {
-      return rejectWithValue({ message: error.message || 'Lỗi máy chủ!', status: 500 });
+      return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
     }
-  }
+  },
 );
 
 // Slice
@@ -172,18 +163,12 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        loginUser.fulfilled,
-        (
-          state,
-          action: PayloadAction<{ token: string; expiresAt: string; user: any }>
-        ) => {
-          state.loading = false;
-          state.user = action.payload.user;
-          state.token = action.payload.token;
-          state.expiresAt = action.payload.expiresAt;
-        }
-      )
+      .addCase(loginUser.fulfilled, (state, action: PayloadAction<{ token: string; expiresAt: string; user: any }>) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.expiresAt = action.payload.expiresAt;
+      })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -202,8 +187,6 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
       .addCase(logoutUser.pending, (state) => {
-      
-        
         state.loading = true;
       })
       .addCase(logoutUser.fulfilled, (state) => {
@@ -231,9 +214,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       });
-      ;
-
-      
   },
 });
 
