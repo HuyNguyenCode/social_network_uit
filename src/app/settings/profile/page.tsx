@@ -86,7 +86,7 @@ export default function ProfilePage() {
       logError("User ID is null");
     }
   };
-
+  
   return (
     <div className={cx("profile-wrapper")}>
       <div className={cx("profile-background")}></div>

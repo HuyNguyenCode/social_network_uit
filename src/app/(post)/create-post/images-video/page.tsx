@@ -15,6 +15,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { toast } from "sonner";
 import router from "next/router";
+import Cookies from "js-cookie";
 
 const cx = classNames.bind(styles);
 
@@ -74,9 +75,11 @@ export default function Page() {
     };
     console.log(data);
     const result = await dispatch(postCreate(data));
+        const userName = Cookies.get("userName");
     if (postCreate.fulfilled.match(result)) {
       toast.success("✅ Đã đăng bài viết thành công!");
-      router.push("/");
+
+      router.push(`/user/${userName}/posts`);
     } else {
       console.log("❌ Đăng bài viết thất bại:", result);
       const errorMessage = (result.payload as { message: string })?.message || "Lỗi không xác định!";

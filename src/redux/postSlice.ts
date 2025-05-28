@@ -375,7 +375,7 @@ export const getPopularPost = createAsyncThunk(
 //Get upvoted post
 export const getUpVotePostById = createAsyncThunk("post/upvoted", async (userId: string, { rejectWithValue }) => {
   try {
-    const response = await fetch(`http://localhost:5108/api/posts/user/${userId}/upvote`, {
+    const response = await fetch(`http://localhost:5108/api/posts/user/${userId}/voted/upvote`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
@@ -403,7 +403,7 @@ export const getUpVotePostById = createAsyncThunk("post/upvoted", async (userId:
 //Get downvoted post
 export const getDownVotePostById = createAsyncThunk("post/downvoted", async (userId: string, { rejectWithValue }) => {
   try {
-    const response = await fetch(`http://localhost:5108/api/posts/user/${userId}/downvote`, {
+    const response = await fetch(`http://localhost:5108/api/posts/user/${userId}/voted/downvote`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });

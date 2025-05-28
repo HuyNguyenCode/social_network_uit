@@ -76,36 +76,36 @@ export const commentCreate = createAsyncThunk(
 );
 
 // //votePost
-// export const votePost = createAsyncThunk(
-//   "post/vote",
-//   async ({ postId, voteData }: { postId: string; voteData: { userId: string; voteType: number } }, { rejectWithValue }) => {
-//     try {
-//       const response = await fetch(`http://localhost:5108/api/posts/user/${userId}/${getBy}`, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify(voteData),
-//       });
+export const voteComment = createAsyncThunk(
+  "post/vote",
+  async ({ commentId, voteData }: { commentId: string; voteData: { userId: string; voteType: number } }, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`http://localhost:5108/api/comments/${commentId}/vote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(voteData),
+      });
 
-//       const result = await response.json();
-//       console.log("data: ");
-//       console.log(result);
-//       if (!response.ok || result.statusCode === 400) {
-//         const errorMessage = result.Errors?.[0] || "Vote bài viết thất bại!";
-//         return rejectWithValue({ message: errorMessage, status: response.status });
-//       }
+      const result = await response.json();
+      console.log("data: ");
+      console.log(result);
+      if (!response.ok || result.statusCode === 400) {
+        const errorMessage = result.Errors?.[0] || "Vote bài viết thất bại!";
+        return rejectWithValue({ message: errorMessage, status: response.status });
+      }
 
-//       if (!result.result) {
-//         return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
-//       }
+      if (!result.result) {
+        return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
+      }
 
-//       console.log("✅ Vote bài viết thành công:", result.result);
-//       return { post: result.result, message: result.message };
-//     } catch (error: any) {
-//       console.log("❌ Lỗi ngoại lệ:", error);
-//       return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
-//     }
-//   },
-// );
+      console.log("✅ Vote bài viết thành công:", result.result);
+      return { post: result.result, message: result.message };
+    } catch (error: any) {
+      console.log("❌ Lỗi ngoại lệ:", error);
+      return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
+    }
+  },
+);
 
 // Thunk update comment
 export const updateComment = createAsyncThunk(
@@ -295,34 +295,22 @@ const commentSlice = createSlice({
         state.error = (action.payload as any)?.message || "Lỗi không xác định";
       })
 
-      // // Xử lý postCreate
-      // .addCase(postCreate.pending, (state) => {
-      //   state.loading = true;
-      //   state.error = null;
-      // })
-      // .addCase(postCreate.fulfilled, (state, action) => {
-      //   state.loading = false;
-      //   state.posts = action.payload.post;
-      //   state.error = null;
-      // })
-      // .addCase(postCreate.rejected, (state, action) => {
-      //   state.loading = false;
-      //   state.error = action.payload as string;
-      // })
-      // // Xử lý updatePost
-      // .addCase(updatePost.pending, (state) => {
-      //   state.loading = true;
-      //   state.error = null;
-      // })
-      // .addCase(updatePost.fulfilled, (state, action) => {
-      //   state.loading = false;
-      //   state.posts = action.payload.post;
-      //   state.error = null;
-      // })
-      // .addCase(updatePost.rejected, (state, action) => {
-      //   state.loading = false;
-      //   state.error = action.payload as string;
-      // })
+      // Xử lý commentCreate
+      .addCase(commentCreate.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(commentCreate.fulfilled, (state, action) => {
+        state.loading = false;
+        state.comments = action.payload.post;
+        state.error = null;
+      })
+      .addCase(commentCreate.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Xử lý updatePost
+
       .addCase(updateComment.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -352,40 +340,25 @@ const commentSlice = createSlice({
         state.loading = false;
         state.error = (action.payload as any)?.message || "Lỗi không xác định";
         state.currentComment = null;
-      });
-    // Xử lý getPostDetailWithId (chi tiết)
-    // .addCase(getPostDetailWithId.pending, (state) => {
-    //   state.loading = true;
-    //   state.error = null;
-    //   state.currentPost = null;
-    // })
-    // .addCase(getPostDetailWithId.fulfilled, (state, action) => {
-    //   state.loading = false;
-    //   state.currentPost = action.payload.post;
-    //   state.error = null;
-    // })
-    // .addCase(getPostDetailWithId.rejected, (state, action) => {
-    //   state.loading = false;
-    //   state.error = (action.payload as any)?.message || "Failed to load post detail";
-    //   state.currentPost = null;
-    // })
+      })
 
-    // Xử lý getUpvotedPostlWithId (chi tiết)
-    // .addCase(getUpVotePostById.pending, (state) => {
-    //   state.loading = true;
-    //   state.error = null;
-    //   state.upvotedPosts = null;
-    // })
-    // .addCase(getUpVotePostById.fulfilled, (state, action) => {
-    //   state.loading = false;
-    //   state.upvotedPosts = action.payload.data;
-    //   state.error = null;
-    // })
-    // .addCase(getUpVotePostById.rejected, (state, action) => {
-    //   state.loading = false;
-    //   state.error = (action.payload as any)?.message || "Failed to load upvoted post";
-    //   state.upvotedPosts = null;
-    // })
+      .addCase(voteComment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(voteComment.fulfilled, (state, action) => {
+        if (state.comments && Array.isArray(state.comments)) {
+          const updatedComment = action.payload.post;
+          const index = state.comments.findIndex((c) => c.id === updatedComment.id);
+          if (index !== -1) {
+            state.comments[index] = updatedComment;
+          }
+        }
+      })
+      .addCase(voteComment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as any)?.message || "Failed to load upvoted post";
+      });
 
     // Xử lý getDownvotedPostlWithId (chi tiết)
     // .addCase(getDownVotePostById.pending, (state) => {
@@ -403,48 +376,6 @@ const commentSlice = createSlice({
     //   state.error = (action.payload as any)?.message || "Failed to load downvoted post";
     //   state.downvotedPosts = null;
     // })
-
-    // Xử lý getHomePost(chi tiết)
-    // .addCase(getHomePost.pending, (state) => {
-    //   state.loading = true;
-    //   state.error = null;
-    //   state.homePosts = null;
-    // })
-    // .addCase(getHomePost.fulfilled, (state, action) => {
-    //   state.loading = false;
-    //   state.homePosts = action.payload.data;
-    //   state.error = null;
-    // })
-    // .addCase(getHomePost.rejected, (state, action) => {
-    //   state.loading = false;
-    //   state.error = (action.payload as any)?.message || "Failed to load downvoted post";
-    //   state.homePosts = null;
-    // })
-
-    // Xử lý getPopularPost(chi tiết)
-    // .addCase(getPopularPost.pending, (state) => {
-    //   state.loading = true;
-    //   state.error = null;
-    // })
-    // .addCase(getPopularPost.fulfilled, (state, action) => {
-    //   state.loading = false;
-    //   const { items, pages } = action.payload.data;
-    //   const currentPage = action.meta.arg.page ?? 1;
-
-    //   if (currentPage === 1) {
-    //     state.popularPosts = { items, page: currentPage, pages };
-    //   } else {
-    //     state.popularPosts = {
-    //       items: [...(state.popularPosts?.items || []), ...items],
-    //       page: currentPage,
-    //       pages,
-    //     };
-    //   }
-    // })
-    // .addCase(getPopularPost.rejected, (state, action) => {
-    //   state.loading = false;
-    //   state.error = (action.payload as any)?.message || "Lỗi không xác định";
-    // });
   },
 });
 

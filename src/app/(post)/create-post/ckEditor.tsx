@@ -1,6 +1,6 @@
 "use client";
 
-import React, {FC, useEffect} from "react";
+import React, {FC} from "react";
 import {CKEditor} from "@ckeditor/ckeditor5-react";
 import {
   ClassicEditor,

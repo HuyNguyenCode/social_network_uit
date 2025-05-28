@@ -15,6 +15,7 @@ import Header from "@/components/ui/header";
 import styles from "@/app/(home)/home.module.scss";
 import classNames from "classnames/bind";
 import Sidebar from "@/app/(home)/sidebar";
+import Cookies from "js-cookie";
 
 const cx = classNames.bind(styles);
 
@@ -72,10 +73,10 @@ export default function Page() {
     };
 
     const result = await dispatch(postCreate(data));
-
+    const userName = Cookies.get("userName");
     if (postCreate.fulfilled.match(result)) {
       toast.success("✅ Đã đăng bài viết thành công!");
-      router.push("/");
+      router.push(`/user/${userName}/posts`);
     } else {
       console.log("❌ Đăng bài viết thất bại:", result);
       const errorMessage = (result.payload as { message: string })?.message || "Lỗi không xác định!";

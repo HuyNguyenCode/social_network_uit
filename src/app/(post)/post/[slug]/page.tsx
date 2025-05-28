@@ -164,12 +164,11 @@ const Page = () => {
   const postId = params.slug as string;
 
   const dispatch = useDispatch<AppDispatch>();
-  const { currentPost, loading, error } = useSelector((state: RootState) => state.post);
+  const { currentPost, error } = useSelector((state: RootState) => state.post);
   const { currentComment } = useSelector((state: RootState) => state.comment);
 
   useEffect(() => {
     dispatch(getPostDetailWithId(postId));
-    setCommentArr(currentPost?.comments ?? []);
   }, [postId, dispatch]);
 
   useEffect(() => {
@@ -208,7 +207,7 @@ const Page = () => {
   }
 
   dayjs.extend(relativeTime);
-  console.log("Current Post:", currentPost);
+
   if (!currentPost) {
     return <div>Loading...</div>;
   } else {

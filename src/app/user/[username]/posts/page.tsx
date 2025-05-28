@@ -56,7 +56,7 @@ export default function UserPosts() {
   const pageSize = 10; // Có thể điều chỉnh
   const { userId } = useUserStore(); // Lấy thông tin từ store
   // console.log("posts", posts);
-  
+
   useEffect(() => {
     if (userId) {
       dispatch(
@@ -84,6 +84,7 @@ export default function UserPosts() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+ 
 
   if (loading) {
     return (
