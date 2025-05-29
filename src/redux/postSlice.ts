@@ -35,7 +35,7 @@ export const postCreate = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await fetch("http://localhost:8080/api/posts", {
+      const response = await fetch("https://localhost:44371/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -66,12 +66,9 @@ export const postCreate = createAsyncThunk(
 
 export const votePost = createAsyncThunk(
   "post/vote",
-  async (
-    { postId, voteData }: { postId: string; voteData: { userId: string; voteType: number } },
-    { rejectWithValue },
-  ) => {
+  async ({ postId, voteData }: { postId: string; voteData: { userId: string; voteType: number } }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}/vote`, {
+      const response = await fetch(`https://localhost:44371/api/posts/${postId}/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(voteData),
@@ -106,7 +103,7 @@ export const updatePost = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}/update`, {
+      const response = await fetch(`https://localhost:44371/api/posts/${postId}/update`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(postData),
@@ -134,37 +131,34 @@ export const updatePost = createAsyncThunk(
 );
 
 // Thunk xử lý lấy bài viết theo ID
-export const getPostWithId = createAsyncThunk(
-  "post/getPostWithId",
-  async (postId: string, { rejectWithValue }) => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/posts/${postId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+export const getPostWithId = createAsyncThunk("post/getPostWithId", async (postId: string, { rejectWithValue }) => {
+  try {
+    const response = await fetch(`https://localhost:44371/api/posts/${postId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      const result = await response.json();
-      console.log("📢 API Response:", result);
+    const result = await response.json();
+    console.log("📢 API Response:", result);
 
-      if (!response.ok) {
-        const errorMessage = result.Errors?.[0] || "Không thể lấy thông tin bài viết!";
-        return rejectWithValue({ message: errorMessage, status: response.status });
-      }
-
-      if (!result.result) {
-        return rejectWithValue({ message: "Không tìm thấy bài viết", status: 404 });
-      }
-
-      console.log("✅ Lấy thông tin bài viết thành công:", result.result);
-      return { post: result.result, message: result.message };
-    } catch (error: any) {
-      console.log("❌ Lỗi ngoại lệ:", error);
-      return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
+    if (!response.ok) {
+      const errorMessage = result.Errors?.[0] || "Không thể lấy thông tin bài viết!";
+      return rejectWithValue({ message: errorMessage, status: response.status });
     }
+
+    if (!result.result) {
+      return rejectWithValue({ message: "Không tìm thấy bài viết", status: 404 });
+    }
+
+    console.log("✅ Lấy thông tin bài viết thành công:", result.result);
+    return { post: result.result, message: result.message };
+  } catch (error: any) {
+    console.log("❌ Lỗi ngoại lệ:", error);
+    return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
   }
-);
+});
 
 // Slice
 const postSlice = createSlice({
