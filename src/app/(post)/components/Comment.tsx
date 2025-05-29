@@ -34,13 +34,22 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
   const handleUpVote = () => {
     // setVote((prev) => (prev === 0 ? null : 0));
     const newVote = vote === 0 ? null : 0; // nếu đã upvote => huỷ vote, ngược lại là upvote
-    dispatch(voteComment({ commentId: String(comment.id), voteData: { userId: userId ?? "", voteType: newVote ?? -1 } }))
+    dispatch(
+      voteComment({
+        commentId: String(comment.id),
+        voteData: { userId: userId ?? "", voteType: newVote ?? -1 },
+        oldVoteType: vote === null ? -1 : vote, // provide the previous vote type, or -1 if none
+      }),
+    )
       .unwrap()
       .then((res) => {
         setVote(newVote); // cập nhật state vote local
         // có thể cập nhật upvoteCount / downvoteCount từ res nếu muốn chính xác
       })
-      .catch((err) => toast.error(err));
+      .catch((err) => {
+        console.error("Vote error:", err);
+        toast.error(typeof err === "object" && err?.message ? err.message : "Đã xảy ra lỗi!");
+      });
   };
   const handleDownVote = () => {
     setVote((prev) => (prev === 1 ? null : 1));
@@ -328,6 +337,7 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
           isOpen={isDeleteConfirmOpen}
           onClose={() => setIsDeleteConfirmOpen(false)}
           onConfirm={handleConfirmDelete}
+          type="comment"
         />
         {comment.childComments && comment.childComments.length > 0 && (
           <div className="mt-3">

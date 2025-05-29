@@ -1,16 +1,13 @@
 "use client";
-
-// import { useDispatch } from "react-redux";
-// import { AppDispatch } from "@/redux/store";
-
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import OutputFile from "@/app/(post)/create-post/outputFile";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
 import OutputFiles from "@/app/(post)/create-post/outputFiles";
+import CountTotalComments from "@/app/(post)/components/CountTotalComments";
 interface PostProps {
   post: {
     id: string;
@@ -30,28 +27,7 @@ interface PostProps {
   };
 }
 
-// const createSlug = (title: string) => {
-//   return title
-//     .toLowerCase() // Chuyển thành chữ thường
-//     .replace(/[^\w\s]/g, '') // Loại bỏ ký tự đặc biệt
-//     .replace(/\s+/g, '-') // Thay khoảng trắng bằng dấu gạch ngang
-//     .trim(); // Loại bỏ khoảng trắng ở đầu/cuối
-// };
-
 const Post = ({ post }: PostProps) => {
-  // Tạo slug từ post.title
-  // const slug = createSlug(post.title);
-
-  //   const dispatch = useDispatch<AppDispatch>();
-  //   const { userInfor } = useSelector((state: RootState) => state.user);
-
-  //   if (post.createdBy) {
-  //     dispatch(fetchUserById(post.createdBy));
-  //   } else {
-  //     console.error("User ID is missing");
-  //   }
-
-  //   console.log(userInfor);
 
   const [vote, setVote] = useState<number | null>(null);
   // const dispatch = useDispatch<AppDispatch>();
@@ -75,27 +51,8 @@ const Post = ({ post }: PostProps) => {
     setVote((prev) => (prev === 0 ? null : 0));
   };
   dayjs.extend(relativeTime);
-  // console.log(post);
 
-  const countTotalComments = (comments: any[]) => {
-    let count = 0;
-    const visited = new Set();
-
-    const dfs = (commentList: any[]) => {
-      for (const comment of commentList) {
-        if (!visited.has(comment.id)) {
-          visited.add(comment.id);
-          count++;
-          if (comment.childComments?.length) {
-            dfs(comment.childComments);
-          }
-        }
-      }
-    };
-
-    dfs(comments);
-    return count;
-  };
+  
   return (
     <div className="border-t border-[#212121]">
       <div className="pt-1 pb-3 px-4 mt-1 w-full max-w-[732px] bg-transparent hover:bg-[#f7f9fa] rounded-xl">
@@ -221,7 +178,7 @@ const Post = ({ post }: PostProps) => {
               <path d="M10 19H1.871a.886.886 0 0 1-.798-.52.886.886 0 0 1 .158-.941L3.1 15.771A9 9 0 1 1 10 19Zm-6.549-1.5H10a7.5 7.5 0 1 0-5.323-2.219l.54.545L3.451 17.5Z"></path>
             </svg>
             <span className="text-black text-xs font-semibold">
-              {post.comments && post.comments.length && countTotalComments(post.comments)}
+              {post.comments && post.comments.length && CountTotalComments(post.comments)}
             </span>
           </Link>
           <button className="border-gray-200 bg-[#e5ebee] hover:bg-[#f7f9fa] flex flex-row items-center justify-center rounded-full px-3 active:bg-[#FFFFFF26]">

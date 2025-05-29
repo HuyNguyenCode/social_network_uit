@@ -75,10 +75,17 @@ export const commentCreate = createAsyncThunk(
   },
 );
 
-// //votePost
+//voteComment
 export const voteComment = createAsyncThunk(
   "post/vote",
-  async ({ commentId, voteData }: { commentId: string; voteData: { userId: string; voteType: number } }, { rejectWithValue }) => {
+  async (
+    {
+      commentId,
+      voteData,
+      oldVoteType,
+    }: { commentId: string; voteData: { userId: string; voteType: number }; oldVoteType: number },
+    { rejectWithValue },
+  ) => {
     try {
       const response = await fetch(`http://localhost:5108/api/comments/${commentId}/vote`, {
         method: "POST",
@@ -99,7 +106,14 @@ export const voteComment = createAsyncThunk(
       }
 
       console.log("✅ Vote bài viết thành công:", result.result);
-      return { post: result.result, message: result.message };
+      // Return the required properties for the reducer
+      return {
+        commentId,
+        newVoteType: voteData.voteType,
+        oldVoteType,
+        post: result.result,
+        message: result.message,
+      };
     } catch (error: any) {
       console.log("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
@@ -336,25 +350,24 @@ const commentSlice = createSlice({
         state.currentComment = action.payload.comments; // Lưu vào currentComment
         state.error = null;
       })
-      .addCase(getCommentDetailWithId.rejected, (state, action) => {
-        state.loading = false;
-        state.error = (action.payload as any)?.message || "Lỗi không xác định";
-        state.currentComment = null;
-      })
-
-      .addCase(voteComment.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(voteComment.fulfilled, (state, action) => {
-        if (state.comments && Array.isArray(state.comments)) {
-          const updatedComment = action.payload.post;
-          const index = state.comments.findIndex((c) => c.id === updatedComment.id);
-          if (index !== -1) {
-            state.comments[index] = updatedComment;
+        const { commentId, newVoteType, oldVoteType } = action.payload;
+        if (Array.isArray(state.comments)) {
+          const comment = state.comments.find((c) => c.id === commentId);
+          if (comment) {
+            // You may need to adjust the logic here based on your actual comment structure
+            if (typeof comment.upvoteCount === "number" && typeof comment.downvoteCount === "number") {
+              if (oldVoteType === 0) comment.upvoteCount--;
+              if (oldVoteType === 1) comment.downvoteCount--;
+              if (newVoteType === 0) comment.upvoteCount++;
+              if (newVoteType === 1) comment.downvoteCount++;
+            }
           }
         }
+        state.loading = false;
+        state.error = null;
       })
+
       .addCase(voteComment.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as any)?.message || "Failed to load upvoted post";

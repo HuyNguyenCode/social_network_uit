@@ -12,95 +12,17 @@ import Sidebar from "@/app/(home)/sidebar";
 import OutputFile from "@/app/(post)/create-post/outputFile";
 import { useParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { getPostDetailWithId } from "@/redux/postSlice";
+import { getPostDetailWithId, updatePost, postDelete } from "@/redux/postSlice";
 import { AppDispatch, RootState } from "@/redux/store";
 import Comment from "@/app/(post)/components/Comment";
 import OutputFiles from "@/app/(post)/create-post/outputFiles";
 import { commentCreate } from "@/redux/commentSlice";
+import PostMenu from "@/app/(post)/components/PostMenu";
 import { toast } from "sonner";
+import DeleteConfirmation from "@/app/(post)/components/DeleteConfirmation";
+import { useRouter } from "next/navigation";
+import CountTotalComments from "@/app/(post)/components/CountTotalComments";
 const cx = classNames.bind(styles);
-
-const countTotalComments = (comments: any[]) => {
-  let count = 0;
-  const visited = new Set();
-
-  const dfs = (commentList: any[]) => {
-    for (const comment of commentList) {
-      if (!visited.has(comment.id)) {
-        visited.add(comment.id);
-        count++;
-        if (comment.childComments?.length) {
-          dfs(comment.childComments);
-        }
-      }
-    }
-  };
-
-  dfs(comments);
-  return count;
-};
-const PostMenu = ({ isOpen, onEdit, onDelete }: { isOpen: boolean; onEdit: () => void; onDelete: () => void }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="absolute right-0 top-10 bg-white rounded-xl shadow-lg z-50">
-      <div className="py-1 text-gray-700">
-        <button
-          onClick={onEdit}
-          className="w-[243px] h-10 px-4 py-1 text-left hover:text-gray-900 flex items-center justify-start gap-2"
-        >
-          <svg
-            className="px-1"
-            fill="currentColor"
-            height="32"
-            icon-name="edit-outline"
-            viewBox="0 0 20 20"
-            width="32"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="m18.236 3.158-1.4-1.4a2.615 2.615 0 0 0-3.667-.021L1.336 13.318a1.129 1.129 0 0 0-.336.8v3.757A1.122 1.122 0 0 0 2.121 19h3.757a1.131 1.131 0 0 0 .8-.337L18.256 6.826a2.616 2.616 0 0 0-.02-3.668ZM5.824 17.747H2.25v-3.574l9.644-9.435L15.259 8.1l-9.435 9.647ZM17.363 5.952l-1.23 1.257-3.345-3.345 1.257-1.23a1.362 1.362 0 0 1 1.91.01l1.4 1.4a1.364 1.364 0 0 1 .008 1.908Z"></path>
-          </svg>
-          Edit Post
-        </button>
-        <button onClick={onDelete} className="w-full px-4 py-2 text-left hover:text-gray-900 flex items-center gap-2">
-          <svg
-            className="px-1"
-            fill="currentColor"
-            height="32"
-            icon-name="delete-outline"
-            viewBox="0 0 20 20"
-            width="32"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M15.751 6.023 17 6.106l-.761 11.368a2.554 2.554 0 0 1-.718 1.741A2.586 2.586 0 0 1 13.8 20H6.2a2.585 2.585 0 0 1-1.718-.783 2.553 2.553 0 0 1-.719-1.737L3 6.106l1.248-.083.761 11.369c-.005.333.114.656.333.908.22.252.525.415.858.458h7.6c.333-.043.64-.207.859-.46.22-.254.338-.578.332-.912l.76-11.363ZM18 2.983v1.243H2V2.983h4v-.372A2.737 2.737 0 0 1 6.896.718 2.772 2.772 0 0 1 8.875.002h2.25c.729-.03 1.44.227 1.979.716.538.488.86 1.169.896 1.893v.372h4Zm-10.75 0h5.5v-.372a1.505 1.505 0 0 0-.531-1.014 1.524 1.524 0 0 0-1.094-.352h-2.25c-.397-.03-.79.097-1.094.352-.304.256-.495.62-.531 1.014v.372Z"></path>
-          </svg>
-          Delete Post
-        </button>
-      </div>
-    </div>
-  );
-};
-
-const DeleteConfirmation = ({ isOpen, onClose, onConfirm }: { isOpen: boolean; onClose: () => void; onConfirm: () => void }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-[400px]">
-        <h2 className="text-gray-900 text-xl font-semibold mb-4">Delete Post?</h2>
-        <p className="text-gray-700 mb-6">Once you delete this post, it can&apos;t be restored.</p>
-        <div className="flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 text-white bg-gray-500 hover:bg-gray-600 rounded-full">
-            Go back
-          </button>
-          <button onClick={onConfirm} className="px-4 py-2 bg-red-500 text-white hover:bg-red-600 rounded-full">
-            Yes, Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const Page = () => {
   const [vote, setVote] = useState<number | null>(null);
@@ -155,9 +77,36 @@ const Page = () => {
     setIsMenuOpen(false);
   };
 
-  const handleConfirmDelete = () => {
+  const router = useRouter();
+  const handleConfirmDelete = async () => {
     // Xử lý logic xóa bài viết ở đây
+    const result = await dispatch(postDelete(postId));
     setIsDeleteConfirmOpen(false);
+    if (postDelete.fulfilled.match(result)) {
+      toast.success("✅ Deleted post successfull!");
+      // Ví dụ: chuyển về trang chủ hoặc trang danh sách bài viết
+      router.push("/");
+    } else {
+      toast.error("❌ Failed to delete post!");
+    }
+  };
+
+  const handleSubmitEdit = async () => {
+    // Giả sử bạn có state content, title, thumbnailUrl
+    const postData = {
+      title: currentPost?.title || "", // hoặc state title nếu có input riêng
+      content: content, // nội dung đã chỉnh sửa
+    };
+
+    const result = await dispatch(updatePost({ postId, postData }));
+    if (updatePost.fulfilled.match(result)) {
+      setIsEdit(false);
+      toast.success("Post edited");
+      // Có thể reload lại chi tiết bài viết nếu muốn
+      dispatch(getPostDetailWithId(postId));
+    } else {
+      toast.error("Failed to update post");
+    }
   };
 
   const params = useParams();
@@ -179,6 +128,12 @@ const Page = () => {
     dispatch(getPostDetailWithId(postId));
     setCommentArr(currentPost?.comments ?? []);
   }, [currentComment]);
+
+  useEffect(() => {
+    if (currentPost) {
+      setContent(currentPost.content);
+    }
+  }, [currentPost]);
 
   const handleSubmitReply = async () => {
     const tempDiv = document.createElement("div");
@@ -267,11 +222,22 @@ const Page = () => {
                   </div>
                   <div className="font-semibold text-gray-900 text-2xl mb-4">{currentPost.title} </div>
                   {isEdit ? (
-                    <div className="border border-gray-300 rounded-2xl h-40">
+                    <div className="border border-gray-300 rounded-2xl h-40 flex flex-col gap-2">
                       <TextEditor editorData={content} setEditorData={setContent} />
+                      <div className="flex justify-end gap-2 mt-6 pr-2">
+                        <button
+                          className="bg-gray-500 text-white rounded-full px-4 py-1 text-sm"
+                          onClick={() => setIsEdit(false)}
+                        >
+                          Cancel
+                        </button>
+                        <button className="bg-blue-600 text-white rounded-full px-4 py-1 text-sm" onClick={handleSubmitEdit}>
+                          Save
+                        </button>
+                      </div>
                     </div>
                   ) : (
-                    <div className="text-sm text-gray-700">{currentPost.content} </div>
+                    <div className="text-sm text-gray-700" dangerouslySetInnerHTML={{ __html: currentPost.content }} />
                   )}
                   {currentPost.postImages && currentPost.postImages.length > 0 && (
                     <OutputFiles imagesArr={currentPost.postImages ?? []} />
@@ -371,7 +337,7 @@ const Page = () => {
                         <path d="M10 19H1.871a.886.886 0 0 1-.798-.52.886.886 0 0 1 .158-.941L3.1 15.771A9 9 0 1 1 10 19Zm-6.549-1.5H10a7.5 7.5 0 1 0-5.323-2.219l.54.545L3.451 17.5Z"></path>
                       </svg>
                       <span className="text-gray-900 text-xs font-semibold">
-                        {currentPost.comments && currentPost.comments.length && countTotalComments(currentPost.comments)}
+                        {currentPost.comments && currentPost.comments.length && CountTotalComments(currentPost.comments)}
                       </span>
                     </a>
                     <button className="bg-gray-200 hover:bg-gray-300 flex flex-row items-center justify-center rounded-full px-3 active:bg-gray-100">
@@ -418,6 +384,7 @@ const Page = () => {
                   isOpen={isDeleteConfirmOpen}
                   onClose={() => setIsDeleteConfirmOpen(false)}
                   onConfirm={handleConfirmDelete}
+                  type="post"
                 />
                 {/* Comments Section */}
                 <div className="mt-10">
