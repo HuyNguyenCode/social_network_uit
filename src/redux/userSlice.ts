@@ -29,7 +29,7 @@ const initialState: UserState = {
 // Async thunk để lấy thông tin user từ API
 export const fetchUserById = createAsyncThunk("user/fetchUserById", async (userId: string, { rejectWithValue }) => {
   try {
-    const response = await fetch(`http://103.82.194.197:8080/api/user/${userId}`);
+    const response = await fetch(`https://localhost:44371/api/user/${userId}`);
     const data = await response.json();
 
     if (!response.ok || !data.succeeded) {
@@ -64,7 +64,7 @@ export const updateUserById = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await fetch(`http://103.82.194.197:8080/api/user/update/${userId}`, {
+      const response = await fetch(`https://localhost:44371/api/user/update/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
