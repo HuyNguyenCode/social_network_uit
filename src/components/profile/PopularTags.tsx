@@ -7,8 +7,9 @@ import { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { blockUser, followUser, getFollowers, getFollowing, getMyFollowing, unfollowUser } from "@/redux/followSlice";
-import { useParams } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { toast } from "sonner";
+import useOnClickOutside from "@/hooks/outside";
 
 
 interface PopularTagsProps {
@@ -21,7 +22,6 @@ interface PopularTagsProps {
 
 const PopularTags = ({ userInfo, avatar_url }: PopularTagsProps) => {
   const dispatch = useDispatch();
-  const [isBlockLoading, setIsBlockLoading] = useState(false);
   const [isMoreModalOpen, setIsMoreModalOpen] = useState(false);
 
   const [viewFollowers, setViewFollowers] = useState(false);
@@ -34,9 +34,11 @@ const PopularTags = ({ userInfo, avatar_url }: PopularTagsProps) => {
   const { followers, following, myFollowing } = useSelector((state: RootState) => state.follow);
   const isFollowing = myFollowing.find(follow => follow.userName === currentUsername);
 
+  const blockModelRef = useRef(null);
+  useOnClickOutside(blockModelRef, () => setIsMoreModalOpen(false));
+
   const handleBlockUser = async () => {
     try {
-      setIsBlockLoading(true);
       const resultAction = await dispatch(blockUser({ userToBlockName: currentUsername as string }) as any);
 
       if (blockUser.rejected.match(resultAction)) {
@@ -45,15 +47,13 @@ const PopularTags = ({ userInfo, avatar_url }: PopularTagsProps) => {
       } else {
         toast.success("Đã chặn người dùng");
         setIsMoreModalOpen(false);
-        // Nếu đang theo dõi thì tự động hủy theo dõi
         if (isFollowing) {
           await handleUnfollow(currentUsername as string);
         }
       }
+      redirect(`/user/${currentUsername}`);
     } catch (error: any) {
       toast.error(error.message || "Có lỗi xảy ra");
-    } finally {
-      setIsBlockLoading(false);
     }
   }
 
@@ -125,16 +125,20 @@ const PopularTags = ({ userInfo, avatar_url }: PopularTagsProps) => {
             ...
           </button>
           {isMoreModalOpen && (
-            <div className="absolute top-9 right-0 z-10">
-              <div className="w-40 bg-white shadow-md rounded-lg p-2">
-                <button
-                  onClick={handleBlockUser}
-                  disabled={isBlockLoading}
-                  className={`w-full text-left py-2 px-3 hover:bg-gray-100 rounded-md ${isBlockLoading ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                >
-                  {isBlockLoading ? 'Đang xử lý...' : 'Chặn'}
-                </button>
+            <div ref={blockModelRef} className="absolute top-9 right-0 z-10">
+              <div className="w-48 bg-white shadow-md rounded-lg">
+                {isMyProfile ? (
+                  <Link href={`/blocked`} className="block w-full h-10 px-3 py-2 text-center hover:bg-gray-100 rounded-md">
+                    Xem người đã chặn
+                  </Link>
+                ) : (
+                  <button
+                    onClick={handleBlockUser}
+                    className="w-full text-left py-2 px-3 hover:bg-gray-100 rounded-md"
+                  >
+                    Chặn
+                  </button>
+                )}
               </div>
             </div>
           )}
