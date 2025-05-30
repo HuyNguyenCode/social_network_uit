@@ -1,23 +1,104 @@
 import Link from "next/link";
 import Image from "next/image";
-import { FaPlus, FaRegComment } from "react-icons/fa";
-import Followers from "@/app/(post)/create-post/followers";
-import Following from "@/app/(post)/create-post/following";
-import { useState } from "react";
+import { FaRegComment } from "react-icons/fa";
+import Followers from "@/app/user/[username]/components/followers";
+import Following from "@/app/user/[username]/components/following";
+import { useState, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { blockUser, followUser, getFollowers, getFollowing, getMyFollowing, unfollowUser } from "@/redux/followSlice";
+import { useParams } from "next/navigation";
+import { toast } from "sonner";
+
 
 interface PopularTagsProps {
-  username: string;
+  userInfo: {
+    userId: string;
+    username: string;
+  };
   avatar_url: string;
 }
 
-const PopularTags = ({ username, avatar_url }: PopularTagsProps) => {
-  console.log("PopularTags received username:", username);  
+const PopularTags = ({ userInfo, avatar_url }: PopularTagsProps) => {
+  const dispatch = useDispatch();
+  const [isBlockLoading, setIsBlockLoading] = useState(false);
+  const [isMoreModalOpen, setIsMoreModalOpen] = useState(false);
+
   const [viewFollowers, setViewFollowers] = useState(false);
   const [viewFollowing, setViewFollowing] = useState(false);
-  
+  const currentUsername = useParams().username;
+  const isMyProfile = currentUsername === userInfo.username;
+
+  const moreModalRef = useRef(null);
+
+  const { followers, following, myFollowing } = useSelector((state: RootState) => state.follow);
+  const isFollowing = myFollowing.find(follow => follow.userName === currentUsername);
+
+  const handleBlockUser = async () => {
+    try {
+      setIsBlockLoading(true);
+      const resultAction = await dispatch(blockUser({ userToBlockName: currentUsername as string }) as any);
+
+      if (blockUser.rejected.match(resultAction)) {
+        const error = resultAction.payload as { message: string; status: number };
+        toast.error(error.message || "Không thể chặn người dùng");
+      } else {
+        toast.success("Đã chặn người dùng");
+        setIsMoreModalOpen(false);
+        // Nếu đang theo dõi thì tự động hủy theo dõi
+        if (isFollowing) {
+          await handleUnfollow(currentUsername as string);
+        }
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Có lỗi xảy ra");
+    } finally {
+      setIsBlockLoading(false);
+    }
+  }
+
+  const handleFollow = async (targetUsername: string) => {
+    try {
+      const resultAction = await dispatch(followUser({ targetUsername: targetUsername }) as any);
+
+      if (followUser.rejected.match(resultAction)) {
+        const error = resultAction.payload as { message: string; status: number };
+        toast.error(error.message || "Không thể theo dõi người dùng");
+      } else {
+        toast.success("Theo dõi thành công");
+        Promise.all([
+          dispatch(getMyFollowing() as any),
+          dispatch(getFollowing({ username: currentUsername as string }) as any),
+          dispatch(getFollowers({ username: currentUsername as string }) as any)
+        ])
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Có lỗi xảy ra");
+    }
+  }
+
+  const handleUnfollow = async (targetUsername: string) => {
+    try {
+      const resultAction = await dispatch(unfollowUser({ targetUsername: targetUsername }) as any);
+
+      if (unfollowUser.rejected.match(resultAction)) {
+        const error = resultAction.payload as { message: string; status: number };
+        toast.error(error.message || "Không thể hủy theo dõi");
+      } else {
+        toast.success("Đã hủy theo dõi");
+        Promise.all([
+          dispatch(getMyFollowing() as any),
+          dispatch(getFollowing({ username: currentUsername as string }) as any),
+          dispatch(getFollowers({ username: currentUsername as string }) as any)
+        ])
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Có lỗi xảy ra");
+    }
+  }
+
   return (
     <div className="rounded-2xl border-[1px] border-borderGray flex flex-col bg-[#f7f9fa]">
-      {/* BACKGROUND CHANGE*/}
 
       <div className="relative w-full max-w-[317px]">
         <div className="rounded-t-2xl overflow-hidden w-full h-auto">
@@ -36,39 +117,66 @@ const PopularTags = ({ username, avatar_url }: PopularTagsProps) => {
       </div>
 
       <div className="px-4 py-2">
-
-        {/* USER NAME */}
-        <h2 className="font-bold py-2">
-          {username || "No username"}
-        </h2>
-
-        <div className="flex gap-2 justify-between py-3">
-          {/* Button Follow với icon dấu cộng */}
-          <button className="flex items-center gap-1 py-1 px-3  bg-gray-200 text-black rounded-full text-sm hover:bg-gray-300 transition-colors">
-            <span className="text-xl">+</span>
-            Follow
+        <div className="relative flex justify-between items-center gap-2">
+          <h2 className="font-bold py-2">
+            {currentUsername || "No username"}
+          </h2>
+          <button ref={moreModalRef} onClick={() => setIsMoreModalOpen((prev) => !prev)} className="bg-gray-200 text-black pb-2 px-3 rounded-2xl leading-none">
+            ...
           </button>
-
-          {/* Button Chat với icon chat */}
-          <button className="flex items-center gap-1 py-1 px-3  bg-gray-200 text-black rounded-full text-sm hover:bg-gray-300 transition-colors">
-            <FaRegComment className="w-3 h-3" /> {/* Icon chat */}
-            Chat
-          </button>
+          {isMoreModalOpen && (
+            <div className="absolute top-9 right-0 z-10">
+              <div className="w-40 bg-white shadow-md rounded-lg p-2">
+                <button
+                  onClick={handleBlockUser}
+                  disabled={isBlockLoading}
+                  className={`w-full text-left py-2 px-3 hover:bg-gray-100 rounded-md ${isBlockLoading ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                >
+                  {isBlockLoading ? 'Đang xử lý...' : 'Chặn'}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* TOPICS */}
+        {!isMyProfile && (
+          <div className="flex gap-2 justify-between py-3">
+            {isFollowing ? (
+              <button
+                onClick={() => handleUnfollow(currentUsername as string)}
+                className={`flex items-center gap-1 py-1 px-3 bg-gray-200 text-black rounded-full text-sm hover:bg-gray-300 transition-colors`}
+              >
+                Đang theo dõi
+              </button>
+            ) : (
+              <button
+                onClick={() => handleFollow(currentUsername as string)}
+                className={`flex items-center gap-1 py-1 px-3 bg-gray-200 text-black rounded-full text-sm hover:bg-gray-300 transition-colors`}
+              >
+                Theo dõi
+              </button>
+            )}
 
+            <button
+              className="flex items-center gap-1 py-1 px-3 bg-gray-200 text-black rounded-full text-sm hover:bg-gray-300 transition-colors"
+            >
+              <FaRegComment className="w-3 h-3" />
+              Chat
+            </button>
+          </div>
+        )}
         <div className="flex justify-between">
           <div className="flex flex-col items-center">
             <button
               onClick={() => setViewFollowers(true)}
               className="font-bold text-gray-600 focus:outline-none hover:underline"
             >
-              96
+              {followers.length}
             </button>
             <span className="text-sm text-gray-500">Followers</span>
             {viewFollowers && (
-              <Followers isModalOpen={viewFollowers} setIsModalOpen={setViewFollowers} />
+              <Followers handleFollow={handleFollow} handleUnfollow={handleUnfollow} setIsModalOpen={setViewFollowers} isMyProfile={isMyProfile} userInfo={userInfo} />
             )}
           </div>
 
@@ -77,11 +185,11 @@ const PopularTags = ({ username, avatar_url }: PopularTagsProps) => {
               onClick={() => setViewFollowing(true)}
               className="text-gray-600 font-bold focus:outline-none hover:underline"
             >
-              70
+              {following.length}
             </button>
             <span className="text-gray-500 text-sm">Followings</span>
             {viewFollowing && (
-              <Following isModalOpen={viewFollowing} setIsModalOpen={setViewFollowing} />
+              <Following handleFollow={handleFollow} handleUnfollow={handleUnfollow} setIsModalOpen={setViewFollowing} isMyProfile={isMyProfile} userInfo={userInfo} />
             )}
           </div>
         </div>

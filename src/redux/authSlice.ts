@@ -108,7 +108,7 @@ export const logoutUser = createAsyncThunk(
   "auth/logoutUser",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch("http://localhost:8080/api/Auth/logout", {
+      const response = await fetch("http://localhost:5108/api/Auth/logout", {
         method: "POST",
         body: JSON.stringify({}),
         headers: {
@@ -136,7 +136,7 @@ export const changePassword = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/Auth/${userId}/changePassword`, {
+      const response = await fetch(`http://localhost:5108/api/Auth/${userId}/changePassword`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ oldPassword, newPassword }),
