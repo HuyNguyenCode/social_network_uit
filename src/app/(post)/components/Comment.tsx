@@ -51,8 +51,53 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
         toast.error(typeof err === "object" && err?.message ? err.message : "Đã xảy ra lỗi!");
       });
   };
+  const [downVote, setDownVote] = useState(comment.downvoteCount);
+  // const handleDownVote = () => {
+  //   const oldVote = downVote;
+  //   const newVote = oldVote + 1;
+  //   setDownVote(newVote);
+
+  //   console.log("downVote", downVote);
+  // };
+  // console.log("downVote", downVote);
+
   const handleDownVote = () => {
-    setVote((prev) => (prev === 1 ? null : 1));
+    const newVote = vote === 1 ? null : 1; // Nếu đang downvote => huỷ, ngược lại là downvote
+    const oldVote = vote;
+
+    // Cập nhật local UI (đếm số lượng)
+    if (newVote === 1) {
+      // Đang downvote
+      if (oldVote === 0) {
+        // Nếu trước đó là upvote → trừ upvote, cộng downvote
+        comment.upvoteCount -= 1;
+        comment.downvoteCount += 1;
+      } else if (oldVote === null) {
+        // Nếu chưa vote gì → chỉ cộng downvote
+        comment.downvoteCount += 1;
+      }
+    } else if (newVote === null && oldVote === 1) {
+      // Bỏ downvote → giảm 1
+      comment.downvoteCount -= 1;
+    }
+
+    setVote(newVote);
+
+    dispatch(
+      voteComment({
+        commentId: String(comment.id),
+        voteData: { userId: userId ?? "", voteType: newVote ?? -1 },
+        oldVoteType: oldVote ?? -1,
+      }),
+    )
+      .unwrap()
+      .then(() => {
+        // Vote success
+      })
+      .catch((err) => {
+        console.error("Vote error:", err);
+        toast.error(typeof err === "object" && err?.message ? err.message : "Đã xảy ra lỗi!");
+      });
   };
 
   dayjs.extend(relativeTime);
@@ -143,7 +188,6 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  console.log(comment);
 
   return (
     <div className={cn("flex", level > 0 ? "ml-8" : "", "mb-4")}>
@@ -223,9 +267,7 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
                 </svg>
               )}
             </button>
-            <span className={cn("text-xs font-semibold", vote === 0 || vote === 1 ? "text-white" : "text-black")}>
-              {comment.upvoteCount}
-            </span>
+            <span className={cn("text-xs font-semibold", vote === 0 || vote === 1 ? "text-white" : "text-black")}>{vote}</span>
             <button
               onClick={handleDownVote}
               className={cn(
@@ -263,7 +305,7 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
               className={cn("text-xs font-semibold", vote === 0 || vote === 1 ? "text-white" : "text-black")}
               style={{ paddingRight: "12px" }}
             >
-              {comment.downvoteCount}
+              {downVote}
             </span>
           </div>
           <a

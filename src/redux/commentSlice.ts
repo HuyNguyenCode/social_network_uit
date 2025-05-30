@@ -87,9 +87,10 @@ export const voteComment = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
+      const token = Cookies.get("sessionToken"); // Lấy token từ cookie
       const response = await fetch(`http://localhost:5108/api/comments/${commentId}/vote`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(voteData),
       });
 
@@ -251,7 +252,7 @@ export const commentDelete = createAsyncThunk("post/delete", async (commentId: s
   }
 });
 
-// //Lấy chi tiết bài viết theo ID
+//Lấy chi tiết comment theo ID
 export const getCommentDetailWithId = createAsyncThunk(
   "comment/getCommentDetailWithId",
   async (commentId: string, { rejectWithValue }) => {
