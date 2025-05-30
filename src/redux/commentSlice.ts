@@ -101,11 +101,6 @@ export const voteComment = createAsyncThunk(
         const errorMessage = result.Errors?.[0] || "Vote bài viết thất bại!";
         return rejectWithValue({ message: errorMessage, status: response.status });
       }
-
-      if (!result.result) {
-        return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
-      }
-
       console.log("✅ Vote bài viết thành công:", result.result);
       // Return the required properties for the reducer
       return {
@@ -349,6 +344,10 @@ const commentSlice = createSlice({
       .addCase(getCommentDetailWithId.fulfilled, (state, action) => {
         state.loading = false;
         state.currentComment = action.payload.comments; // Lưu vào currentComment
+        state.error = null;
+      })
+      .addCase(voteComment.pending, (state) => {
+        state.loading = false;
         state.error = null;
       })
       .addCase(voteComment.fulfilled, (state, action) => {

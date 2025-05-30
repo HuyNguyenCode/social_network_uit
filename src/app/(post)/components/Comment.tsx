@@ -14,6 +14,11 @@ import CommentMenu from "@/app/(post)/components/CommentMenu";
 import DeleteConfirmation from "@/app/(post)/components/DeleteConfirmation";
 import { useUserStore } from "@/store/useUserStore";
 import { updateComment, getCommentDetailWithId, commentCreate, commentDelete, voteComment } from "@/redux/commentSlice";
+type VoteType = {
+  userId: string;
+  voteType: number;
+};
+
 type CommentType = {
   id: number;
   user: { avatarId: string; userName: string; id: string };
@@ -22,7 +27,7 @@ type CommentType = {
   content: string;
   postId: string;
   parentCommentId: string;
-  votes: number;
+  votes: VoteType[];
   childComments: CommentType[];
   upvoteCount: number;
   downvoteCount: number;
@@ -31,73 +36,70 @@ type CommentType = {
 function Comment({ comment, level = 0 }: { comment: CommentType; level?: number }) {
   const [vote, setVote] = useState<null | 0 | 1>(null);
   const { userId } = useUserStore(); // Lấy thông tin từ store
-  const handleUpVote = () => {
-    // setVote((prev) => (prev === 0 ? null : 0));
-    const newVote = vote === 0 ? null : 0; // nếu đã upvote => huỷ vote, ngược lại là upvote
-    dispatch(
+
+  // 0 = upvote, 1 = downvote
+  const [userVote, setUserVote] = useState<number | null>(comment.votes.find((v) => v.userId === userId)?.voteType ?? null);
+
+  const [upVoteCount, setUpVoteCount] = useState(comment.upvoteCount);
+  const [downVoteCount, setDownVoteCount] = useState(comment.downvoteCount);
+
+  // Gọi khi người dùng click vote
+  const handleVote = async (voteType: 0 | 1) => {
+    const oldVoteType = userVote;
+
+    const isSameVote = oldVoteType === voteType;
+    const newVoteType = isSameVote ? null : voteType; // Nếu cùng loại thì hủy vote
+
+    const voteData = {
+      userId: userId ?? "",
+      voteType,
+    };
+
+    const resultAction = await dispatch(
       voteComment({
         commentId: String(comment.id),
-        voteData: { userId: userId ?? "", voteType: newVote ?? -1 },
-        oldVoteType: vote === null ? -1 : vote, // provide the previous vote type, or -1 if none
+        voteData,
+        oldVoteType: oldVoteType ?? -1,
       }),
-    )
-      .unwrap()
-      .then((res) => {
-        setVote(newVote); // cập nhật state vote local
-        // có thể cập nhật upvoteCount / downvoteCount từ res nếu muốn chính xác
-      })
-      .catch((err) => {
-        console.error("Vote error:", err);
-        toast.error(typeof err === "object" && err?.message ? err.message : "Đã xảy ra lỗi!");
-      });
-  };
-  const [downVote, setDownVote] = useState(comment.downvoteCount);
-  // const handleDownVote = () => {
-  //   const oldVote = downVote;
-  //   const newVote = oldVote + 1;
-  //   setDownVote(newVote);
+    );
 
-  //   console.log("downVote", downVote);
-  // };
-  // console.log("downVote", downVote);
-
-  const handleDownVote = () => {
-    const newVote = vote === 1 ? null : 1; // Nếu đang downvote => huỷ, ngược lại là downvote
-    const oldVote = vote;
-
-    // Cập nhật local UI (đếm số lượng)
-    if (newVote === 1) {
-      // Đang downvote
-      if (oldVote === 0) {
-        // Nếu trước đó là upvote → trừ upvote, cộng downvote
-        comment.upvoteCount -= 1;
-        comment.downvoteCount += 1;
-      } else if (oldVote === null) {
-        // Nếu chưa vote gì → chỉ cộng downvote
-        comment.downvoteCount += 1;
+    if (voteComment.fulfilled.match(resultAction)) {
+      // Update local state
+      if (oldVoteType === null && voteType === 0) {
+        setUpVoteCount((prev) => prev + 1);
+        setVote(0);
+      } else if (oldVoteType === null && voteType === 1) {
+        setDownVoteCount((prev) => prev + 1);
+        setVote(1);
+      } else if (oldVoteType === 0 && voteType === 0) {
+        // Hủy upvote
+        setUpVoteCount((prev) => prev - 1);
+        setVote(null);
+      } else if (oldVoteType === 1 && voteType === 1) {
+        // Hủy downvote
+        setDownVoteCount((prev) => prev - 1);
+        setVote(null);
+      } else if (oldVoteType === 0 && voteType === 1) {
+        // Upvote → Downvote
+        setUpVoteCount((prev) => prev - 1);
+        setVote(0);
+        setDownVoteCount((prev) => prev + 1);
+        setVote(1);
+      } else if (oldVoteType === 1 && voteType === 0) {
+        // Downvote → Upvote
+        setDownVoteCount((prev) => prev - 1);
+        setVote(0);
+        setUpVoteCount((prev) => prev + 1);
+        setVote(1);
+      } else {
       }
-    } else if (newVote === null && oldVote === 1) {
-      // Bỏ downvote → giảm 1
-      comment.downvoteCount -= 1;
+
+      // Cập nhật userVote
+      setUserVote(newVoteType);
+    } else {
+      toast.error("Vote thất bại!");
+      console.error("Vote thất bại", resultAction.payload);
     }
-
-    setVote(newVote);
-
-    dispatch(
-      voteComment({
-        commentId: String(comment.id),
-        voteData: { userId: userId ?? "", voteType: newVote ?? -1 },
-        oldVoteType: oldVote ?? -1,
-      }),
-    )
-      .unwrap()
-      .then(() => {
-        // Vote success
-      })
-      .catch((err) => {
-        console.error("Vote error:", err);
-        toast.error(typeof err === "object" && err?.message ? err.message : "Đã xảy ra lỗi!");
-      });
   };
 
   dayjs.extend(relativeTime);
@@ -235,7 +237,7 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
             style={{ width: "15%" }}
           >
             <button
-              onClick={handleUpVote}
+              onClick={() => handleVote(0)}
               className={cn(
                 "hover:bg-[#f7f9fa] rounded-full p-2 text-black w-8 h-8 ease-in-out duration-100",
                 vote === null && "hover:text-[#D93900]",
@@ -267,9 +269,11 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
                 </svg>
               )}
             </button>
-            <span className={cn("text-xs font-semibold", vote === 0 || vote === 1 ? "text-white" : "text-black")}>{vote}</span>
+            <span className={cn("text-xs font-semibold", vote === 0 || vote === 1 ? "text-white" : "text-black")}>
+              {upVoteCount}
+            </span>
             <button
-              onClick={handleDownVote}
+              onClick={() => handleVote(1)}
               className={cn(
                 "hover:bg-[#f7f9fa] rounded-full p-2 text-black w-8 h-8",
                 vote === null && "hover:text-[#6A3CFF]",
@@ -305,7 +309,7 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
               className={cn("text-xs font-semibold", vote === 0 || vote === 1 ? "text-white" : "text-black")}
               style={{ paddingRight: "12px" }}
             >
-              {downVote}
+              {downVoteCount}
             </span>
           </div>
           <a
