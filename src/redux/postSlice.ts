@@ -119,73 +119,33 @@ export const postCreate = createAsyncThunk(
 export const votePost = createAsyncThunk(
   "post/vote",
   async (
-    { postId, voteData }: { postId: string; voteData: { userId: string; voteType: number } },
-    { rejectWithValue, getState },
+    { postId, voteData, oldVoteType }: { postId: string; voteData: { userId: string; voteType: number }; oldVoteType: number },
+    { rejectWithValue },
   ) => {
     try {
-      console.log(`Sending vote request for post ${postId}:`, voteData);
+      const token = Cookies.get("sessionToken"); // Lấy token từ cookie
       const response = await fetch(`http://localhost:5108/api/posts/${postId}/vote`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("sessionToken")}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(voteData),
       });
 
       const result = await response.json();
-      console.log("Vote API Response:", result);
-
+      console.log("data: ");
+      console.log(result);
       if (!response.ok || result.statusCode === 400) {
-        const errorMessage = result.Errors?.[0] || "Vote bài viết thất bại!";
+        const errorMessage = result.Errors?.[0] || "Failed to vote post!";
         return rejectWithValue({ message: errorMessage, status: response.status });
       }
-
-      // Get current state to calculate new vote counts
-      const state = getState() as RootState;
-      const currentPost = state.post.posts?.items.find((p) => p.id === postId) || state.post.currentPost;
-
-      if (!currentPost) {
-        return rejectWithValue({ message: "Không tìm thấy bài viết", status: 404 });
-      }
-
-      // Calculate new vote counts based on previous state and new vote
-      let newUpvoteCount = currentPost.upvoteCount;
-      let newDownvoteCount = currentPost.downvoteCount;
-      const previousVote = currentPost.userVote;
-      const newVote = result.result === true ? voteData.voteType : null;
-
-      // Remove previous vote if exists
-      if (previousVote === 0) newUpvoteCount--;
-      if (previousVote === 1) newDownvoteCount--;
-
-      // Add new vote if not removing
-      if (newVote === 0) newUpvoteCount++;
-      if (newVote === 1) newDownvoteCount++;
-
-      const baseUpdatedPost = {
-        ...currentPost,
-        upvoteCount: newUpvoteCount,
-        downvoteCount: newDownvoteCount,
-        userVote: newVote,
+      console.log("✅ Vote bài viết thành công:", result.result);
+      // Return the required properties for the reducer
+      return {
+        postId,
+        newVoteType: voteData.voteType,
+        oldVoteType,
+        post: result.result,
+        message: result.message,
       };
-
-      // Type guard to check if it's a PostDetail
-      const isPostDetail = (post: any): post is PostDetail => {
-        return "comments" in post && "votes" in post && "shares" in post && "reports" in post;
-      };
-
-      const updatedPost = isPostDetail(currentPost)
-        ? {
-            ...baseUpdatedPost,
-            comments: currentPost.comments,
-            votes: currentPost.votes,
-            shares: currentPost.shares,
-            reports: currentPost.reports,
-          }
-        : baseUpdatedPost;
-
-      return { post: updatedPost, message: result.message };
     } catch (error: any) {
       console.log("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
@@ -709,51 +669,32 @@ const postSlice = createSlice({
       })
 
       //Xử lý VotePost
-      // Handle votePost actions
       .addCase(votePost.pending, (state) => {
-        state.loading = true;
+        state.loading = false;
         state.error = null;
       })
       .addCase(votePost.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedPost = action.payload.post;
-
-        // Update current post if it's the voted post
-        if (state.currentPost && state.currentPost.id === updatedPost.id) {
-          if ("comments" in updatedPost) {
-            state.currentPost = updatedPost as PostDetail;
-          }
-        }
-
-        // Update post in the list if it exists
-        if (state.posts?.items) {
-          state.posts.items = state.posts.items.map((post) => (post.id === updatedPost.id ? { ...post, ...updatedPost } : post));
-        }
-
-        // Update in votedPosts if it exists
-        if (state.votedPosts) {
-          const postIndex = state.votedPosts.findIndex((p: PostListItem) => p.id === updatedPost.id);
-          if (postIndex !== -1) {
-            if (updatedPost.userVote === null) {
-              // Remove from votedPosts if vote was removed
-              state.votedPosts = state.votedPosts.filter((p: PostListItem) => p.id !== updatedPost.id);
-            } else {
-              // Update the post in votedPosts
-              state.votedPosts[postIndex] = { ...state.votedPosts[postIndex], ...updatedPost };
+        const { postId, newVoteType, oldVoteType } = action.payload;
+        if (Array.isArray(state.posts)) {
+          const comment = state.posts.find((c) => c.id === postId);
+          if (comment) {
+            // You may need to adjust the logic here based on your actual comment structure
+            if (typeof comment.upvoteCount === "number" && typeof comment.downvoteCount === "number") {
+              if (oldVoteType === 0) comment.upvoteCount--;
+              if (oldVoteType === 1) comment.downvoteCount--;
+              if (newVoteType === 0) comment.upvoteCount++;
+              if (newVoteType === 1) comment.downvoteCount++;
             }
-          } else if (updatedPost.userVote !== null) {
-            // Add to votedPosts if new vote
-            state.votedPosts.push({ ...updatedPost });
           }
         }
-
+        state.loading = false;
         state.error = null;
       })
+
       .addCase(votePost.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as { message: string })?.message || "Không thể vote cho bài viết";
+        state.error = (action.payload as any)?.message || "Failed to load upvoted post";
       })
-
       .addCase(getUserVotedPosts.pending, (state) => {
         state.loading = true;
         state.error = null;

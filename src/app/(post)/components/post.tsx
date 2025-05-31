@@ -8,6 +8,15 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
 import OutputFiles from "@/app/(post)/create-post/outputFiles";
 import CountTotalComments from "@/app/(post)/components/CountTotalComments";
+import { votePost } from "@/redux/postSlice";
+import { useUserStore } from "@/store/useUserStore";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+import { toast } from "sonner";
+type VoteType = {
+  userId: string;
+  voteType: number;
+};
 interface PostProps {
   post: {
     id: string;
@@ -23,36 +32,83 @@ interface PostProps {
     comments?: any[];
     timeAgo?: string;
     postImages?: any[];
+    votes: VoteType[]; // Add this line
     // Thêm các trường khác nếu cần
   };
 }
 
 const Post = ({ post }: PostProps) => {
+  const [vote, setVote] = useState<null | 0 | 1>(null);
+  const dispatch = useDispatch<AppDispatch>();
 
-  const [vote, setVote] = useState<number | null>(null);
-  // const dispatch = useDispatch<AppDispatch>();
-  const handleDownVote = async () => {
-    // const result = await dispatch(votePost({ postId: "1", voteData: { userId: "1", voteType: 1 } }));
-    // if (votePost.fulfilled.match(result)) {
-    //     toast.success("✅ Vote bài viết thành công!");
-    // } else {
-    //     toast.error("❌ Vote bài viết thất bại!");
-    // }
-    setVote((prev) => (prev === 1 ? null : 1));
-  };
+  const { userId } = useUserStore(); // Lấy thông tin từ store
 
-  const handleUpVote = async () => {
-    // const result = await dispatch(votePost({ postId: "1", voteData: { userId: "1", voteType: 0 } }));
-    // if (votePost.fulfilled.match(result)) {
-    //     toast.success("✅ Vote bài viết thành công!");
-    // } else {
-    //     toast.error("❌ Vote bài viết thất bại!");
-    // }
-    setVote((prev) => (prev === 0 ? null : 0));
+  // 0 = upvote, 1 = downvote
+  const [userVote, setUserVote] = useState<number | null>(post.votes.find((v) => v.userId === userId)?.voteType ?? null);
+
+  const [upVoteCount, setUpVoteCount] = useState(post.upvoteCount);
+  const [downVoteCount, setDownVoteCount] = useState(post.downvoteCount);
+
+  // Gọi khi người dùng click vote
+  const handleVote = async (voteType: 0 | 1) => {
+    const oldVoteType = userVote;
+
+    const isSameVote = oldVoteType === voteType;
+    const newVoteType = isSameVote ? null : voteType; // Nếu cùng loại thì hủy vote
+
+    const voteData = {
+      userId: userId ?? "",
+      voteType,
+    };
+
+    const resultAction = await dispatch(
+      votePost({
+        postId: String(post.id),
+        voteData,
+        oldVoteType: oldVoteType ?? -1,
+      }),
+    );
+
+    if (votePost.fulfilled.match(resultAction)) {
+      // Update local state
+      if (oldVoteType === null && voteType === 0) {
+        setUpVoteCount((prev) => prev + 1);
+        setVote(0);
+      } else if (oldVoteType === null && voteType === 1) {
+        setDownVoteCount((prev) => prev + 1);
+        setVote(1);
+      } else if (oldVoteType === 0 && voteType === 0) {
+        // Hủy upvote
+        setUpVoteCount((prev) => prev - 1);
+        setVote(null);
+      } else if (oldVoteType === 1 && voteType === 1) {
+        // Hủy downvote
+        setDownVoteCount((prev) => prev - 1);
+        setVote(null);
+      } else if (oldVoteType === 0 && voteType === 1) {
+        // Upvote → Downvote
+        setUpVoteCount((prev) => prev - 1);
+        setVote(0);
+        setDownVoteCount((prev) => prev + 1);
+        setVote(1);
+      } else if (oldVoteType === 1 && voteType === 0) {
+        // Downvote → Upvote
+        setDownVoteCount((prev) => prev - 1);
+        setVote(0);
+        setUpVoteCount((prev) => prev + 1);
+        setVote(1);
+      } else {
+      }
+
+      // Cập nhật userVote
+      setUserVote(newVoteType);
+    } else {
+      toast.error("Vote thất bại!");
+      console.error("Vote thất bại", resultAction.payload);
+    }
   };
   dayjs.extend(relativeTime);
 
-  
   return (
     <div className="border-t border-[#212121]">
       <div className="pt-1 pb-3 px-4 mt-1 w-full max-w-[732px] bg-transparent hover:bg-[#f7f9fa] rounded-xl">
@@ -89,9 +145,10 @@ const Post = ({ post }: PostProps) => {
               vote === 0 && "bg-[#D93900]",
               vote === 1 && "bg-[#6A3CFF]",
             )}
+            style={{ width: "15%" }}
           >
             <button
-              onClick={handleUpVote}
+              onClick={() => handleVote(0)}
               className={cn(
                 "hover:bg-[#f7f9fa] rounded-full p-2 text-black w-8 h-8 ease-in-out duration-100",
                 vote === null && "hover:text-[#D93900]",
@@ -124,10 +181,10 @@ const Post = ({ post }: PostProps) => {
               )}
             </button>
             <span className={cn("text-xs font-semibold", vote === 0 || vote === 1 ? "text-white" : "text-black")}>
-              {post.upvoteCount - post.downvoteCount}
+              {upVoteCount}
             </span>
             <button
-              onClick={handleDownVote}
+              onClick={() => handleVote(1)}
               className={cn(
                 "hover:bg-[#f7f9fa] rounded-full p-2 text-black w-8 h-8",
                 vote === null && "hover:text-[#6A3CFF]",
@@ -159,6 +216,12 @@ const Post = ({ post }: PostProps) => {
                 </svg>
               )}
             </button>
+            <span
+              className={cn("text-xs font-semibold", vote === 0 || vote === 1 ? "text-white" : "text-black")}
+              style={{ paddingRight: "12px" }}
+            >
+              {downVoteCount}
+            </span>
           </div>
 
           <Link

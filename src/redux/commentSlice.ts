@@ -77,7 +77,7 @@ export const commentCreate = createAsyncThunk(
 
 //voteComment
 export const voteComment = createAsyncThunk(
-  "post/vote",
+  "comment/vote",
   async (
     {
       commentId,
@@ -98,7 +98,7 @@ export const voteComment = createAsyncThunk(
       console.log("data: ");
       console.log(result);
       if (!response.ok || result.statusCode === 400) {
-        const errorMessage = result.Errors?.[0] || "Vote bài viết thất bại!";
+        const errorMessage = result.Errors?.[0] || "Failed to vote comment!";
         return rejectWithValue({ message: errorMessage, status: response.status });
       }
       console.log("✅ Vote bài viết thành công:", result.result);
@@ -372,23 +372,6 @@ const commentSlice = createSlice({
         state.loading = false;
         state.error = (action.payload as any)?.message || "Failed to load upvoted post";
       });
-
-    // Xử lý getDownvotedPostlWithId (chi tiết)
-    // .addCase(getDownVotePostById.pending, (state) => {
-    //   state.loading = true;
-    //   state.error = null;
-    //   state.downvotedPosts = null;
-    // })
-    // .addCase(getDownVotePostById.fulfilled, (state, action) => {
-    //   state.loading = false;
-    //   state.downvotedPosts = action.payload.data;
-    //   state.error = null;
-    // })
-    // .addCase(getDownVotePostById.rejected, (state, action) => {
-    //   state.loading = false;
-    //   state.error = (action.payload as any)?.message || "Failed to load downvoted post";
-    //   state.downvotedPosts = null;
-    // })
   },
 });
 

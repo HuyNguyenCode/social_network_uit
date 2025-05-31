@@ -97,7 +97,7 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
       // Cập nhật userVote
       setUserVote(newVoteType);
     } else {
-      toast.error("Vote thất bại!");
+      toast.error("Failed to vote!");
       console.error("Vote thất bại", resultAction.payload);
     }
   };
