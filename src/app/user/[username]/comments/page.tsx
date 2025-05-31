@@ -3,7 +3,6 @@ import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getCommentWithId } from "@/redux/commentSlice";
-import Link from "next/link";
 import { useUserStore } from "@/store/useUserStore";
 import CommentWithReply from "@/app/(post)/components/CommentWithReply";
 import { AppDispatch, RootState } from "@/redux/store";

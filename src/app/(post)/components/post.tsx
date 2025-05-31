@@ -1,7 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import OutputFile from "@/app/(post)/create-post/outputFile";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -15,7 +15,7 @@ import { AppDispatch } from "@/redux/store";
 import { toast } from "sonner";
 type VoteType = {
   userId: string;
-  voteType: number;
+  voteType: number | string;
 };
 interface PostProps {
   post: {
@@ -44,7 +44,13 @@ const Post = ({ post }: PostProps) => {
   const { userId } = useUserStore(); // Lấy thông tin từ store
 
   // 0 = upvote, 1 = downvote
-  const [userVote, setUserVote] = useState<number | null>(post.votes.find((v) => v.userId === userId)?.voteType ?? null);
+  const [userVote, setUserVote] = useState<number | null>(() => {
+    const found = post.votes.find((v) => v.userId === userId)?.voteType;
+    if (found === "Upvote") return 0;
+    if (found === "Downvote") return 1;
+    if (typeof found === "number") return found;
+    return null;
+  });
 
   const [upVoteCount, setUpVoteCount] = useState(post.upvoteCount);
   const [downVoteCount, setDownVoteCount] = useState(post.downvoteCount);
@@ -98,6 +104,7 @@ const Post = ({ post }: PostProps) => {
         setUpVoteCount((prev) => prev + 1);
         setVote(1);
       } else {
+        setVote(null);
       }
 
       // Cập nhật userVote
@@ -107,6 +114,19 @@ const Post = ({ post }: PostProps) => {
       console.error("Vote thất bại", resultAction.payload);
     }
   };
+  useEffect(() => {
+    setVote(null);
+    if (post.votes.some((v) => v.userId === userId)) {
+      if (post.votes.some((v) => v.voteType === "Upvote")) {
+        setVote(0);
+      } else if (post.votes.some((v) => v.voteType === "Downvote")) {
+        setVote(1);
+      } else {
+        setVote(null);
+      }
+    }
+  }, [post]);
+
   dayjs.extend(relativeTime);
 
   return (

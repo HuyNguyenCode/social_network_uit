@@ -145,7 +145,7 @@ const Page = () => {
     const oldVoteType = userVote;
 
     const isSameVote = oldVoteType === voteType;
-    const newVoteType = isSameVote ? null : voteType;
+    const newVoteType = isSameVote ? null : voteType; // Nếu cùng loại thì hủy vote
 
     const voteData = {
       userId: userId ?? "",
@@ -161,6 +161,7 @@ const Page = () => {
     );
 
     if (votePost.fulfilled.match(resultAction)) {
+      // Update local state
       if (oldVoteType === null && voteType === 0) {
         setUpVoteCount((prev) => prev + 1);
         setVote(0);
@@ -168,29 +169,49 @@ const Page = () => {
         setDownVoteCount((prev) => prev + 1);
         setVote(1);
       } else if (oldVoteType === 0 && voteType === 0) {
+        // Hủy upvote
         setUpVoteCount((prev) => prev - 1);
         setVote(null);
       } else if (oldVoteType === 1 && voteType === 1) {
+        // Hủy downvote
         setDownVoteCount((prev) => prev - 1);
         setVote(null);
       } else if (oldVoteType === 0 && voteType === 1) {
+        // Upvote → Downvote
         setUpVoteCount((prev) => prev - 1);
         setVote(0);
         setDownVoteCount((prev) => prev + 1);
         setVote(1);
       } else if (oldVoteType === 1 && voteType === 0) {
+        // Downvote → Upvote
         setDownVoteCount((prev) => prev - 1);
         setVote(0);
         setUpVoteCount((prev) => prev + 1);
         setVote(1);
+      } else {
+        setVote(null);
       }
 
+      // Cập nhật userVote
       setUserVote(newVoteType);
     } else {
       toast.error("Vote thất bại!");
       console.error("Vote thất bại", resultAction.payload);
     }
   };
+  useEffect(() => {
+    setVote(null);
+    if (currentPost?.votes.some((v) => v.userId === userId)) {
+      if (currentPost?.votes.some((v) => v.voteType === "Upvote")) {
+        setVote(0);
+      } else if (currentPost?.votes.some((v) => v.voteType === "Downvote")) {
+        setVote(1);
+      } else {
+        setVote(null);
+      }
+    }
+    console.log("vote", vote);
+  }, [currentPost]);
 
   if (error) {
     return <div>Error: {error}</div>;

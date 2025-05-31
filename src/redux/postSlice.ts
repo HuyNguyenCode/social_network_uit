@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
 
 // Add base URL constant
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5108";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 interface PostListItem {
   id: string;
   title: string;
@@ -362,7 +362,6 @@ export const getPostWithId = createAsyncThunk(
       });
 
       const result = await response.json();
-      // console.log("📢 API Response get post with id:", result);
 
       if (!response.ok || !result.succeeded) {
         const errorMessage = result.message || result.errors?.join(", ") || "Không thể lấy danh sách bài viết";

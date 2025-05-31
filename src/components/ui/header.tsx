@@ -9,12 +9,9 @@ import { useDispatch } from "react-redux";
 import Cookies from "js-cookie";
 import { AppDispatch } from "@/redux/store";
 import { FormEvent, useState, useEffect } from "react";
-
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { logoutUser } from "@/redux/authSlice";
-import { Button } from "@/components/ui/button";
 import { searchPosts, clearSearchResults } from "@/redux/postSlice";
-
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { useUserStore } from "@/store/useUserStore";
@@ -84,8 +81,7 @@ export default function Header() {
   };
 
   const { userId, username } = useUserStore(); // Lấy thông tin từ store
-  console.log("username: ", username);
-  console.log("userId: ", userId);
+
   return (
     <div className={cx("header-wrapper")}>
       <div className={cx("container")}>
@@ -128,7 +124,9 @@ export default function Header() {
                   fill="white"
                 />
               </svg>
-              <span>Create</span>
+              <Link href={"/create-post/text"}>
+                <span>Create</span>
+              </Link>
             </button>
             <button className={cx("cursor-button")}>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">

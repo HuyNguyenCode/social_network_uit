@@ -16,8 +16,6 @@ const users = [
 
 const ChatPage = () => {
   const { userId, username } = useUserStore(); // Lấy thông tin từ store
-  console.log("username: ", username);
-  console.log("userId: ", userId);
   const [currentUser, setCurrentUser] = useState<{
     id: string;
     name: string;

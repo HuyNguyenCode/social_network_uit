@@ -16,7 +16,7 @@ import { useUserStore } from "@/store/useUserStore";
 import { updateComment, getCommentDetailWithId, commentCreate, commentDelete, voteComment } from "@/redux/commentSlice";
 type VoteType = {
   userId: string;
-  voteType: number;
+  voteType: number | string;
 };
 
 type CommentType = {
@@ -38,7 +38,13 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
   const { userId } = useUserStore(); // Lấy thông tin từ store
 
   // 0 = upvote, 1 = downvote
-  const [userVote, setUserVote] = useState<number | null>(comment.votes.find((v) => v.userId === userId)?.voteType ?? null);
+  const [userVote, setUserVote] = useState<number | null>(() => {
+    const found = comment.votes.find((v) => v.userId === userId)?.voteType;
+    if (found === "Upvote") return 0;
+    if (found === "Downvote") return 1;
+    if (typeof found === "number") return found;
+    return null;
+  });
 
   const [upVoteCount, setUpVoteCount] = useState(comment.upvoteCount);
   const [downVoteCount, setDownVoteCount] = useState(comment.downvoteCount);
@@ -101,6 +107,19 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
       console.error("Vote thất bại", resultAction.payload);
     }
   };
+  useEffect(() => {
+    setVote(null);
+    if (comment.votes.some((v) => v.userId === userId)) {
+      if (comment.votes.some((v) => v.voteType === "Upvote")) {
+        setVote(0);
+      } else if (comment.votes.some((v) => v.voteType === "Downvote")) {
+        setVote(1);
+      } else {
+        setVote(null);
+      }
+    }
+  }, [comment]);
+  console.log(comment);
 
   dayjs.extend(relativeTime);
   const menuRef = useRef<HTMLDivElement>(null);
