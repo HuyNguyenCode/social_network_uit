@@ -48,7 +48,8 @@ export const getFollowers = createAsyncThunk(
       console.log("📢 API getFollowers Response:", data);
 
       if (!response.ok) {
-        const errorMessage = data.message || data.errors?.join(", ") || "Không thể lấy danh sách người theo dõi";
+        const errorMessage = data.message || data.Errors?.join(", ") || "Không thể lấy danh sách người theo dõi";
+
         return rejectWithValue({
           message: errorMessage,
           status: response.status,
@@ -97,7 +98,7 @@ export const getFollowing = createAsyncThunk(
       console.log("📢 API getFollowing Response:", data);
 
       if (!response.ok) {
-        const errorMessage = data.message || data.errors?.join(", ") || "Không thể lấy danh sách người đang theo dõi";
+        const errorMessage = data.message || data.Errors?.join(", ") || "Không thể lấy danh sách người đang theo dõi";
         return rejectWithValue({
           message: errorMessage,
           status: response.status,
@@ -147,7 +148,7 @@ export const followUser = createAsyncThunk(
       console.log("📢 API followUser Response:", data);
 
       if (!response.ok) {
-        const errorMessage = data.message || data.errors?.join(", ") || "Không thể theo dõi người dùng";
+        const errorMessage = data.message || data.Errors?.join(", ") || "Không thể theo dõi người dùng";
         return rejectWithValue({
           message: errorMessage,
           status: response.status,
@@ -191,7 +192,7 @@ export const removeFollowing = createAsyncThunk(
       console.log("📢 API removeFollowing Response:", data);
 
       if (!response.ok) {
-        const errorMessage = data.message || data.errors?.join(", ") || "Không thể hủy theo dõi người dùng";
+        const errorMessage = data.message || data.Errors?.join(", ") || "Không thể hủy theo dõi người dùng";
         return rejectWithValue({
           message: errorMessage,
           status: response.status,
@@ -233,7 +234,7 @@ export const removeFollower = createAsyncThunk(
       console.log("📢 API removeFollower Response:", data);
 
       if (!response.ok) {
-        const errorMessage = data.message || data.errors?.join(", ") || "Không thể xóa người theo dõi";
+        const errorMessage = data.message || data.Errors?.join(", ") || "Không thể xóa người theo dõi";
         return rejectWithValue({
           message: errorMessage,
           status: response.status,
@@ -278,7 +279,7 @@ export const blockUser = createAsyncThunk(
       console.log("📢 API blockUser Response:", data);
 
       if (!response.ok) {
-        const errorMessage = data.message || data.errors?.join(", ") || "Không thể chặn người dùng";
+        const errorMessage = data.message || data.Errors?.join(", ") || "Không thể chặn người dùng";
         return rejectWithValue({
           message: errorMessage,
           status: response.status,
@@ -322,7 +323,7 @@ export const unblockUser = createAsyncThunk(
       console.log("📢 API unblockUser Response:", data);
 
       if (!response.ok) {
-        const errorMessage = data.message || data.errors?.join(", ") || "Không thể bỏ chặn người dùng";
+        const errorMessage = data.message || data.Errors?.join(", ") || "Không thể bỏ chặn người dùng";
         return rejectWithValue({
           message: errorMessage,
           status: response.status,
@@ -364,7 +365,7 @@ export const getBlockedUsers = createAsyncThunk("follow/getBlockedUsers", async 
     console.log("📢 API getBlockedUsers Response:", data);
 
     if (!response.ok) {
-      const errorMessage = data.message || data.errors?.join(", ") || "Không thể lấy danh sách người bị chặn";
+      const errorMessage = data.message || data.Errors?.join(", ") || "Không thể lấy danh sách người bị chặn";
       return rejectWithValue({
         message: errorMessage,
         status: response.status,
@@ -409,7 +410,7 @@ export const unfollowUser = createAsyncThunk(
       console.log("📢 API unfollowUser Response:", data);
 
       if (!response.ok) {
-        const errorMessage = data.message || data.errors?.join(", ") || "Không thể hủy theo dõi người dùng";
+        const errorMessage = data.message || data.Errors?.join(", ") || "Không thể hủy theo dõi người dùng";
         return rejectWithValue({
           message: errorMessage,
           status: response.status,
@@ -445,7 +446,7 @@ export const getMyFollowing = createAsyncThunk("follow/getMyFollowing", async (_
     console.log("📢 API getMyFollowing Response:", data);
 
     if (!response.ok) {
-      const errorMessage = data.message || data.errors?.join(", ") || "Không thể lấy danh sách người theo dõi";
+      const errorMessage = data.message || data.Errors?.join(", ") || "Không thể lấy danh sách người theo dõi";
       return rejectWithValue({
         message: errorMessage,
         status: response.status,

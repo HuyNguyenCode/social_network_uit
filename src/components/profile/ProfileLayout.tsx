@@ -394,7 +394,7 @@ const ProfileLayout = ({ children }: { children: React.ReactNode }) => {
 
                             <div className=" text-black w-1/4 pr-6">
                                 {/*FEEDS*/}
-                                <RightBar userInfo={{ userId: userId as string, username: username as string }} avatar_url={user.avatar_url} />
+                                <RightBar userInfo={{ userId: userId as string, username: username as string }} avatar_url={user?.avatar_url || "/general/image4.png"} />
                             </div>
                         </div>
 

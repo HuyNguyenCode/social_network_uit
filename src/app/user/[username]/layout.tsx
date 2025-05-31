@@ -16,6 +16,7 @@ import { AppDispatch, RootState } from "@/redux/store";
 import { fetchUserById } from "@/redux/userSlice";
 import { useUserStore } from "@/store/useUserStore";
 import { getBlockedUsers, getFollowers, getFollowing, getMyFollowing } from "@/redux/followSlice";
+import toast from "react-hot-toast";
 
 const cx = classNames.bind(styles);
 
@@ -31,17 +32,19 @@ export default function UserPageLayout({ children }: { children: React.ReactNode
   const { userInfor, loading } = useSelector((state: RootState) => state.user);
   const { blocked } = useSelector((state: RootState) => state.follow);
 
-  console.log("layout")
-
   const fetchData = async () => {
     if (userId) {
-      await Promise.all([
-        dispatch(fetchUserById(userId)),
-        dispatch(getBlockedUsers() as any),
-        dispatch(getFollowers({ username: currentUsername }) as any),
-        dispatch(getFollowing({ username: currentUsername }) as any),
-        dispatch(getMyFollowing() as any),
-      ]);
+      try {
+        await Promise.all([
+          dispatch(fetchUserById(userId)).unwrap(),
+          dispatch(getBlockedUsers() as any).unwrap(),
+          dispatch(getFollowers({ username: currentUsername }) as any).unwrap(),
+          dispatch(getFollowing({ username: currentUsername }) as any).unwrap(),
+          dispatch(getMyFollowing() as any).unwrap(),
+        ]);
+      } catch (error: any) {
+        toast.error(error.message || "Có lỗi xảy ra");
+      }
       setIsAllReady(true);
     } else {
       setError("User ID is missing");
@@ -108,8 +111,8 @@ export default function UserPageLayout({ children }: { children: React.ReactNode
                   <div className="w-1/6 relative">
                     <div className="aspect-square rounded-full overflow-hidden border-4 border-gray-200 bg-gray-300">
                       <Image
-                        src={user.avatar_url || "/general/image4.png"}
-                        alt={user.userName || ""}
+                        src={user?.avatar_url || "/general/image4.png"}
+                        alt={user?.userName || ""}
                         width={100}
                         height={100}
                         className="object-cover"
@@ -149,7 +152,7 @@ export default function UserPageLayout({ children }: { children: React.ReactNode
             </div>
 
             <div className="text-black w-1/4 pr-6">
-              <RightBar userInfo={{ userId: userId as string, username: username as string }} avatar_url={user.avatar_url} />
+              <RightBar userInfo={{ userId: userId as string, username: username as string }} avatar_url={user?.avatar_url || "/general/image4.png"} />
             </div>
           </div>
 

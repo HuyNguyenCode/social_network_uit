@@ -31,7 +31,7 @@ interface PostProps {
 
 
 const Postx = ({ post }: PostProps) => {
-    const avatarUrl = post.user.avatar_url || "/general/image4.png"; // Sử dụng ảnh mặc định nếu avatar_url không hợp lệ
+    const avatarUrl = post?.user?.avatar_url || "/general/image4.png";
     const netVotes = post.upvots_count - post.downvots_count;
 
     return (

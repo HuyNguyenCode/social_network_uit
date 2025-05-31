@@ -8,8 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { blockUser, followUser, getFollowers, getFollowing, getMyFollowing, unfollowUser } from "@/redux/followSlice";
 import { redirect, useParams } from "next/navigation";
-import { toast } from "sonner";
 import useOnClickOutside from "@/hooks/outside";
+import toast from "react-hot-toast";
 
 
 interface PopularTagsProps {
@@ -39,17 +39,12 @@ const PopularTags = ({ userInfo, avatar_url }: PopularTagsProps) => {
 
   const handleBlockUser = async () => {
     try {
-      const resultAction = await dispatch(blockUser({ userToBlockName: currentUsername as string }) as any);
+      await dispatch(blockUser({ userToBlockName: currentUsername as string }) as any).unwrap();
 
-      if (blockUser.rejected.match(resultAction)) {
-        const error = resultAction.payload as { message: string; status: number };
-        toast.error(error.message || "Không thể chặn người dùng");
-      } else {
-        toast.success("Đã chặn người dùng");
-        setIsMoreModalOpen(false);
-        if (isFollowing) {
-          await handleUnfollow(currentUsername as string);
-        }
+      toast.success("Đã chặn người dùng");
+      setIsMoreModalOpen(false);
+      if (isFollowing) {
+        await handleUnfollow(currentUsername as string);
       }
       redirect(`/user/${currentUsername}`);
     } catch (error: any) {
@@ -59,19 +54,13 @@ const PopularTags = ({ userInfo, avatar_url }: PopularTagsProps) => {
 
   const handleFollow = async (targetUsername: string) => {
     try {
-      const resultAction = await dispatch(followUser({ targetUsername: targetUsername }) as any);
-
-      if (followUser.rejected.match(resultAction)) {
-        const error = resultAction.payload as { message: string; status: number };
-        toast.error(error.message || "Không thể theo dõi người dùng");
-      } else {
-        toast.success("Theo dõi thành công");
-        Promise.all([
-          dispatch(getMyFollowing() as any),
-          dispatch(getFollowing({ username: currentUsername as string }) as any),
-          dispatch(getFollowers({ username: currentUsername as string }) as any)
-        ])
-      }
+      await dispatch(followUser({ targetUsername: targetUsername }) as any).unwrap();
+      toast.success("Theo dõi thành công");
+      Promise.all([
+        dispatch(getMyFollowing() as any).unwrap(),
+        dispatch(getFollowing({ username: currentUsername as string }) as any).unwrap(),
+        dispatch(getFollowers({ username: currentUsername as string }) as any).unwrap()
+      ])
     } catch (error: any) {
       toast.error(error.message || "Có lỗi xảy ra");
     }
@@ -79,7 +68,7 @@ const PopularTags = ({ userInfo, avatar_url }: PopularTagsProps) => {
 
   const handleUnfollow = async (targetUsername: string) => {
     try {
-      const resultAction = await dispatch(unfollowUser({ targetUsername: targetUsername }) as any);
+      const resultAction = await dispatch(unfollowUser({ targetUsername: targetUsername }) as any).unwrap();
 
       if (unfollowUser.rejected.match(resultAction)) {
         const error = resultAction.payload as { message: string; status: number };
@@ -87,9 +76,9 @@ const PopularTags = ({ userInfo, avatar_url }: PopularTagsProps) => {
       } else {
         toast.success("Đã hủy theo dõi");
         Promise.all([
-          dispatch(getMyFollowing() as any),
-          dispatch(getFollowing({ username: currentUsername as string }) as any),
-          dispatch(getFollowers({ username: currentUsername as string }) as any)
+          dispatch(getMyFollowing() as any).unwrap(),
+          dispatch(getFollowing({ username: currentUsername as string }) as any).unwrap(),
+          dispatch(getFollowers({ username: currentUsername as string }) as any).unwrap()
         ])
       }
     } catch (error: any) {
