@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getPostWithId } from "@/redux/postSlice";
 import { getTimeAgo } from "@/utils/dateFormat";
-import Post from "@/app/(post)/components/post";
+import Post from "@/app/(post)/components/Post";
 import { useUserStore } from "@/store/useUserStore";
 import { Button } from "@/components/ui/button";
 import { AppDispatch, RootState } from "@/redux/store";
@@ -84,7 +84,6 @@ export default function UserPosts() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
- 
 
   if (loading) {
     return (
@@ -112,7 +111,7 @@ export default function UserPosts() {
       <div className="space-y-4">
         {posts.items.map((post) => (
           <div key={post.id} className="border-b border-border pb-4">
-            <Post post={{ ...post, userAvatar: post.userAvatar ?? undefined, timeAgo: getTimeAgo(post.createdOn) }} />
+            <Post post={{ ...post, userAvatar: post.userAvatar ?? undefined }} />
           </div>
         ))}
       </div>

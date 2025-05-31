@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { mockUsers, mockPosts, mockSavedPosts, mockVotes } from "../data/mockData";
 import Postx from "@/components/profile/Postx";
 import { getTimeAgo } from "@/utils/dateFormat";
-import Post from "@/app/(post)/components/post";
+import Post from "@/app/(post)/components/Post";
 import UserPeakProfile from "@/app/(post)/components/UserPeakProfile";
 import Page from "@/app/(post)/post/[slug]/page";
 

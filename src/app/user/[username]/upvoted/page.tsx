@@ -1,10 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-
-import { getTimeAgo } from "@/utils/dateFormat";
-import Post from "@/app/(post)/components/post";
-
+import Post from "@/app/(post)/components/Post";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { getUpVotePostById } from "@/redux/postSlice";
@@ -84,7 +81,7 @@ export default function UpvotedPosts() {
     <div className="p-4 space-y-4">
       {upvotedPosts.map((post) => (
         <div key={post.p_id} className="border-b border-border pb-4">
-          <Post post={{ ...post, timeAgo: getTimeAgo(post.createdOn) }} />
+          <Post post={{ ...post }} />
         </div>
       ))}
     </div>

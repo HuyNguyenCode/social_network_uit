@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { searchPosts, searchUsers, clearSearchResults } from "@/redux/postSlice";
 import { getTimeAgo } from "@/utils/dateFormat";
 import { AppDispatch, RootState } from "@/redux/store";
-import Post from "@/app/(post)/components/post";
+import Post from "@/app/(post)/components/Post";
 import Header from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
 import styles from "@/app/(home)/home.module.scss";
@@ -238,7 +238,6 @@ export default function SearchResults() {
                           username: post.username || "Unknown User",
                           upvoteCount: post.upvoteCount || 0,
                           downvoteCount: post.downvoteCount || 0,
-                          timeAgo: getTimeAgo(post.createdOn),
                           votes: post.votes,
                         }}
                       />

@@ -78,7 +78,6 @@ export default function Page() {
         const userName = Cookies.get("userName");
     if (postCreate.fulfilled.match(result)) {
       toast.success("✅ Đã đăng bài viết thành công!");
-
       router.push(`/user/${userName}/posts`);
     } else {
       console.log("❌ Đăng bài viết thất bại:", result);

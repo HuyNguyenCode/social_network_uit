@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { getHomePost } from "@/redux/postSlice";
-import Post from "@/app/(post)/components/post";
+import Post from "@/app/(post)/components/Post";
 import { getTimeAgo } from "@/utils/dateFormat";
 
 export default function HomePage() {

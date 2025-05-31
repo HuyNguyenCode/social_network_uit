@@ -8,10 +8,10 @@ import { RootState } from "@/redux/store";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useDispatch  } from "react-redux";
+import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { getHomePost } from "@/redux/postSlice";
-import Post from "@/app/(post)/components/post";
+import Post from "@/app/(post)/components/Post";
 import { getTimeAgo } from "@/utils/dateFormat";
 const cx = classNames.bind(styles);
 export default function Home() {
@@ -27,7 +27,7 @@ export default function Home() {
 
   if (!user) return null; // Tránh hiển thị nội dung khi đang redirect
 
-    const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch<AppDispatch>();
   const { homePosts } = useSelector((state: RootState) => state.post);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10; // Có thể điều chỉnh
@@ -50,7 +50,7 @@ export default function Home() {
               Array.isArray(homePosts) &&
               homePosts.map((post) => (
                 <div key={post.id} className="border-b border-border pb-4">
-                  <Post post={{ ...post, timeAgo: getTimeAgo(post.createdOn) }} />
+                  <Post post={{ ...post }} />
                 </div>
               ))}
           </div>

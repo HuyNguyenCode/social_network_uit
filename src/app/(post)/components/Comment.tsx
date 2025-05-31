@@ -94,9 +94,9 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
       } else if (oldVoteType === 1 && voteType === 0) {
         // Downvote → Upvote
         setDownVoteCount((prev) => prev - 1);
-        setVote(0);
-        setUpVoteCount((prev) => prev + 1);
         setVote(1);
+        setUpVoteCount((prev) => prev + 1);
+        setVote(0);
       } else {
       }
 
