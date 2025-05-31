@@ -1,5 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
+import { RootState } from "@/redux/store";
+
+// Add base URL constant
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5108";
 
 // interface PostDetail {
 //   id: string;
@@ -43,7 +47,7 @@ import Cookies from "js-cookie";
 //   error: null,
 // };
 
-interface PostListItem {
+export interface PostListItem {
   id: string;
   title: string;
   content: string;
@@ -54,6 +58,7 @@ interface PostListItem {
   postImages: string[];
   username: string;
   userAvatar: string | null;
+  userVote?: number | null;
 }
 
 interface PostListResponse {
@@ -72,8 +77,49 @@ interface PostDetail extends PostListItem {
   reports: any[];
 }
 
+// Cập nhật interface cho response search
+interface SearchResponse {
+  items: PostListItem[];
+  total: number;
+}
+
+interface ApiSearchResponse {
+  errors: string[];
+  message: string;
+  result: PostListItem[];
+  statusCode: number;
+  succeeded: boolean;
+}
+
+// Thêm interface cho user search
+interface UserSearchItem {
+  id: string;
+  userName: string;
+  email: string;
+  avatarUrl: string;
+  reputation: number;
+  isFollowing: boolean;
+  isBlocked: boolean;
+}
+
+interface UserSearchResponse {
+  page: number;
+  pages: number;
+  size: number;
+  total: number;
+  items: UserSearchItem[];
+}
+
+interface SearchState {
+  posts: SearchResponse | null;
+  users: UserSearchResponse | null;
+  loading: boolean;
+  error: string | null;
+}
+
 interface PostState {
   posts: PostListResponse | null;
+  searchState: SearchState;
   votedPosts: PostListItem[] | null;
   currentPost: PostDetail | null;
   loading: boolean;
@@ -81,7 +127,13 @@ interface PostState {
 }
 
 const initialState: PostState = {
-  posts: null, // Thay currentPost bằng posts
+  posts: null,
+  searchState: {
+    posts: null,
+    users: null,
+    loading: false,
+    error: null,
+  },
   votedPosts: null,
   currentPost: null,
   loading: false,
@@ -103,10 +155,10 @@ export const postCreate = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const token = Cookies.get("sessionToken"); // Lấy token từ cookie
-      console.log("Token lấy từ cookie:", token); // Thêm dòng này để kiểm tra
+      const token = Cookies.get("sessionToken");
+      console.log("Token lấy từ cookie:", token);
 
-      const response = await fetch("http://103.82.194.197:8080/api/posts", {
+      const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -142,10 +194,13 @@ export const postCreate = createAsyncThunk(
 //votePost
 export const votePost = createAsyncThunk(
   "post/vote",
-  async ({ postId, voteData }: { postId: string; voteData: { userId: string; voteType: number } }, { rejectWithValue }) => {
+  async (
+    { postId, voteData }: { postId: string; voteData: { userId: string; voteType: number } },
+    { rejectWithValue, getState },
+  ) => {
     try {
       console.log(`Sending vote request for post ${postId}:`, voteData);
-      const response = await fetch(`http://103.82.194.197:8080/api/posts/${postId}/vote`, {
+      const response = await fetch(`${API_BASE_URL}/api/posts/${postId}/vote`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -162,20 +217,51 @@ export const votePost = createAsyncThunk(
         return rejectWithValue({ message: errorMessage, status: response.status });
       }
 
-      if (!result.result) {
-        return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
+      // Get current state to calculate new vote counts
+      const state = getState() as RootState;
+      const currentPost = state.post.posts?.items.find((p) => p.id === postId) || state.post.currentPost;
+
+      if (!currentPost) {
+        return rejectWithValue({ message: "Không tìm thấy bài viết", status: 404 });
       }
 
-      // Log detailed structure of returned post
-      console.log("✅ Vote bài viết thành công, post object:", JSON.stringify(result.result));
+      // Calculate new vote counts based on previous state and new vote
+      let newUpvoteCount = currentPost.upvoteCount;
+      let newDownvoteCount = currentPost.downvoteCount;
+      const previousVote = currentPost.userVote;
+      const newVote = result.result === true ? voteData.voteType : null;
 
-      // Add userVote field if missing
-      const postWithUserVote = {
-        ...result.result,
-        userVote: voteData.voteType,
+      // Remove previous vote if exists
+      if (previousVote === 0) newUpvoteCount--;
+      if (previousVote === 1) newDownvoteCount--;
+
+      // Add new vote if not removing
+      if (newVote === 0) newUpvoteCount++;
+      if (newVote === 1) newDownvoteCount++;
+
+      const baseUpdatedPost = {
+        ...currentPost,
+        upvoteCount: newUpvoteCount,
+        downvoteCount: newDownvoteCount,
+        userVote: newVote,
       };
 
-      return { post: postWithUserVote, message: result.message };
+      // Type guard to check if it's a PostDetail
+      const isPostDetail = (post: any): post is PostDetail => {
+        return "comments" in post && "votes" in post && "shares" in post && "reports" in post;
+      };
+
+      const updatedPost = isPostDetail(currentPost)
+        ? {
+            ...baseUpdatedPost,
+            comments: currentPost.comments,
+            votes: currentPost.votes,
+            shares: currentPost.shares,
+            reports: currentPost.reports,
+          }
+        : baseUpdatedPost;
+
+      return { post: updatedPost, message: result.message };
     } catch (error: any) {
       console.log("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
@@ -188,9 +274,15 @@ export const updatePost = createAsyncThunk(
   "post/update",
   async ({ postId, postData }: { postId: string; postData: { title: string; content: string } }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`http://103.82.194.197:8080/api/posts/${postId}/update`, {
+      const token = Cookies.get("sessionToken");
+      console.log("Token lấy từ cookie:", token);
+
+      const response = await fetch(`${API_BASE_URL}/api/posts/${postId}/update`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(postData),
       });
 
@@ -231,7 +323,7 @@ export const getPostWithId = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const url = new URL(`http://103.82.194.197:8080/api/posts/user/${userId}/paginated`);
+      const url = new URL(`/api/posts/user/${userId}/paginated`, API_BASE_URL);
       url.searchParams.append("page", page.toString());
       url.searchParams.append("pageSize", pageSize.toString());
 
@@ -278,7 +370,7 @@ export const getPostWithId = createAsyncThunk(
 //Lấy chi tiết bài viết theo ID
 export const getPostDetailWithId = createAsyncThunk("post/getPostDetail", async (postId: string, { rejectWithValue }) => {
   try {
-    const response = await fetch(`http://103.82.194.197:8080/api/posts/${postId}`);
+    const response = await fetch(`${API_BASE_URL}/api/posts/${postId}`);
     const result = await response.json();
 
     if (!response.ok || !result.succeeded) {
@@ -308,7 +400,7 @@ export const getPostDetailWithId = createAsyncThunk("post/getPostDetail", async 
 //       const token = Cookies.get("sessionToken");
 //       console.log("Token lấy từ cookie:", token);
 
-//       const response = await fetch(`http://103.82.194.197:8080/api/posts/${postId}`, {
+//       const response = await fetch(`http://localhost:5108/api/posts/${postId}`, {
 //         method: "DELETE",
 //         headers: {
 //           "Content-Type": "application/json",
@@ -346,7 +438,7 @@ export const postDelete = createAsyncThunk("post/delete", async (postId: string,
     const token = Cookies.get("sessionToken");
     console.log("Token lấy từ cookie:", token);
 
-    const response = await fetch(`http://103.82.194.197:8080/api/posts/delete/${postId}`, {
+    const response = await fetch(`http://localhost:5108/api/posts/delete/${postId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -397,7 +489,7 @@ export const getUserVotedPosts = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const url = new URL(`http://103.82.194.197:8080/api/posts/user/${userId}/voted/${voteType}`);
+      const url = new URL(`http://localhost:5108/api/posts/user/${userId}/voted/${voteType}`);
       // Add pagination parameters
 
       const response = await fetch(url.toString(), {
@@ -459,7 +551,7 @@ export const searchPosts = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const url = new URL(`http://103.82.194.197:8080/api/posts/search`);
+      const url = new URL("/api/posts/search", API_BASE_URL);
       url.searchParams.append("searchTerm", searchTerm);
       if (category) {
         url.searchParams.append("category", category);
@@ -474,7 +566,7 @@ export const searchPosts = createAsyncThunk(
         },
       });
 
-      const result = await response.json();
+      const result = (await response.json()) as ApiSearchResponse;
       console.log("📢 API Response for search posts:", result);
 
       if (!response.ok || !result.succeeded) {
@@ -485,17 +577,83 @@ export const searchPosts = createAsyncThunk(
         });
       }
 
-      if (!result.result) {
+      // Kiểm tra kết quả có dữ liệu không
+      if (!result.result || result.result.length === 0) {
         return rejectWithValue({
           message: "Không tìm thấy bài viết nào",
           status: 404,
         });
       }
 
-      console.log("✅ Tìm kiếm bài viết thành công:", result.result);
+      console.log("✅ Tìm kiếm bài viết thành công:", result);
       return {
-        data: result.result, // Bao gồm items, page, pages, size, total
+        data: {
+          items: result.result,
+          total: result.result.length,
+        },
         message: result.message,
+      };
+    } catch (error: any) {
+      console.error("❌ Lỗi ngoại lệ:", error);
+      return rejectWithValue({
+        message: error.message || "Lỗi kết nối đến server",
+        status: 500,
+      });
+    }
+  },
+);
+
+// Thêm action search users
+export const searchUsers = createAsyncThunk(
+  "post/searchUsers",
+  async (
+    {
+      searchTerm,
+      page = 1,
+      pageSize = 10,
+    }: {
+      searchTerm: string;
+      page?: number;
+      pageSize?: number;
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      const url = new URL("/api/follows/search", API_BASE_URL);
+      url.searchParams.append("SearchTerm", searchTerm);
+      url.searchParams.append("Page", page.toString());
+      url.searchParams.append("PageSize", pageSize.toString());
+
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("sessionToken")}`,
+        },
+      });
+
+      const result = await response.json();
+      console.log("📢 API Response for search users:", result);
+
+      if (!response.ok) {
+        return rejectWithValue({
+          message: "Không thể tìm kiếm người dùng",
+          status: response.status,
+        });
+      }
+
+      // API trả về trực tiếp kết quả phân trang
+      if (!result.items || result.items.length === 0) {
+        return rejectWithValue({
+          message: "Không tìm thấy người dùng nào",
+          status: 404,
+        });
+      }
+
+      console.log("✅ Tìm kiếm người dùng thành công:", result);
+      return {
+        data: result, // Trả về toàn bộ response vì đã đúng format
+        message: `Tìm thấy ${result.total} người dùng`,
       };
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
@@ -515,6 +673,14 @@ const postSlice = createSlice({
     clearCurrentPost(state) {
       state.posts = null;
       state.error = null;
+    },
+    clearSearchResults(state) {
+      state.searchState = {
+        posts: null,
+        users: null,
+        loading: false,
+        error: null,
+      };
     },
   },
   extraReducers: (builder) => {
@@ -610,27 +776,35 @@ const postSlice = createSlice({
       })
       .addCase(votePost.fulfilled, (state, action) => {
         state.loading = false;
+        const updatedPost = action.payload.post;
 
         // Update current post if it's the voted post
-        if (state.currentPost && state.currentPost.id === action.payload.post.id) {
-          state.currentPost = {
-            ...state.currentPost,
-            ...action.payload.post,
-          };
+        if (state.currentPost && state.currentPost.id === updatedPost.id) {
+          if ("comments" in updatedPost) {
+            state.currentPost = updatedPost as PostDetail;
+          }
         }
 
         // Update post in the list if it exists
         if (state.posts?.items) {
-          state.posts.items = state.posts.items.map((post) =>
-            post.id === action.payload.post.id
-              ? {
-                  ...post,
-                  upvoteCount: action.payload.post.upvoteCount,
-                  downvoteCount: action.payload.post.downvoteCount,
-                  userVote: action.payload.post.userVote,
-                }
-              : post,
-          );
+          state.posts.items = state.posts.items.map((post) => (post.id === updatedPost.id ? { ...post, ...updatedPost } : post));
+        }
+
+        // Update in votedPosts if it exists
+        if (state.votedPosts) {
+          const postIndex = state.votedPosts.findIndex((p: PostListItem) => p.id === updatedPost.id);
+          if (postIndex !== -1) {
+            if (updatedPost.userVote === null) {
+              // Remove from votedPosts if vote was removed
+              state.votedPosts = state.votedPosts.filter((p: PostListItem) => p.id !== updatedPost.id);
+            } else {
+              // Update the post in votedPosts
+              state.votedPosts[postIndex] = { ...state.votedPosts[postIndex], ...updatedPost };
+            }
+          } else if (updatedPost.userVote !== null) {
+            // Add to votedPosts if new vote
+            state.votedPosts.push({ ...updatedPost });
+          }
         }
 
         state.error = null;
@@ -655,20 +829,39 @@ const postSlice = createSlice({
       })
       // Handle searchPosts actions
       .addCase(searchPosts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.searchState.loading = true;
+        state.searchState.error = null;
+        state.searchState.posts = null;
       })
       .addCase(searchPosts.fulfilled, (state, action) => {
-        state.loading = false;
-        state.posts = action.payload.data;
-        state.error = null;
+        state.searchState.loading = false;
+        state.searchState.posts = action.payload.data;
+        state.searchState.error = null;
       })
       .addCase(searchPosts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = (action.payload as any)?.message || "Không thể tìm kiếm bài viết";
+        state.searchState.loading = false;
+        state.searchState.posts = null;
+        state.searchState.error = (action.payload as any)?.message || "Không thể tìm kiếm bài viết";
+      })
+
+      // Handle searchUsers actions
+      .addCase(searchUsers.pending, (state) => {
+        state.searchState.loading = true;
+        state.searchState.error = null;
+        state.searchState.users = null;
+      })
+      .addCase(searchUsers.fulfilled, (state, action) => {
+        state.searchState.loading = false;
+        state.searchState.users = action.payload.data;
+        state.searchState.error = null;
+      })
+      .addCase(searchUsers.rejected, (state, action) => {
+        state.searchState.loading = false;
+        state.searchState.users = null;
+        state.searchState.error = (action.payload as any)?.message || "Không thể tìm kiếm người dùng";
       });
   },
 });
 
-export const { clearCurrentPost } = postSlice.actions;
+export const { clearCurrentPost, clearSearchResults } = postSlice.actions;
 export default postSlice.reducer;

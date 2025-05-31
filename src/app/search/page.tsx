@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
-import { searchPosts } from "@/redux/postSlice";
+import { searchPosts, searchUsers, clearSearchResults } from "@/redux/postSlice";
 import { getTimeAgo } from "@/utils/dateFormat";
 import { AppDispatch, RootState } from "@/redux/store";
 import Post from "@/app/(post)/components/post";
@@ -12,11 +12,66 @@ import { Button } from "@/components/ui/button";
 import styles from "@/app/(home)/home.module.scss";
 import classNames from "classnames/bind";
 import Sidebar from "@/app/(home)/sidebar";
+import Link from "next/link";
+import Image from "next/image";
+
+// Add SearchSkeleton component
+const SearchSkeleton = () => {
+  return (
+    <div className="space-y-4 animate-pulse">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="border-b border-border pb-4">
+          <div className="flex items-start gap-4">
+            <div className="h-10 w-10 bg-gray-200 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-3/4" />
+              <div className="h-3 bg-gray-200 rounded w-1/2" />
+              <div className="h-20 bg-gray-200 rounded w-full" />
+              <div className="flex gap-4 mt-2">
+                <div className="h-8 w-20 bg-gray-200 rounded" />
+                <div className="h-8 w-20 bg-gray-200 rounded" />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Add UserCard component
+const UserCard = ({ user }: { user: any }) => {
+  return (
+    <Link href={`/user/${user.userName}`}>
+      <div className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors">
+        <Image src={user.avatarUrl || "/avatar.jpg"} alt={user.userName} width={48} height={48} className="rounded-full" />
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="font-medium">{user.userName}</h3>
+            {user.reputation > 0 && <span className="text-sm text-muted-foreground">({user.reputation} điểm)</span>}
+          </div>
+          <p className="text-sm text-muted-foreground">{user.email}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {user.isFollowing ? (
+            <span className="text-sm text-primary">Đang theo dõi</span>
+          ) : (
+            <Button variant="outline" size="sm">
+              Theo dõi
+            </Button>
+          )}
+          {user.isBlocked && <span className="text-sm text-destructive">Đã chặn</span>}
+        </div>
+      </div>
+    </Link>
+  );
+};
 
 export default function SearchResults() {
   const searchParams = useSearchParams();
   const dispatch = useDispatch<AppDispatch>();
-  const { posts, loading, error } = useSelector((state: RootState) => state.post);
+  const { searchState } = useSelector((state: RootState) => state.post);
+  const [searchType, setSearchType] = useState<"posts" | "users">("posts");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const cx = classNames.bind(styles);
@@ -26,34 +81,34 @@ export default function SearchResults() {
 
   useEffect(() => {
     if (searchQuery.trim()) {
-      dispatch(
-        searchPosts({
-          searchTerm: searchQuery,
-          page: currentPage,
-          pageSize,
-        }),
-      );
+      console.log("🔍 Searching for:", searchQuery, "Type:", searchType);
+
+      if (searchType === "posts") {
+        dispatch(
+          searchPosts({
+            searchTerm: searchQuery,
+            page: currentPage,
+            pageSize,
+          }),
+        );
+      } else {
+        dispatch(
+          searchUsers({
+            searchTerm: searchQuery,
+            page: currentPage,
+            pageSize,
+          }),
+        );
+      }
     }
-  }, [searchQuery, currentPage, dispatch]);
 
-  const handleNextPage = () => {
-    if (posts && currentPage < posts.pages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
+    return () => {
+      dispatch(clearSearchResults());
+    };
+  }, [searchQuery, searchType, currentPage, dispatch]);
 
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  // Show loading state
-  if (loading) {
+  // Update loading state
+  if (searchState.loading) {
     return (
       <>
         <Header />
@@ -61,8 +116,17 @@ export default function SearchResults() {
           <div className={cx("container")}>
             <div className={cx("home-content")}>
               <Sidebar />
-              <div className="flex justify-center items-center min-h-[200px] p-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="flex flex-col max-w-[732px] w-full">
+                <div className="flex gap-4 mb-6">
+                  <Button variant={searchType === "posts" ? "default" : "outline"} onClick={() => setSearchType("posts")}>
+                    Bài viết
+                  </Button>
+                  <Button variant={searchType === "users" ? "default" : "outline"} onClick={() => setSearchType("users")}>
+                    Người dùng
+                  </Button>
+                </div>
+                <h1 className="text-xl font-semibold mb-4">Searching for "{searchQuery}"...</h1>
+                <SearchSkeleton />
               </div>
             </div>
           </div>
@@ -72,7 +136,7 @@ export default function SearchResults() {
   }
 
   // Show error state
-  if (error) {
+  if (searchState.error) {
     return (
       <>
         <Header />
@@ -80,7 +144,19 @@ export default function SearchResults() {
           <div className={cx("container")}>
             <div className={cx("home-content")}>
               <Sidebar />
-              <div className="flex justify-center items-center min-h-[200px] p-4 text-destructive">Error: {error}</div>
+              <div className="flex flex-col max-w-[732px] w-full">
+                <div className="flex gap-4 mb-6">
+                  <Button variant={searchType === "posts" ? "default" : "outline"} onClick={() => setSearchType("posts")}>
+                    Bài viết
+                  </Button>
+                  <Button variant={searchType === "users" ? "default" : "outline"} onClick={() => setSearchType("users")}>
+                    Người dùng
+                  </Button>
+                </div>
+                <div className="flex justify-center items-center min-h-[200px] p-4 text-destructive">
+                  Error: {searchState.error}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -88,8 +164,10 @@ export default function SearchResults() {
     );
   }
 
+  const results = searchType === "posts" ? searchState.posts : searchState.users;
+
   // Show empty state
-  if (!posts?.items?.length) {
+  if (!results || !results.items || results.items.length === 0) {
     return (
       <>
         <Header />
@@ -97,9 +175,21 @@ export default function SearchResults() {
           <div className={cx("container")}>
             <div className={cx("home-content")}>
               <Sidebar />
-              <div className="flex flex-col items-center justify-center min-h-[200px] p-4 text-muted-foreground">
-                <p>No results found for "{searchQuery}"</p>
-                <p className="text-sm mt-2">Try different keywords or check your spelling</p>
+              <div className="flex flex-col max-w-[732px] w-full">
+                <div className="flex gap-4 mb-6">
+                  <Button variant={searchType === "posts" ? "default" : "outline"} onClick={() => setSearchType("posts")}>
+                    Bài viết
+                  </Button>
+                  <Button variant={searchType === "users" ? "default" : "outline"} onClick={() => setSearchType("users")}>
+                    Người dùng
+                  </Button>
+                </div>
+                <div className="flex flex-col items-center justify-center min-h-[200px] p-4 text-muted-foreground">
+                  <p>
+                    No {searchType} found for "{searchQuery}"
+                  </p>
+                  <p className="text-sm mt-2">Try different keywords or check your spelling</p>
+                </div>
               </div>
             </div>
           </div>
@@ -117,74 +207,66 @@ export default function SearchResults() {
           <div className={cx("home-content")}>
             <Sidebar />
             <div className="flex flex-col max-w-[732px] w-full">
-              <h1 className="text-xl font-semibold mb-4">
-                Search results for "{searchQuery}" ({posts.total} results)
-              </h1>
-
-              {/* Post list */}
-              <div className="space-y-4">
-                {posts.items.map((post) => (
-                  <div key={post.id} className="border-b border-border pb-4">
-                    <Post
-                      post={{
-                        id: post.id,
-                        title: post.title || "Untitled Post",
-                        content: post.content || "",
-                        createdOn: post.createdOn || new Date().toISOString(),
-                        username: post.username || "Unknown User",
-                        upvoteCount: post.upvoteCount || 0,
-                        downvoteCount: post.downvoteCount || 0,
-                        timeAgo: getTimeAgo(post.createdOn),
-                      }}
-                    />
-                  </div>
-                ))}
+              <div className="flex gap-4 mb-6">
+                <Button variant={searchType === "posts" ? "default" : "outline"} onClick={() => setSearchType("posts")}>
+                  Bài viết
+                </Button>
+                <Button variant={searchType === "users" ? "default" : "outline"} onClick={() => setSearchType("users")}>
+                  Người dùng
+                </Button>
               </div>
 
-              {/* Pagination */}
-              {posts.pages > 1 && (
-                <div className="flex items-center justify-between mt-6">
-                  <Button variant="outline" disabled={currentPage === 1} onClick={handlePrevPage}>
-                    Trang trước
-                  </Button>
+              <h1 className="text-xl font-semibold mb-4">
+                Search results for "{searchQuery}" ({results.total} {searchType})
+              </h1>
 
-                  <div className="flex items-center gap-2">
-                    {Array.from({ length: Math.min(5, posts.pages) }, (_, i) => {
-                      let pageNum;
-                      if (posts.pages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= posts.pages - 2) {
-                        pageNum = posts.pages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
-
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={currentPage === pageNum ? "default" : "outline"}
-                          onClick={() => handlePageChange(pageNum)}
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
-                  </div>
-
-                  <Button variant="outline" disabled={currentPage >= posts.pages} onClick={handleNextPage}>
-                    Trang sau
-                  </Button>
+              {searchType === "posts" ? (
+                // Post list with animation
+                <div className="space-y-4">
+                  {results.items.map((post: any, index: number) => (
+                    <div
+                      key={post.id}
+                      className="border-b border-border pb-4 opacity-0 animate-[fadeIn_0.5s_ease-in-out_forwards]"
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      <Post
+                        post={{
+                          id: post.id,
+                          title: post.title || "Untitled Post",
+                          content: post.content || "",
+                          createdOn: post.createdOn || new Date().toISOString(),
+                          username: post.username || "Unknown User",
+                          upvoteCount: post.upvoteCount || 0,
+                          downvoteCount: post.downvoteCount || 0,
+                          timeAgo: getTimeAgo(post.createdOn),
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                // User list with animation
+                <div className="space-y-2">
+                  {results.items.map((user: any, index: number) => (
+                    <div
+                      key={user.id}
+                      className="opacity-0 animate-[fadeIn_0.5s_ease-in-out_forwards]"
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      <UserCard user={user} />
+                    </div>
+                  ))}
                 </div>
               )}
 
-              {/* Pagination info */}
-              {posts.pages > 1 && (
-                <div className="text-sm text-muted-foreground text-center mt-2">
-                  Trang {currentPage} / {posts.pages} - Tổng {posts.total} bài viết
-                </div>
-              )}
+              {/* Thêm thông báo kết quả tìm kiếm */}
+              <div className="text-sm text-muted-foreground text-center mt-4">
+                {results.total === 0
+                  ? `Không tìm thấy ${searchType === "posts" ? "bài viết" : "người dùng"} nào`
+                  : results.total === 1
+                    ? `Tìm thấy 1 ${searchType === "posts" ? "bài viết" : "người dùng"}`
+                    : `Tìm thấy ${results.total} ${searchType === "posts" ? "bài viết" : "người dùng"}`}
+              </div>
             </div>
           </div>
         </div>

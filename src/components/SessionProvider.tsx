@@ -11,7 +11,7 @@ export default function SessionProvider() {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/Auth/status", { method: "GET" });
+        const response = await fetch("http://localhost:5108/api/Auth/status", { method: "GET" });
         const data = await response.json();
         console.log("Gọi api để chekc status session:", data);
         if (!data.succeeded || !data.result.isAuthenticated) {
@@ -28,7 +28,7 @@ export default function SessionProvider() {
 
         if (remainingMinutes < 1 && timeNow - lastActivity < USER_ACTIVE_TIMEOUT) {
           console.log("🔄 Kéo dài session bằng cách gọi lại /api/Auth/status");
-          await fetch("http://localhost:8080/api/Auth/status", { method: "GET" }); // Gián tiếp "gia hạn" session
+          await fetch("http://localhost:5108/api/Auth/status", { method: "GET" }); // Gián tiếp "gia hạn" session
         }
       } catch (error) {
         console.error("Lỗi khi kiểm tra session:", error);

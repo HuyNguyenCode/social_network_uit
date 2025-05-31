@@ -8,12 +8,12 @@ import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import Cookies from "js-cookie";
 import { AppDispatch } from "@/redux/store";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { logoutUser } from "@/redux/authSlice";
 import { Button } from "@/components/ui/button";
-import { searchPosts } from "@/redux/postSlice";
+import { searchPosts, clearSearchResults } from "@/redux/postSlice";
 
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -25,6 +25,16 @@ export default function Header() {
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector((state: RootState) => state.user);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  // Add debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // Wait for 500ms before updating debounced value
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   interface LogoutResult {
     payload?: { message: string };
@@ -44,14 +54,18 @@ export default function Header() {
     }
   };
 
+  // Update search handler to use debounced value
   const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!searchTerm.trim()) {
-      return; // Don't search with empty terms
+      return;
     }
 
     try {
+      // Clear previous search results before new search
+      dispatch(clearSearchResults());
+
       // Dispatch search action
       await dispatch(
         searchPosts({

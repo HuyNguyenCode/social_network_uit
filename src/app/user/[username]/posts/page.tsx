@@ -99,6 +99,14 @@ export default function UserPosts() {
       ).then((result) => {
         if (votePost.fulfilled.match(result)) {
           console.log("Vote successful:", result.payload);
+          // Refresh posts after successful vote
+          dispatch(
+            getPostWithId({
+              userId: userId as string,
+              page: currentPage,
+              pageSize,
+            }),
+          );
         } else {
           console.error("Vote failed:", result.error);
         }
