@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { getBlockedUsers, unblockUser } from "@/redux/followSlice";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 
 const BlockedPage = () => {
@@ -17,22 +17,21 @@ const BlockedPage = () => {
     useEffect(() => {
         (async () => {
             setIsLoading(true);
-            await dispatch(getBlockedUsers() as any);
+            try {
+                await dispatch(getBlockedUsers() as any).unwrap();
+            } catch (error: any) {
+                toast.error(error.message || "Có lỗi xảy ra");
+            }
             setIsLoading(false);
         })();
     }, [dispatch]);
 
     const handleUnblock = async (userName: string) => {
         try {
-            const resultAction = await dispatch(unblockUser({ userToUnblockName: userName }) as any);
+            await dispatch(unblockUser({ userToUnblockName: userName }) as any).unwrap();
 
-            if (unblockUser.rejected.match(resultAction)) {
-                const error = resultAction.payload as { message: string; status: number };
-                toast.error(error.message || "Không thể bỏ chặn người dùng");
-            } else {
-                dispatch(getBlockedUsers() as any);
-                toast.success("Đã bỏ chặn người dùng");
-            }
+            dispatch(getBlockedUsers() as any);
+            toast.success("Đã bỏ chặn người dùng");
         } catch (error: any) {
             toast.error(error.message || "Có lỗi xảy ra");
         }
@@ -52,7 +51,7 @@ const BlockedPage = () => {
             {blockedUsers.length > 0 ? (
                 <div className="mt-4">
                     {blockedUsers.map((user, index) => (
-                        <div key={user.userId} className={cn("flex justify-between items-center gap-2 p-5", index !== 0 && "border-t-2 border-gray-200" )}>
+                        <div key={user.userId} className={cn("flex justify-between items-center gap-2 p-5", index !== 0 && "border-t-2 border-gray-200")}>
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gray-200"></div>
                                 <div>
