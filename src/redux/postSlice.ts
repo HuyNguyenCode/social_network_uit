@@ -1,6 +1,8 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import Cookies from "js-cookie";
-import { RootState } from "@/redux/store";
+
+// Add base URL constant
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5108";
 interface PostListItem {
   id: string;
   title: string;
@@ -31,6 +33,42 @@ interface PostDetail extends PostListItem {
   reports: any[];
 }
 
+interface ApiSearchResponse {
+  errors: string[];
+  message: string;
+  result: PostListItem[];
+  statusCode: number;
+  succeeded: boolean;
+}
+
+interface SearchResponse {
+  items: PostListItem[];
+  total: number;
+}
+interface UserSearchResponse {
+  page: number;
+  pages: number;
+  size: number;
+  total: number;
+  items: UserSearchItem[];
+}
+interface UserSearchItem {
+  id: string;
+  userName: string;
+  email: string;
+  avatarUrl: string;
+  reputation: number;
+  isFollowing: boolean;
+  isBlocked: boolean;
+}
+
+interface SearchState {
+  posts: SearchResponse | null;
+  users: UserSearchResponse | null;
+  loading: boolean;
+  error: string | null;
+}
+
 interface PostState {
   posts: PostListResponse | null;
   currentPost: PostDetail | null;
@@ -45,6 +83,7 @@ interface PostState {
   loading: boolean;
   error: string | null;
   votedPosts: PostListItem[] | null;
+  searchState: SearchState;
 }
 
 const initialState: PostState = {
@@ -52,6 +91,12 @@ const initialState: PostState = {
   currentPost: null,
   upvotedPosts: null,
   downvotedPosts: null,
+  searchState: {
+    posts: null,
+    users: null,
+    loading: false,
+    error: null,
+  },
   homePosts: null,
   popularPosts: {
     items: [],
@@ -458,7 +503,7 @@ export const searchPosts = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const url = new URL(`http://localhost:5108/api/posts/search`);
+      const url = new URL("/api/posts/search", API_BASE_URL);
       url.searchParams.append("searchTerm", searchTerm);
       if (category) {
         url.searchParams.append("category", category);
@@ -473,7 +518,7 @@ export const searchPosts = createAsyncThunk(
         },
       });
 
-      const result = await response.json();
+      const result = (await response.json()) as ApiSearchResponse;
       console.log("📢 API Response for search posts:", result);
 
       if (!response.ok || !result.succeeded) {
@@ -484,17 +529,83 @@ export const searchPosts = createAsyncThunk(
         });
       }
 
-      if (!result.result) {
+      // Kiểm tra kết quả có dữ liệu không
+      if (!result.result || result.result.length === 0) {
         return rejectWithValue({
           message: "Không tìm thấy bài viết nào",
           status: 404,
         });
       }
 
-      console.log("✅ Tìm kiếm bài viết thành công:", result.result);
+      console.log("✅ Tìm kiếm bài viết thành công:", result);
       return {
-        data: result.result, // Bao gồm items, page, pages, size, total
+        data: {
+          items: result.result,
+          total: result.result.length,
+        },
         message: result.message,
+      };
+    } catch (error: any) {
+      console.error("❌ Lỗi ngoại lệ:", error);
+      return rejectWithValue({
+        message: error.message || "Lỗi kết nối đến server",
+        status: 500,
+      });
+    }
+  },
+);
+
+// Thêm action search users
+export const searchUsers = createAsyncThunk(
+  "post/searchUsers",
+  async (
+    {
+      searchTerm,
+      page = 1,
+      pageSize = 10,
+    }: {
+      searchTerm: string;
+      page?: number;
+      pageSize?: number;
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      const url = new URL("/api/follows/search", API_BASE_URL);
+      url.searchParams.append("SearchTerm", searchTerm);
+      url.searchParams.append("Page", page.toString());
+      url.searchParams.append("PageSize", pageSize.toString());
+
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("sessionToken")}`,
+        },
+      });
+
+      const result = await response.json();
+      console.log("📢 API Response for search users:", result);
+
+      if (!response.ok) {
+        return rejectWithValue({
+          message: "Không thể tìm kiếm người dùng",
+          status: response.status,
+        });
+      }
+
+      // API trả về trực tiếp kết quả phân trang
+      if (!result.items || result.items.length === 0) {
+        return rejectWithValue({
+          message: "Không tìm thấy người dùng nào",
+          status: 404,
+        });
+      }
+
+      console.log("✅ Tìm kiếm người dùng thành công:", result);
+      return {
+        data: result, // Trả về toàn bộ response vì đã đúng format
+        message: `Tìm thấy ${result.total} người dùng`,
       };
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
@@ -595,6 +706,14 @@ const postSlice = createSlice({
     clearCurrentPost(state) {
       state.posts = null;
       state.error = null;
+    },
+    clearSearchResults(state) {
+      state.searchState = {
+        posts: null,
+        users: null,
+        loading: false,
+        error: null,
+      };
     },
   },
   extraReducers: (builder) => {
@@ -803,20 +922,39 @@ const postSlice = createSlice({
       })
       // Handle searchPosts actions
       .addCase(searchPosts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.searchState.loading = true;
+        state.searchState.error = null;
+        state.searchState.posts = null;
       })
       .addCase(searchPosts.fulfilled, (state, action) => {
-        state.loading = false;
-        state.posts = action.payload.data;
-        state.error = null;
+        state.searchState.loading = false;
+        state.searchState.posts = action.payload.data;
+        state.searchState.error = null;
       })
       .addCase(searchPosts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = (action.payload as any)?.message || "Không thể tìm kiếm bài viết";
+        state.searchState.loading = false;
+        state.searchState.posts = null;
+        state.searchState.error = (action.payload as any)?.message || "Không thể tìm kiếm bài viết";
+      })
+
+      // Handle searchUsers actions
+      .addCase(searchUsers.pending, (state) => {
+        state.searchState.loading = true;
+        state.searchState.error = null;
+        state.searchState.users = null;
+      })
+      .addCase(searchUsers.fulfilled, (state, action) => {
+        state.searchState.loading = false;
+        state.searchState.users = action.payload.data;
+        state.searchState.error = null;
+      })
+      .addCase(searchUsers.rejected, (state, action) => {
+        state.searchState.loading = false;
+        state.searchState.users = null;
+        state.searchState.error = (action.payload as any)?.message || "Không thể tìm kiếm người dùng";
       });
   },
 });
 
-export const { clearCurrentPost } = postSlice.actions;
+export const { clearCurrentPost, clearSearchResults } = postSlice.actions;
 export default postSlice.reducer;
