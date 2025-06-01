@@ -3,6 +3,8 @@ import { AppDispatch, RootState } from "@/redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { useRef } from "react";
 import { useParams } from "next/navigation";
+import { CldImage } from "next-cloudinary";
+import Image from "next/image";
 
 const Following = ({ setIsModalOpen, isMyProfile, userInfo, handleFollow, handleUnfollow }: { setIsModalOpen: (value: boolean) => void, isMyProfile: boolean, userInfo: any, handleFollow: (userName: string) => void, handleUnfollow: (userName: string) => void }) => {
     const dispatch = useDispatch<AppDispatch>();
@@ -34,8 +36,20 @@ const Following = ({ setIsModalOpen, isMyProfile, userInfo, handleFollow, handle
                         followingList.map((following) => {
                             return (
                                 <div key={following.userName} className="flex items-center">
-                                    <div className="w-10 h-10 rounded-full bg-gray-200 mr-3"></div>
-                                    <div className="flex items-center gap-1">
+                                    {following.avatarUrl !== '' ? (
+                                        <CldImage
+                                            key={following.avatarUrl}
+                                            src={following.avatarUrl}
+                                            alt={`avatar ${following.userName}`}
+                                            loading="lazy"
+                                            width={40}
+                                            height={40}
+                                            className="w-10 h-10 object-cover rounded-full mr-3"
+                                        />
+                                    ) : (
+                                        <Image src={"/avatar.jpg"} alt="avatar" width={40} height={40} className="rounded-full mr-3" />
+                                    )}
+                                    <div className="flex items-center justify-between w-full gap-1">
                                         <span className="text-white">{following.userName}</span>
                                         {userInfo.username !== following.userName && (
                                             myFollowing.find(item => item.userName === following.userName) ? (

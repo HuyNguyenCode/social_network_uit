@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import { CldImage } from "next-cloudinary";
 
 interface ProfileAvatarProps {
   avatarUrl: string;
@@ -20,13 +21,19 @@ export default function ProfileAvatar({ avatarUrl, onChange }: ProfileAvatarProp
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      <Image
-        src={avatarUrl}
-        alt="Profile Avatar"
-        width={128}
-        height={128}
-        className="rounded-full"
-      />
+      {avatarUrl !== '' ? (
+        <CldImage
+          key={avatarUrl}
+          src={avatarUrl}
+          alt={`avatar ${avatarUrl}`}
+          loading="lazy"
+          width={128}
+          height={128}
+          className="rounded-full"
+        />
+      ) : (
+        <Image src={"/avatar.jpg"} alt="avatar" width={40} height={40} className="rounded-full" />
+      )}
       <input
         type="file"
         accept="image/*"

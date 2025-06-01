@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import PostInteractionx from "./PostInteractionx";
+import { CldImage } from "next-cloudinary";
 
 // Mock data: Replace this with real API data when available 
 
@@ -31,7 +32,6 @@ interface PostProps {
 
 
 const Postx = ({ post }: PostProps) => {
-    const avatarUrl = post?.user?.avatar_url || "/general/image4.png";
     const netVotes = post.upvots_count - post.downvots_count;
 
     return (
@@ -41,7 +41,19 @@ const Postx = ({ post }: PostProps) => {
                 <div className="flex justify-between">
                     <div className="flex gap-x-2 items-center">
                         <div className="aspect-square rounded-full overflow-hidden border-1 border-white bg-gray-300">
-                            <Image src={avatarUrl}  alt="" width={24} height={24} />
+                            {post?.user?.avatar_url !== '' ? (
+                                <CldImage
+                                    key={post?.user?.avatar_url}
+                                    src={post?.user?.avatar_url}
+                                    alt={`avatar ${post?.user?.avatar_url}`}
+                                    loading="lazy"
+                                    width={24}
+                                    height={24}
+                                    className="w-6 h-6 object-cover rounded-full"
+                                />
+                            ) : (
+                                <Image src={"/avatar.jpg"} alt="avatar" width={24} height={24} className="rounded-full" />
+                            )}
                         </div>
                         <div className="text-sm text-muted-foreground flex items-center gap-1">
                             <span>{post.user?.username}</span>

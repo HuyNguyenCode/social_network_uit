@@ -4,15 +4,24 @@ import { AppDispatch, RootState } from "@/redux/store";
 import useOnClickOutside from "@/hooks/outside";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import { CldImage } from "next-cloudinary";
 
 const MyFollowers = ({ followerList, myFollowing, handleFollow, handleUnfollow }: any) => {
     return followerList.map((follower: any) => {
         return (
             <div key={follower.userName} className="flex items-center">
-                {follower.avatarUrl === '' ? (
-                    <div className="w-10 h-10 rounded-full bg-gray-200 mr-3"></div>
+                {follower.avatarUrl !== '' ? (
+                    <CldImage
+                        key={follower.avatarUrl}
+                        src={follower.avatarUrl}
+                        alt={`avatar ${follower.userName}`}
+                        loading="lazy"
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 object-cover rounded-full mr-3"
+                    />
                 ) : (
-                    <Image src={follower.avatarUrl} alt="avatar" width={40} height={40} className="rounded-full mr-3" />
+                    <Image src={"/avatar.jpg"} alt="avatar" width={40} height={40} className="rounded-full mr-3" />
                 )}
                 <div className="flex w-full items-center gap-1">
                     <span className="text-white">{follower.userName}</span>
@@ -47,10 +56,18 @@ const OthersFollowers = ({ loginedUser, followerList, myFollowing, handleFollow,
     return followerList.map((follower: any) => {
         return (
             <div key={follower.userName} className="flex items-center">
-                {follower.avatarUrl === '' ? (
-                    <div className="w-10 h-10 rounded-full bg-gray-200 mr-3"></div>
+                {follower.avatarUrl !== '' ? (
+                    <CldImage
+                        key={follower.avatarUrl}
+                        src={follower.avatarUrl}
+                        alt={`avatar ${follower.userName}`}
+                        loading="lazy"
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 object-cover rounded-full mr-3"
+                    />
                 ) : (
-                    <Image src={follower.avatarUrl} alt="avatar" width={40} height={40} className="rounded-full mr-3" />
+                    <Image src={"/avatar.jpg"} alt="avatar" width={40} height={40} className="rounded-full mr-3" />
                 )}
                 <div className="flex w-full items-center justify-between gap-1">
                     <span className="text-white">{follower.userName}</span>
