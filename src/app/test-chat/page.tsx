@@ -5,9 +5,9 @@ import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signal
 import Cookies from "js-cookie";
 import { useUserStore } from "@/store/useUserStore";
 const users = [
-  { id: "08dd68a8-1a45-492c-8d88-3a074394154c", name: "admin" },
-  { id: "08dd68a8-0acb-4ba0-8f39-84da41a58b6e", name: "ngntu1234" },
-  { id: "08dd67ab-ae5e-4097-8882-3543a74bcba3", name: "ngntu10" },
+  { id: "08dd9b7f-4f73-4b87-834a-d884e89d2cc3", name: "admin" },
+  { id: "08dd9b7f-80cf-4b72-8fe8-6330a53100f3", name: "ngntu1234" },
+  { id: "08dd9b7f-2864-4d99-8946-593658a958de", name: "ngntu10" },
 ];
 
 const ChatPage = () => {
@@ -36,7 +36,7 @@ const ChatPage = () => {
     if (!currentUser) return;
 
     const connection = new HubConnectionBuilder()
-      .withUrl(`http://localhost:5108/chathub?userId=${currentUser.id}`)
+      .withUrl(`http://103.82.194.197:8080/chathub?userId=${currentUser.id}`)
       .configureLogging(LogLevel.Information)
       .withAutomaticReconnect()
       .build();
