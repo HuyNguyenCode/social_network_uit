@@ -164,7 +164,6 @@ function CommentWithReply({ comment }: { comment: CommentType }) {
       }
     }
   }, [comment]);
-  console.log(comment);
 
   return (
     <div key={comment.id} className="border rounded-lg border-border p-4">

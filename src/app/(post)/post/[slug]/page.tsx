@@ -28,10 +28,12 @@ const Page = () => {
     dispatch(getPostDetailWithId(postId));
   }, [postId, dispatch]);
 
+  // currentPost => commentArr not channged
   useEffect(() => {
     setCommentArr(currentPost?.comments ?? []);
   }, [currentPost]);
 
+  //currentComment cũng null => getPostDetailWithId ko đc gọi 
   useEffect(() => {
     dispatch(getPostDetailWithId(postId));
     setCommentArr(currentPost?.comments ?? []);
@@ -44,6 +46,7 @@ const Page = () => {
   if (!currentPost) {
     return <div>Loading...</div>;
   }
+  console.log("currentPost", currentPost);
 
   return (
     <div className="">

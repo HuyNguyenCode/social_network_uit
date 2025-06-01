@@ -14,6 +14,7 @@ import CommentMenu from "@/app/(post)/components/CommentMenu";
 import DeleteConfirmation from "@/app/(post)/components/DeleteConfirmation";
 import { useUserStore } from "@/store/useUserStore";
 import { updateComment, getCommentDetailWithId, commentCreate, commentDelete, voteComment } from "@/redux/commentSlice";
+import { getPostDetailWithId } from "@/redux/postSlice";
 type VoteType = {
   userId: string;
   voteType: number | string;
@@ -119,7 +120,6 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
       }
     }
   }, [comment]);
-  console.log(comment);
 
   dayjs.extend(relativeTime);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -165,7 +165,7 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
     if (commentDelete.fulfilled.match(result)) {
       setIsDeleteConfirmOpen(false);
       toast.success("Comment deleted!");
-      dispatch(getCommentDetailWithId(commentId));
+      dispatch(getPostDetailWithId(comment.postId));
     } else {
       toast.error("Failed to delete comment!");
     }
