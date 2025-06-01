@@ -49,6 +49,7 @@ export default function UserComments() {
   if (comments === null) {
     return <div className="flex items-center justify-center min-h-[200px] p-4 text-muted-foreground">No comments found</div>;
   }
+
   dayjs.extend(relativeTime);
 
   return (

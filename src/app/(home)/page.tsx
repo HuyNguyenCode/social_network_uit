@@ -11,8 +11,8 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { getHomePost } from "@/redux/postSlice";
-import Post from "@/app/(post)/components/Post";
-import { getTimeAgo } from "@/utils/dateFormat";
+// import Post from "@/app/(post)/components/Post";
+
 const cx = classNames.bind(styles);
 export default function Home() {
   const router = useRouter();
@@ -31,21 +31,21 @@ export default function Home() {
   const { homePosts } = useSelector((state: RootState) => state.post);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10; // Có thể điều chỉnh
-  useEffect(() => {
-    dispatch(
-      getHomePost({
-        page: currentPage,
-        pageSize,
-      }),
-    );
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(
+  //     getHomePost({
+  //       page: currentPage,
+  //       pageSize,
+  //     }),
+  //   );
+  // }, [dispatch]);
 
   return (
     <div className={cx("home-wrapper")}>
       <div className={cx("container")}>
         <div className={cx("home-content")}>
           <Sidebar />
-          <div className={cx("middle-content")}>
+          {/* <div className={cx("middle-content")}>
             {homePosts &&
               Array.isArray(homePosts) &&
               homePosts.map((post) => (
@@ -53,7 +53,7 @@ export default function Home() {
                   <Post post={{ ...post }} />
                 </div>
               ))}
-          </div>
+          </div> */}
           <div className={cx("right-content")}>
             <div className={cx("recent-post-header")}>
               <span className={cx("recent-post-header-text")}>Recent Posts</span>

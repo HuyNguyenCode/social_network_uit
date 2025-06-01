@@ -3,48 +3,10 @@ import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getPostWithId } from "@/redux/postSlice";
-import { getTimeAgo } from "@/utils/dateFormat";
 import Post from "@/app/(post)/components/Post";
 import { useUserStore } from "@/store/useUserStore";
 import { Button } from "@/components/ui/button";
 import { AppDispatch, RootState } from "@/redux/store";
-
-// export default function UserPosts() {
-//   const { userId } = useUserStore(); // Lấy thông tin từ store
-//   const dispatch = useDispatch();
-//   const { posts, loading, error } = useSelector((state) => state.post);
-
-//   useEffect(() => {
-//     // Giả sử username chính là userId (nếu không cần API để chuyển đổi)
-//     dispatch(getPostWithId({ userId: userId as string, page: 1, pageSize: 10 }));
-//   }, [userId, dispatch]);
-
-//   if (loading) {
-//     return <div>Loading...</div>;
-//   }
-
-//   if (error) {
-//     return <div>Error: {error}</div>;
-//   }
-
-//   if (!posts?.items?.length) {
-//     return <div>Người dùng chưa có bài viết nào</div>;
-//   }
-
-//   return (
-//     <div>
-//       {posts.items.map((post) => (
-//         <Post
-//           key={post.id}
-//           post={{
-//             ...post,
-//             timeAgo: getTimeAgo(post.createdOn) // Format ngày
-//           }}
-//         />
-//       ))}
-//     </div>
-//   );
-// }
 
 export default function UserPosts() {
   const { username } = useParams();

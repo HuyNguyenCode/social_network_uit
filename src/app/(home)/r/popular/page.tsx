@@ -5,7 +5,6 @@ import { getPopularPost } from "@/redux/postSlice";
 import { RootState, AppDispatch } from "@/redux/store";
 import Sidebar from "@/app/(home)/sidebar";
 import Post from "@/app/(post)/components/Post";
-import { getTimeAgo } from "@/utils/dateFormat";
 import classNames from "classnames/bind";
 import styles from "../../home.module.scss";
 

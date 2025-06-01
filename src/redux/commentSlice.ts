@@ -164,7 +164,7 @@ export const getCommentWithId = createAsyncThunk(
   ) => {
     try {
       const url = new URL(`http://localhost:5108/api/comments/user/${userId}`);
-      const token = Cookies.get("sessionToken"); // Lấy token từ cookie
+      const token = Cookies.get("sessionToken"); // Lấy token từ cookie   
       const response = await fetch(url.toString(), {
         method: "GET",
         headers: {

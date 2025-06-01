@@ -4,12 +4,11 @@ import styles from "../home.module.scss";
 import classNames from "classnames/bind";
 const cx = classNames.bind(styles);
 import Sidebar from "@/app/(home)/sidebar";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { getHomePost } from "@/redux/postSlice";
-import Post from "@/app/(post)/components/Post";
-import { getTimeAgo } from "@/utils/dateFormat";
+// import Post from "@/app/(post)/components/Post";
 
 export default function HomePage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -319,13 +318,13 @@ console.log("homePosts", homePosts);
                 </div>
               </div>
             </div> */}
-            {homePosts &&
+            {/* {homePosts &&
               Array.isArray(homePosts) &&
               homePosts.map((post) => (
                 <div key={post.id} className="border-b border-border pb-4">
                   <Post post={{ ...post, timeAgo: getTimeAgo(post.createdOn) }} />
                 </div>
-              ))}
+              ))} */}
           </div>
           <div className={cx("right-content")}>
             <div className={cx("recent-post-header")}>

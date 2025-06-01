@@ -33,7 +33,7 @@ const Page = () => {
     setCommentArr(currentPost?.comments ?? []);
   }, [currentPost]);
 
-  //currentComment cũng null => getPostDetailWithId ko đc gọi 
+  //currentComment cũng null => getPostDetailWithId ko đc gọi
   useEffect(() => {
     dispatch(getPostDetailWithId(postId));
     setCommentArr(currentPost?.comments ?? []);

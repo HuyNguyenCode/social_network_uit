@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { searchPosts, searchUsers, clearSearchResults } from "@/redux/postSlice";
-import { getTimeAgo } from "@/utils/dateFormat";
 import { AppDispatch, RootState } from "@/redux/store";
 import Post from "@/app/(post)/components/Post";
 import Header from "@/components/ui/header";
