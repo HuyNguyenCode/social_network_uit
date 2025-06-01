@@ -72,6 +72,7 @@ const PostDetail = ({ post }: PostProps) => {
   const handleEditPost = () => {
     setIsEdit(true);
     setIsMenuOpen(false);
+    setContent(post.content);
   };
 
   const handleDeletePost = () => {
@@ -91,9 +92,12 @@ const PostDetail = ({ post }: PostProps) => {
   };
 
   const handleSubmitEdit = async () => {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = content;
+    const plainText = tempDiv.textContent || tempDiv.innerText || "";
     const postData = {
       title: post?.title || "",
-      content: content,
+      content: plainText,
     };
 
     const result = await dispatch(updatePost({ postId, postData }));
@@ -279,7 +283,7 @@ const PostDetail = ({ post }: PostProps) => {
         </div>
         <div className="font-semibold text-gray-900 text-2xl mb-4">{post.title} </div>
         {isEdit ? (
-          <div className="border border-gray-300 rounded-2xl h-40 flex flex-col gap-2">
+          <div className="border border-gray-300 rounded-2xl h-40 flex flex-col gap-2" style={{marginBottom: "50px"}}>
             <TextEditor editorData={content} setEditorData={setContent} />
             <div className="flex justify-end gap-2 mt-6 pr-2">
               <button className="bg-gray-500 text-white rounded-full px-4 py-1 text-sm" onClick={() => setIsEdit(false)}>

@@ -15,9 +15,9 @@ export default function UserPosts() {
 
   // State quản lý trang hiện tại
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10; // Có thể điều chỉnh
+  const pageSize = 10; 
   const { userId } = useUserStore(); // Lấy thông tin từ store
-  // console.log("posts", posts);
+
 
   useEffect(() => {
     if (userId) {

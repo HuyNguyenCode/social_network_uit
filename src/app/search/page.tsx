@@ -13,6 +13,7 @@ import classNames from "classnames/bind";
 import Sidebar from "@/app/(home)/sidebar";
 import Link from "next/link";
 import Image from "next/image";
+import OutputFile from "@/app/(post)/create-post/outputFile";
 
 // Add SearchSkeleton component
 const SearchSkeleton = () => {
@@ -43,7 +44,21 @@ const UserCard = ({ user }: { user: any }) => {
   return (
     <Link href={`/user/${user.userName}`}>
       <div className="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors">
-        <Image src={user.avatarUrl || "/avatar.jpg"} alt={user.userName} width={48} height={48} className="rounded-full" />
+        <div className="w-6 h-6 rounded-full position-relative" style={{ position: "relative" }}>
+          {user?.avatarUrl ? (
+            <OutputFile imageID={user?.avatarUrl ?? ""} />
+          ) : (
+            <Image
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZw4HYx8PHlE8ZniW1hqck5nZeKaYZSqG56g&s"
+              alt="avatar"
+              className="w-12 h-12 rounded-full"
+              width={48}
+              height={48}
+              style={{ height: "100%" }}
+            />
+          )}
+        </div>
+
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h3 className="font-medium">{user.userName}</h3>

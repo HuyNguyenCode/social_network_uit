@@ -232,7 +232,7 @@ function Comment({ comment, level = 0 }: { comment: CommentType; level?: number 
           <span className="text-xs text-gray-500">• {dayjs(comment.createdOn).fromNow()}</span>
         </div>
         {isEdit ? (
-          <div className="border border-gray-300 rounded-2xl h-40" style={{ width: "99%", marginTop: "8px" }}>
+          <div className="border border-gray-300 rounded-2xl h-40" style={{ width: "99%", marginTop: "8px", marginBottom: "20px" }}>
             <TextEditor editorData={content} setEditorData={setContent} />
             <div className="flex justify-end gap-2 mt-6 pr-2">
               <button className="bg-gray-500 text-white rounded-full px-4 py-1 text-sm" onClick={() => setIsEdit(false)}>

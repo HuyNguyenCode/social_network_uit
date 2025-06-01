@@ -74,11 +74,23 @@ interface PostState {
   currentPost: PostDetail | null;
   upvotedPosts: PostListItem | null; // Thay đổi kiểu dữ liệu
   downvotedPosts: PostListItem | null; // Thay đổi kiểu dữ liệu
-  homePosts: PostListItem | null; // Thay đổi kiểu dữ liệu
+  homePosts: {
+    items: PostListItem[];
+    page: number;
+    pages: number;
+    total: number;
+  } | null;
   popularPosts: {
     items: PostListItem[];
     page: number;
     pages: number;
+    total: number;
+  } | null;
+  followingPosts: {
+    items: PostListItem[];
+    page: number;
+    pages: number;
+    total: number;
   } | null;
   loading: boolean;
   error: string | null;
@@ -97,11 +109,23 @@ const initialState: PostState = {
     loading: false,
     error: null,
   },
-  homePosts: null,
+  homePosts: {
+    items: [],
+    page: 0,
+    pages: 0,
+    total: 0,
+  },
   popularPosts: {
     items: [],
     page: 0,
     pages: 0,
+    total: 0,
+  },
+  followingPosts: {
+    items: [],
+    page: 0,
+    pages: 0,
+    total: 0,
   },
   votedPosts: null,
   loading: false,
@@ -194,64 +218,6 @@ export const votePost = createAsyncThunk(
     } catch (error: any) {
       console.log("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
-    }
-  },
-);
-
-// Thunk to get posts that a user has voted on
-export const getUserVotedPosts = createAsyncThunk(
-  "post/getUserVotedPosts",
-  async (
-    {
-      userId,
-      voteType,
-    }: {
-      userId: string;
-      voteType: string;
-    },
-    { rejectWithValue },
-  ) => {
-    try {
-      const url = new URL(`http://localhost:5108/api/posts/user/${userId}/voted/${voteType}`);
-      // Add pagination parameters
-
-      const response = await fetch(url.toString(), {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${Cookies.get("sessionToken")}`,
-        },
-      });
-
-      const result = await response.json();
-      console.log("📢 API Response for voted posts:", result);
-
-      if (!response.ok || !result.succeeded) {
-        const errorMessage = result.message || result.errors?.join(", ") || "Không thể lấy danh sách bài viết đã vote";
-        return rejectWithValue({
-          message: errorMessage,
-          status: response.status,
-        });
-      }
-
-      if (!result.result) {
-        return rejectWithValue({
-          message: "Không tìm thấy bài viết",
-          status: 404,
-        });
-      }
-
-      console.log("✅ Lấy danh sách bài viết đã vote thành công:", result.result);
-      return {
-        data: result.result, // Bao gồm items, page, pages, size, total
-        message: result.message,
-      };
-    } catch (error: any) {
-      console.error("❌ Lỗi ngoại lệ:", error);
-      return rejectWithValue({
-        message: error.message || "Lỗi kết nối đến server",
-        status: 500,
-      });
     }
   },
 );
@@ -392,49 +358,12 @@ export const getPostWithId = createAsyncThunk(
   },
 );
 
-// Thunk xử lý lấy danh sách bài viết theo userID (có phân trang)
-export const getHomePost = createAsyncThunk("post/getHomePost", async (_, { rejectWithValue }) => {
-  try {
-    const response = await fetch("http://localhost:5108/api/posts/home", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const result = await response.json();
-
-    if (!response.ok || !result) {
-      const errorMessage = result.message || result.errors?.join(", ") || "Không thể lấy danh sách bài viết";
-      return rejectWithValue({
-        message: errorMessage,
-        status: response.status,
-      });
-    }
-
-    if (!result) {
-      return rejectWithValue({
-        message: "Không tìm thấy bài viết",
-        status: 404,
-      });
-    }
-    return {
-      data: result.result.items,
-    };
-  } catch (error: any) {
-    console.error("❌ Lỗi ngoại lệ:", error);
-    return rejectWithValue({
-      message: error.message || "Lỗi kết nối đến server",
-      status: 500,
-    });
-  }
-});
-
-export const getPopularPost = createAsyncThunk(
-  "post/getPopularPost",
+export const getHomePost = createAsyncThunk(
+  "post/getHomePost",
   async (
     {
-      page = 1,
-      pageSize = 10,
+      page,
+      pageSize,
     }: {
       page?: number;
       pageSize?: number;
@@ -442,11 +371,7 @@ export const getPopularPost = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const url = new URL(`http://localhost:5108/api/posts/popular`);
-      url.searchParams.append("page", page.toString());
-      url.searchParams.append("pageSize", pageSize.toString());
-
-      const response = await fetch(url.toString(), {
+      const response = await fetch(`http://localhost:5108/api/posts/home?pageNumber=${page}&pageSize=${pageSize}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -454,7 +379,9 @@ export const getPopularPost = createAsyncThunk(
       });
 
       const result = await response.json();
-      console.log("📢 API Response:", result);
+      console.log("📢 API Response for popular posts:", {
+        result,
+      });
 
       if (!response.ok || !result) {
         const errorMessage = result.message || result.errors?.join(", ") || "Không thể lấy danh sách bài viết";
@@ -471,8 +398,142 @@ export const getPopularPost = createAsyncThunk(
         });
       }
 
+      // Get the total count from the API response
+      const totalItems = result.result.total || result.result.items.length;
+      const totalPages = pageSize && Math.ceil(totalItems / pageSize);
+
       return {
-        data: result.result,
+        data: {
+          items: result.result.items,
+          page: page,
+          pages: totalPages,
+          total: totalItems,
+        },
+      };
+    } catch (error: any) {
+      console.error("❌ Lỗi ngoại lệ:", error);
+      return rejectWithValue({
+        message: error.message || "Lỗi kết nối đến server",
+        status: 500,
+      });
+    }
+  },
+);
+
+export const getPopularPost = createAsyncThunk(
+  "post/getPopularPost",
+  async (
+    {
+      page,
+      pageSize,
+    }: {
+      page?: number;
+      pageSize?: number;
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await fetch(`http://localhost:5108/api/posts/popular?pageNumber=${page}&pageSize=${pageSize}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+      console.log("📢 API Response for popular posts:", {
+        result,
+      });
+
+      if (!response.ok || !result) {
+        const errorMessage = result.message || result.errors?.join(", ") || "Không thể lấy danh sách bài viết";
+        return rejectWithValue({
+          message: errorMessage,
+          status: response.status,
+        });
+      }
+
+      if (!result) {
+        return rejectWithValue({
+          message: "Không tìm thấy bài viết",
+          status: 404,
+        });
+      }
+
+      // Get the total count from the API response
+      const totalItems = result.result.total || result.result.items.length;
+      const totalPages = pageSize && Math.ceil(totalItems / pageSize);
+
+      return {
+        data: {
+          items: result.result.items,
+          page: page,
+          pages: totalPages,
+          total: totalItems,
+        },
+      };
+    } catch (error: any) {
+      console.error("❌ Lỗi ngoại lệ:", error);
+      return rejectWithValue({
+        message: error.message || "Lỗi kết nối đến server",
+        status: 500,
+      });
+    }
+  },
+);
+
+export const getFollowingPost = createAsyncThunk(
+  "post/getFollowingPost",
+  async (
+    {
+      page,
+      pageSize,
+    }: {
+      page?: number;
+      pageSize?: number;
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await fetch(`http://localhost:5108/api/posts/recent-followed?pageNumber=${page}&pageSize=${pageSize}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("sessionToken")}`,
+        },
+      });
+
+      const result = await response.json();
+      console.log("📢 API Response for popular posts:", {
+        result,
+      });
+
+      if (!response.ok || !result) {
+        const errorMessage = result.message || result.errors?.join(", ") || "Không thể lấy danh sách bài viết";
+        return rejectWithValue({
+          message: errorMessage,
+          status: response.status,
+        });
+      }
+
+      if (!result) {
+        return rejectWithValue({
+          message: "Không tìm thấy bài viết",
+          status: 404,
+        });
+      }
+
+      // Get the total count from the API response
+      const totalItems = result.result.total || result.result.items.length;
+      const totalPages = pageSize && Math.ceil(totalItems / pageSize);
+
+      return {
+        data: {
+          items: result.result.items,
+          page: page,
+          pages: totalPages,
+          total: totalItems,
+        },
       };
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
@@ -714,6 +775,30 @@ const postSlice = createSlice({
         error: null,
       };
     },
+    resetPopularPosts(state) {
+      state.popularPosts = {
+        items: [],
+        page: 0,
+        pages: 0,
+        total: 0,
+      };
+    },
+    resetHomePosts(state) {
+      state.homePosts = {
+        items: [],
+        page: 0,
+        pages: 0,
+        total: 0,
+      };
+    },
+    resetFollowingPosts(state) {
+      state.homePosts = {
+        items: [],
+        page: 0,
+        pages: 0,
+        total: 0,
+      };
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -813,19 +898,6 @@ const postSlice = createSlice({
         state.loading = false;
         state.error = (action.payload as any)?.message || "Failed to load upvoted post";
       })
-      .addCase(getUserVotedPosts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getUserVotedPosts.fulfilled, (state, action) => {
-        state.loading = false;
-        state.votedPosts = action.payload.data; // Use the same posts field to store the voted posts
-        state.error = null;
-      })
-      .addCase(getUserVotedPosts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = (action.payload as any)?.message || "Không thể tải danh sách bài viết đã vote";
-      })
 
       // Xử lý getPostDetailWithId (chi tiết)
       .addCase(getPostDetailWithId.pending, (state) => {
@@ -882,17 +954,44 @@ const postSlice = createSlice({
       .addCase(getHomePost.pending, (state) => {
         state.loading = true;
         state.error = null;
-        state.homePosts = null;
       })
       .addCase(getHomePost.fulfilled, (state, action) => {
         state.loading = false;
-        state.homePosts = action.payload.data;
+        const { items, pages, total } = action.payload.data;
+        const currentPage = action.meta.arg.page ?? 1;
+
+        if (currentPage === 1) {
+          state.homePosts = { items, page: currentPage ?? 1, pages: pages ?? 0, total: total ?? 0 };
+        } else {
+          // Append new items for subsequent pages
+          const existingItems = state.homePosts?.items || [];
+          const existingIds = new Set(existingItems.map((item) => item.id));
+          const uniqueNewItems = items.filter((item: PostListItem) => !existingIds.has(item.id));
+
+          // If we got duplicates or no new items, we've reached the end
+          if (uniqueNewItems.length === 0) {
+            state.homePosts = {
+              items: existingItems,
+              page: currentPage,
+              pages: Math.ceil(existingItems.length / (action.meta.arg.pageSize ?? 5)),
+              total: existingItems.length,
+            };
+            return;
+          }
+
+          // Update state with new items
+          state.homePosts = {
+            items: [...existingItems, ...uniqueNewItems],
+            page: currentPage,
+            pages: pages ?? 0,
+            total,
+          };
+        }
         state.error = null;
       })
       .addCase(getHomePost.rejected, (state, action) => {
         state.loading = false;
-        state.error = (action.payload as any)?.message || "Failed to load downvoted post";
-        state.homePosts = null;
+        state.error = (action.payload as any)?.message || "Lỗi không xác định";
       })
 
       // Xử lý getPopularPost(chi tiết)
@@ -902,20 +1001,83 @@ const postSlice = createSlice({
       })
       .addCase(getPopularPost.fulfilled, (state, action) => {
         state.loading = false;
-        const { items, pages } = action.payload.data;
+        const { items, pages, total } = action.payload.data;
         const currentPage = action.meta.arg.page ?? 1;
 
         if (currentPage === 1) {
-          state.popularPosts = { items, page: currentPage, pages };
+          state.popularPosts = { items, page: currentPage ?? 1, pages: pages ?? 0, total: total ?? 0 };
         } else {
+          // Append new items for subsequent pages
+          const existingItems = state.popularPosts?.items || [];
+          const existingIds = new Set(existingItems.map((item) => item.id));
+          const uniqueNewItems = items.filter((item: PostListItem) => !existingIds.has(item.id));
+
+          // If we got duplicates or no new items, we've reached the end
+          if (uniqueNewItems.length === 0) {
+            state.popularPosts = {
+              items: existingItems,
+              page: currentPage,
+              pages: Math.ceil(existingItems.length / (action.meta.arg.pageSize ?? 5)),
+              total: existingItems.length,
+            };
+            return;
+          }
+
+          // Update state with new items
           state.popularPosts = {
-            items: [...(state.popularPosts?.items || []), ...items],
+            items: [...existingItems, ...uniqueNewItems],
             page: currentPage,
-            pages,
+            pages: pages ?? 0,
+            total,
           };
         }
+        state.error = null;
       })
       .addCase(getPopularPost.rejected, (state, action) => {
+        state.loading = false;
+        state.error = (action.payload as any)?.message || "Lỗi không xác định";
+      })
+
+      // Xử lý getFollowingPost(chi tiết)
+      .addCase(getFollowingPost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getFollowingPost.fulfilled, (state, action) => {
+        state.loading = false;
+        const { items, pages, total } = action.payload.data;
+        const currentPage = action.meta.arg.page ?? 1;
+
+        if (currentPage === 1) {
+          state.followingPosts = { items, page: currentPage ?? 1, pages: pages ?? 0, total: total ?? 0 };
+        } else {
+          // Append new items for subsequent pages
+          const existingItems = state.followingPosts?.items || [];
+          const existingIds = new Set(existingItems.map((item) => item.id));
+          const uniqueNewItems = items.filter((item: PostListItem) => !existingIds.has(item.id));
+
+          // If we got duplicates or no new items, we've reached the end
+          if (uniqueNewItems.length === 0) {
+            state.followingPosts = {
+              items: existingItems,
+              page: currentPage,
+              pages: Math.ceil(existingItems.length / (action.meta.arg.pageSize ?? 5)),
+              total: existingItems.length,
+            };
+            return;
+          }
+
+          // Update state with new items
+          state.followingPosts = {
+            items: [...existingItems, ...uniqueNewItems],
+            page: currentPage,
+            pages: pages ?? 0,
+            total,
+          };
+        }
+        state.error = null;
+      })
+      .addCase(getFollowingPost.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as any)?.message || "Lỗi không xác định";
       })
@@ -955,5 +1117,5 @@ const postSlice = createSlice({
   },
 });
 
-export const { clearCurrentPost, clearSearchResults } = postSlice.actions;
+export const { clearCurrentPost, clearSearchResults, resetPopularPosts, resetHomePosts, resetFollowingPosts } = postSlice.actions;
 export default postSlice.reducer;

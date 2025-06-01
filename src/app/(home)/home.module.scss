@@ -43,7 +43,6 @@
             border-radius: 20px;
             outline-offset: -1px;
             padding: 12px 12px;
-            
           }
         }
         .recent,
@@ -253,7 +252,7 @@
         }
         .recent-post {
           display: flex;
-          padding: 16px 8px;
+          padding: 5px 8px;
           flex-direction: column;
           align-items: flex-start;
           gap: 16px;
@@ -274,15 +273,20 @@
             }
           }
           .recent-post-content {
+            width: 100%;
             .recent-post-with-img {
               display: flex;
-              gap: 16px;
+              gap: 5px;
               .left-content-recent-post {
-                width: 50%;
+                width: 70%;
               }
               .right-content-recent-post {
                 width: 50%;
+                position: relative;
               }
+            }
+            .recent-post-wihtout-img {
+              display: block;
             }
             .post-title {
               color: #1e293b;

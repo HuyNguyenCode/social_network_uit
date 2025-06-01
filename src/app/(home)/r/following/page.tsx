@@ -1,17 +1,18 @@
 "use client";
 import Image from "next/image";
-import styles from "./home.module.scss";
+import styles from "../../home.module.scss";
 import classNames from "classnames/bind";
 const cx = classNames.bind(styles);
 import Sidebar from "@/app/(home)/sidebar";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { getHomePost, resetHomePosts } from "@/redux/postSlice";
+import { getFollowingPost, resetFollowingPosts } from "@/redux/postSlice";
 import Post from "@/app/(post)/components/Post";
-export default function HomePage() {
+
+export default function FollowingPage() {
   const dispatch = useDispatch<AppDispatch>();
-  const { homePosts, loading } = useSelector((state: RootState) => state.post);
+  const { followingPosts, loading } = useSelector((state: RootState) => state.post);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef<IntersectionObserver | null>(null);
@@ -22,7 +23,7 @@ export default function HomePage() {
   // Gọi API khi page thay đổi
   useEffect(() => {
     if (!hasMore) return;
-    dispatch(getHomePost({ page, pageSize }));
+    dispatch(getFollowingPost({ page, pageSize }));
   }, [page, dispatch, hasMore, pageSize]);
 
   // Tạo observer khi scroll tới cuối
@@ -38,9 +39,9 @@ export default function HomePage() {
       }
 
       observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && homePosts && !loading && hasMore) {
-          const currentItems = homePosts.items.length;
-          const totalItems = homePosts.total;
+        if (entries[0].isIntersecting && followingPosts && !loading && hasMore) {
+          const currentItems = followingPosts.items.length;
+          const totalItems = followingPosts.total;
           // Check if we have more items to load
           if (currentItems < totalItems) {
             setPage((prev) => prev + 1);
@@ -54,16 +55,16 @@ export default function HomePage() {
         observer.current.observe(node);
       }
     },
-    [loading, homePosts, page, hasMore],
+    [loading, followingPosts, page, hasMore],
   );
   useEffect(() => {
     return () => {
-      dispatch(resetHomePosts());
+      dispatch(resetFollowingPosts());
     };
   }, [dispatch]);
 
   useEffect(() => {
-    dispatch(resetHomePosts());
+    dispatch(resetFollowingPosts());
     setPage(1);
     setHasMore(true);
   }, [dispatch]);
@@ -72,15 +73,14 @@ export default function HomePage() {
     if (lastPostRef.current) {
       handleObserver(lastPostRef.current);
     }
-  }, [homePosts?.items.length, handleObserver]);
+  }, [followingPosts?.items.length, handleObserver]);
 
   useEffect(() => {
     console.log(
-      "🧠 homePosts.items:",
-      homePosts?.items.map((p) => p.id),
+      "🧠 followingPosts.items:",
+      followingPosts?.items.map((p) => p.id),
     );
-  }, [homePosts?.items]);
-
+  }, [followingPosts?.items]);
   return (
     <div className={cx("home-wrapper")}>
       <div className={cx("container")}>
@@ -89,10 +89,10 @@ export default function HomePage() {
           <div className={cx("middle-content")}>
             {loading && page === 1 ? (
               <div className="text-center text-gray-500 py-4">Loading posts...</div>
-            ) : homePosts?.items?.length ? (
+            ) : followingPosts?.items?.length ? (
               <>
-                {homePosts.items.map((post, index) => {
-                  const isLastPost = index === homePosts.items.length - 1;
+                {followingPosts.items.map((post, index) => {
+                  const isLastPost = index === followingPosts.items.length - 1;
                   return (
                     <div key={post.id} ref={isLastPost ? lastPostRef : null} className="border-b border-border pb-4">
                       <Post
@@ -107,7 +107,7 @@ export default function HomePage() {
                 {loading && <div className="text-center text-gray-500 py-2">Loading more posts...</div>}
                 {!loading && !hasMore && (
                   <div className="text-center text-gray-500 py-4">
-                    Displayed all posts({homePosts.items.length} / {homePosts.total} posts)
+                    Displayed all posts({followingPosts.items.length} / {followingPosts.total} posts)
                   </div>
                 )}
               </>
@@ -158,7 +158,7 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-            {/* <div className={cx("recent-post")}></div> */}
+            <div className={cx("recent-post")}></div>
           </div>
         </div>
       </div>
