@@ -35,7 +35,7 @@ export const postCreate = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await fetch("https://localhost:44371/api/posts", {
+      const response = await fetch("http://localhost:5108/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -68,7 +68,7 @@ export const votePost = createAsyncThunk(
   "post/vote",
   async ({ postId, voteData }: { postId: string; voteData: { userId: string; voteType: number } }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`https://localhost:44371/api/posts/${postId}/vote`, {
+      const response = await fetch(`http://localhost:5108/api/posts/${postId}/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(voteData),
@@ -103,7 +103,7 @@ export const updatePost = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await fetch(`https://localhost:44371/api/posts/${postId}/update`, {
+      const response = await fetch(`http://localhost:5108/api/posts/${postId}/update`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(postData),
@@ -133,7 +133,7 @@ export const updatePost = createAsyncThunk(
 // Thunk xử lý lấy bài viết theo ID
 export const getPostWithId = createAsyncThunk("post/getPostWithId", async (postId: string, { rejectWithValue }) => {
   try {
-    const response = await fetch(`https://localhost:44371/api/posts/${postId}`, {
+    const response = await fetch(`http://localhost:5108/api/posts/${postId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
