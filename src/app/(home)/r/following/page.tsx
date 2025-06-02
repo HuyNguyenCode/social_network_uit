@@ -7,12 +7,14 @@ import Sidebar from "@/app/(home)/sidebar";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { getFollowingPost, resetFollowingPosts } from "@/redux/postSlice";
+import { getFollowingPost, resetFollowingPosts, getPostWithId } from "@/redux/postSlice";
 import Post from "@/app/(post)/components/Post";
-
+import CurrentPost from "@/app/(post)/components/CurrentPost";
+import { useUserStore } from "@/store/useUserStore";
+import { useParams } from "next/navigation";
 export default function FollowingPage() {
   const dispatch = useDispatch<AppDispatch>();
-  const { followingPosts, loading } = useSelector((state: RootState) => state.post);
+  const { followingPosts, loading, posts } = useSelector((state: RootState) => state.post);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef<IntersectionObserver | null>(null);
@@ -81,6 +83,19 @@ export default function FollowingPage() {
       followingPosts?.items.map((p) => p.id),
     );
   }, [followingPosts?.items]);
+  const { userId } = useUserStore(); // Lấy thông tin từ store
+  const { username } = useParams();
+  useEffect(() => {
+    if (userId) {
+      dispatch(
+        getPostWithId({
+          userId: userId as string,
+          page: 1,
+          pageSize: 2,
+        }),
+      );
+    }
+  }, [username, dispatch]);
   return (
     <div className={cx("home-wrapper")}>
       <div className={cx("container")}>
@@ -120,45 +135,7 @@ export default function FollowingPage() {
               <span className={cx("recent-post-header-text")}>Recent Posts</span>
               <span className={cx("recent-post-header-clear")}>Clear</span>
             </div>
-            <div className={cx("recent-post")}>
-              <div className={cx("recent-post-header")}>
-                <div className={cx("avatar")}>
-                  <Image src="/avatar.jpg" alt="avatar" width={24} height={24} className={cx("avatar-image")}></Image>
-                </div>
-                <span className={cx("name")}>s/tiktokcringe</span>
-              </div>
-              <div className={cx("recent-post-content")}>
-                <div className={cx("recent-post-with-img")}>
-                  <div className={cx("left-content-recent-post")}>
-                    <span className={cx("post-title")}>
-                      Guy with fear of heights gets the courage make it to the cliffside view
-                    </span>
-                    <p className={cx("post-content")}>
-                      https://www.slothui.com/guy-with-fear-of-heights-gets-the-courage-to-make-if
-                    </p>
-                  </div>
-                  <div className={cx("right-content-recent-post")}>
-                    <Image src="/post-img.jpg" width={200} height={200} alt="avatar" className={cx("avatar-image")}></Image>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className={cx("recent-post")}>
-              <div className={cx("recent-post-header")}>
-                <div className={cx("avatar")}>
-                  <Image src="/avatar.jpg" width={24} height={24} alt="avatar" className={cx("avatar-image")}></Image>
-                </div>
-                <span className={cx("name")}>s/anime</span>
-              </div>
-              <div className={cx("recent-post-content")}>
-                <span className={cx("post-title")}>Best anime for gen Z</span>
-                <p className={cx("post-content")}>
-                  I like movies where they start out in a way that you think you're in for a typical movie where you have a pretty
-                  good idea how{" "}
-                </p>
-              </div>
-            </div>
-            <div className={cx("recent-post")}></div>
+            {posts && posts.items.map((post) => <CurrentPost post={{ ...post, userAvatar: post.userAvatar ?? undefined }} />)}
           </div>
         </div>
       </div>

@@ -1,24 +1,27 @@
 "use client";
-import Image from "next/image";
 import styles from "./home.module.scss";
 import classNames from "classnames/bind";
+import { useParams } from "next/navigation";
 const cx = classNames.bind(styles);
 import Sidebar from "@/app/(home)/sidebar";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { getHomePost, resetHomePosts } from "@/redux/postSlice";
+import { useUserStore } from "@/store/useUserStore";
+import { getHomePost, resetHomePosts, getPostWithId } from "@/redux/postSlice";
 import Post from "@/app/(post)/components/Post";
+import CurrentPost from "@/app/(post)/components/CurrentPost";
 export default function HomePage() {
   const dispatch = useDispatch<AppDispatch>();
-  const { homePosts, loading } = useSelector((state: RootState) => state.post);
+  const { username } = useParams();
+  const { homePosts, loading, posts } = useSelector((state: RootState) => state.post);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef<IntersectionObserver | null>(null);
   const lastPostRef = useRef<HTMLDivElement | null>(null);
 
   const pageSize = 5; // Fixed page size of 5 posts
-
+  const { userId } = useUserStore(); // Lấy thông tin từ store
   // Gọi API khi page thay đổi
   useEffect(() => {
     if (!hasMore) return;
@@ -80,7 +83,19 @@ export default function HomePage() {
       homePosts?.items.map((p) => p.id),
     );
   }, [homePosts?.items]);
+  console.log(posts);
 
+  useEffect(() => {
+    if (userId) {
+      dispatch(
+        getPostWithId({
+          userId: userId as string,
+          page: 1,
+          pageSize: 2,
+        }),
+      );
+    }
+  }, [username, dispatch]);
   return (
     <div className={cx("home-wrapper")}>
       <div className={cx("container")}>
@@ -120,45 +135,7 @@ export default function HomePage() {
               <span className={cx("recent-post-header-text")}>Recent Posts</span>
               <span className={cx("recent-post-header-clear")}>Clear</span>
             </div>
-            <div className={cx("recent-post")}>
-              <div className={cx("recent-post-header")}>
-                <div className={cx("avatar")}>
-                  <Image src="/avatar.jpg" alt="avatar" width={24} height={24} className={cx("avatar-image")}></Image>
-                </div>
-                <span className={cx("name")}>s/tiktokcringe</span>
-              </div>
-              <div className={cx("recent-post-content")}>
-                <div className={cx("recent-post-with-img")}>
-                  <div className={cx("left-content-recent-post")}>
-                    <span className={cx("post-title")}>
-                      Guy with fear of heights gets the courage make it to the cliffside view
-                    </span>
-                    <p className={cx("post-content")}>
-                      https://www.slothui.com/guy-with-fear-of-heights-gets-the-courage-to-make-if
-                    </p>
-                  </div>
-                  <div className={cx("right-content-recent-post")}>
-                    <Image src="/post-img.jpg" width={200} height={200} alt="avatar" className={cx("avatar-image")}></Image>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className={cx("recent-post")}>
-              <div className={cx("recent-post-header")}>
-                <div className={cx("avatar")}>
-                  <Image src="/avatar.jpg" width={24} height={24} alt="avatar" className={cx("avatar-image")}></Image>
-                </div>
-                <span className={cx("name")}>s/anime</span>
-              </div>
-              <div className={cx("recent-post-content")}>
-                <span className={cx("post-title")}>Best anime for gen Z</span>
-                <p className={cx("post-content")}>
-                  I like movies where they start out in a way that you think you're in for a typical movie where you have a pretty
-                  good idea how{" "}
-                </p>
-              </div>
-            </div>
-            {/* <div className={cx("recent-post")}></div> */}
+            {posts && posts.items.map((post) => <CurrentPost post={{ ...post, userAvatar: post.userAvatar ?? undefined }} />)}
           </div>
         </div>
       </div>

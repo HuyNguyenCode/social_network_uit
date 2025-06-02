@@ -1,18 +1,20 @@
 "use client";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getPopularPost, resetPopularPosts } from "@/redux/postSlice";
+import { getPopularPost, resetPopularPosts, getPostWithId } from "@/redux/postSlice";
 import { RootState, AppDispatch } from "@/redux/store";
 import Sidebar from "@/app/(home)/sidebar";
 import Post from "@/app/(post)/components/Post";
 import classNames from "classnames/bind";
 import styles from "../../home.module.scss";
-
+import CurrentPost from "@/app/(post)/components/CurrentPost";
+import { useUserStore } from "@/store/useUserStore";
+import { useParams } from "next/navigation";
 const cx = classNames.bind(styles);
 
 export default function PopularPage() {
   const dispatch = useDispatch<AppDispatch>();
-  const { popularPosts, loading } = useSelector((state: RootState) => state.post);
+  const { popularPosts, loading, posts } = useSelector((state: RootState) => state.post);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef<IntersectionObserver | null>(null);
@@ -81,7 +83,19 @@ export default function PopularPage() {
       popularPosts?.items.map((p) => p.id),
     );
   }, [popularPosts?.items]);
-
+  const { userId } = useUserStore(); // Lấy thông tin từ store
+  const { username } = useParams();
+  useEffect(() => {
+    if (userId) {
+      dispatch(
+        getPostWithId({
+          userId: userId as string,
+          page: 1,
+          pageSize: 2,
+        }),
+      );
+    }
+  }, [username, dispatch]);
   return (
     <div className={cx("home-wrapper")}>
       <div className={cx("container")}>
@@ -115,6 +129,13 @@ export default function PopularPage() {
             ) : (
               <div className="text-gray-500 text-sm text-center py-4">There are no posts.</div>
             )}
+          </div>
+          <div className={cx("right-content")}>
+            <div className={cx("recent-post-header")}>
+              <span className={cx("recent-post-header-text")}>Recent Posts</span>
+              <span className={cx("recent-post-header-clear")}>Clear</span>
+            </div>
+            {posts && posts.items.map((post) => <CurrentPost post={{ ...post, userAvatar: post.userAvatar ?? undefined }} />)}
           </div>
         </div>
       </div>
