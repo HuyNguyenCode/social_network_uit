@@ -103,6 +103,7 @@
         padding: 0px 24px;
         display: flex;
         flex-direction: column;
+        margin-top: 30px;
         .post:first-child {
           border-top: none;
         }
@@ -281,15 +282,20 @@
             }
           }
           .recent-post-content {
+            width: 100%;
             .recent-post-with-img {
               display: flex;
-              gap: 16px;
+              gap: 5px;
               .left-content-recent-post {
-                width: 50%;
+                width: 70%;
               }
               .right-content-recent-post {
                 width: 50%;
+                position: relative;
               }
+            }
+            .recent-post-wihtout-img {
+              display: block;
             }
             .post-title {
               color: #1e293b;

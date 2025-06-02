@@ -38,6 +38,7 @@ body {
     --gray-0-white: #FFF;
     /* --Gray-50:  */
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -70,7 +71,108 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.ck-content {
+  background-color: #fff !important;
+  color: #000 !important;
+  border-radius: 0.5rem !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ck-content p {
+  color: #000 !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+}
+
+.ck-content h1 {
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  color: #000 !important;
+}
+
+.ck-content h2 {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: #000 !important;
+}
+
+.ck.ck-editor__editable_inline,
+.ck-editor__editable,
+.ck-editor__editable_inline {
+  background-color: #fff !important;
+  color: #000 !important;
+  border-radius: 0.5rem !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ck-toolbar,
+.ck-toolbar__items {
+  background-color: #f5f5f5 !important;
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ck-button {
+  color: #000 !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ck-button:hover {
+  background-color: #e2e8f0 !important; /* light gray hover */
+}
+
+.ck-editor__main {
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.ck.ck-editor__main > .ck-editor__editable,
+.ck.ck-editor__main > .ck-editor__editable:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.ck-sticky-panel__content {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.ck.ck-dropdown__panel,
+.ck-button.ck-on {
+  background-color: #f5f5f5 !important;
+}
+
+.ck-list,
+.ck-list-item-button {
+  background-color: #fff !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
 }

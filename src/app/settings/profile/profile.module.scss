@@ -9,10 +9,7 @@
     height: 70px;
     width: 100%;
     padding: 16px 16px 172px 1072px;
-    background: var(
-      --Gradient-Mesh-6,
-      url("../../../../public/gradient-mesh-6.png") lightgray 50% / cover no-repeat
-    );
+    background: var(--Gradient-Mesh-6, url("../../../../public/gradient-mesh-6.png") lightgray 50% / cover no-repeat);
   }
   .profile-container {
     position: absolute;
@@ -20,12 +17,11 @@
     padding: 0 32px;
     width: 100%;
     .profile-avatar-wrapper {
+      position: relative;
+      height: 100px;
+      width: 100px;
       .profile-avatar {
         border-radius: 246px;
-        background: var(
-          --Avatar-1,
-          url("../../../../public/avatar.jpg") lightgray 50% / cover no-repeat
-        );
       }
     }
     .profile-infor-wrapper {
@@ -109,7 +105,7 @@
   }
   .profile-info-wrapper {
     position: absolute;
-    margin-top: 15%;
+    margin-top: 12%;
     padding: 0 32px;
     display: flex;
     // justify-content: space-between;
@@ -148,7 +144,7 @@
         .profile-input-wrapper {
           display: flex;
           flex-direction: column;
-          width: 50%;
+          width: 100%;
           gap: 8px;
           .input-text {
             color: #1e293b;
@@ -180,7 +176,14 @@
           .change-avatar-section {
             display: flex;
             gap: 32px;
+            .avatar-origin {
+              position: relative;
+              width: 11%;
+              height: 29%;
+              border-radius: 100%;
+            }
             .avatar-upload-box {
+              flex: 1;
               display: flex;
               flex-direction: column;
               padding: 24px;
@@ -203,6 +206,7 @@
               .avatar-upload-text-wrapper {
                 display: flex;
                 gap: 4px;
+                width: 100%;
                 .avatar-upload-text-click {
                   color: #4f46e5;
                   font-size: 16px;
@@ -223,7 +227,7 @@
                 }
               }
               .avatar-upload-format {
-                color:  #94a3b8;
+                color: #94a3b8;
                 text-align: center;
                 font-size: 14px;
                 font-style: normal;
@@ -233,6 +237,27 @@
               }
             }
           }
+          .input-select {
+            width: 100%;
+            outline: none;
+          }
+        }
+      }
+      .view-btn {
+        display: flex;
+        padding: 10px 16px;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        border-radius: 1234px;
+        background: #4f46e5;
+        .view-text {
+          color: var(--gray-0-white, #fff);
+          font-size: 14px;
+          font-style: normal;
+          font-weight: 700;
+          line-height: 20px; /* 142.857% */
+          letter-spacing: -0.084px;
         }
       }
     }

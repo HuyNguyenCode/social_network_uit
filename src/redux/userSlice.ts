@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { log } from "node:console";
 
-// Interface cho user
+// Interface cho thông tin user từ API
 interface User {
   id: string;
   userName: string;
@@ -10,50 +11,96 @@ interface User {
   phoneNumber: string | null;
 }
 
-// Interface cho state
+// Interface cho trạng thái user
 interface UserState {
-  userInfo: User | null;
+  userInfor: User | null;
+  isUpdate: boolean;
   loading: boolean;
   error: string | null;
 }
 
-// State ban đầu
-const initialUserState: UserState = {
-  userInfo: null,
+const initialState: UserState = {
+  userInfor: null,
+  isUpdate: false,
   loading: false,
   error: null,
 };
 
-// Thunk xử lý gọi API lấy thông tin user
-export const fetchUserById = createAsyncThunk<
-  User,
-  string,
-  { rejectValue: string }
->("user/fetchUserById", async (userId, { rejectWithValue }) => {
+// Async thunk để lấy thông tin user từ API
+export const fetchUserById = createAsyncThunk("user/fetchUserById", async (userId: string, { rejectWithValue }) => {
   try {
-    const response = await fetch(`http://103.82.194.197:8080/api/user/${userId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      return rejectWithValue(`HTTP status: ${response.status}`);
-    }
-
+    const response = await fetch(`http://localhost:5108/api/user/${userId}`);
     const data = await response.json();
+
+    if (!response.ok || !data.succeeded) {
+      const errorMessage = data.message || "Không thể lấy thông tin người dùng.";
+      return rejectWithValue(errorMessage);
+    }
     return data.result as User;
-  } catch (error) {
-    return rejectWithValue("Lỗi hệ thống khi gọi user API");
+  } catch (error: any) {
+    return rejectWithValue(error.message || "Lỗi hệ thống.");
   }
 });
 
-// Slice
+// Thêm ngay dưới fetchUserById
+export const updateUserById = createAsyncThunk(
+  "user/updateUserById",
+  async (
+    {
+      userId,
+      updatedData,
+      token,
+    }: {
+      userId: string;
+      updatedData: {
+        userName: string;
+        email: string;
+        phoneNumber: string;
+        gender: string;
+        avatarId: string;
+      };
+      token: string;
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await fetch(`http://localhost:5108/api/user/update/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      const data = await response.json();
+      console.log("📢 API Response:", data);
+      console.log("token:", token);
+      
+
+      if (!response.ok || !data.succeeded) {
+        const errorMessage = data.message || "Cập nhật thông tin thất bại.";
+        return rejectWithValue(errorMessage);
+      }
+
+      return data.result as User;
+    } catch (error: any) {
+      return rejectWithValue(error.message || "Lỗi hệ thống.");
+    }
+  },
+);
+
+// Tạo slice
 const userSlice = createSlice({
   name: "user",
-  initialState: initialUserState,
-  reducers: {},
+  initialState,
+  reducers: {
+    clearUser: (state) => {
+      state.userInfor = null;
+      state.isUpdate = false;
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchUserById.pending, (state) => {
@@ -62,13 +109,28 @@ const userSlice = createSlice({
       })
       .addCase(fetchUserById.fulfilled, (state, action: PayloadAction<User>) => {
         state.loading = false;
-        state.userInfo = action.payload;
+        state.userInfor = action.payload;
       })
       .addCase(fetchUserById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || action.error.message || "Lỗi không xác định";
+        state.error = action.payload as string;
+      })
+      .addCase(updateUserById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.isUpdate = false;
+      })
+      .addCase(updateUserById.fulfilled, (state, action: PayloadAction<User>) => {
+        state.loading = false;
+        state.isUpdate = true;
+      })
+      .addCase(updateUserById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        state.isUpdate = false;
       });
   },
 });
 
+export const { clearUser } = userSlice.actions;
 export default userSlice.reducer;
