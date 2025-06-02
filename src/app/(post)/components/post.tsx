@@ -129,7 +129,7 @@ const Post = ({ post }: PostProps) => {
   dayjs.extend(relativeTime);
 
   return (
-    <div style={{ borderTop: "solid #cbd5e1;" }}>
+    <div style={{ borderTop: "1px solid #cbd5e1" }}>
       <div className="pt-1 pb-3 px-4 mt-1 w-full max-w-[732px] bg-transparent hover:bg-[#f7f9fa] rounded-xl">
         <div className="relative group/profile">
           <div className="flex flex-row items-center gap-1 text-[#8BA2AD] text-xs font-semibold">
