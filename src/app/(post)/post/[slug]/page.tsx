@@ -46,7 +46,6 @@ const Page = () => {
   if (!currentPost) {
     return <div>Loading...</div>;
   }
-  console.log("currentPost", currentPost);
 
   return (
     <div className="">

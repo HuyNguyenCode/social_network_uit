@@ -52,7 +52,7 @@ export const commentCreate = createAsyncThunk(
       });
 
       const data = await response.json();
-      // console.log("📢 API Response:", data);
+
 
       if (!response.ok || !data.succeeded) {
         // Xử lý lỗi từ server
@@ -62,8 +62,6 @@ export const commentCreate = createAsyncThunk(
           status: response.status,
         });
       }
-
-      console.log("✅ Đăng bài viết thành công:", data);
       return data.result; // Trả về toàn bộ response data nếu API không có nested 'result'
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
@@ -95,14 +93,10 @@ export const voteComment = createAsyncThunk(
       });
 
       const result = await response.json();
-      console.log("data: ");
-      console.log(result);
       if (!response.ok || result.statusCode === 400) {
         const errorMessage = result.Errors?.[0] || "Failed to vote comment!";
         return rejectWithValue({ message: errorMessage, status: response.status });
       }
-      console.log("✅ Vote bài viết thành công:", result.result);
-      // Return the required properties for the reducer
       return {
         commentId,
         newVoteType: voteData.voteType,
@@ -111,7 +105,6 @@ export const voteComment = createAsyncThunk(
         message: result.message,
       };
     } catch (error: any) {
-      console.log("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
     }
   },
@@ -131,8 +124,6 @@ export const updateComment = createAsyncThunk(
       });
 
       const result = await response.json();
-      // console.log("result: ");
-      // console.log(result);
       if (!response.ok || result.statusCode === 400) {
         const errorMessage = result.Errors?.[0] || "Update comment successfull !";
         return rejectWithValue({ message: errorMessage, status: response.status });
@@ -141,11 +132,8 @@ export const updateComment = createAsyncThunk(
       if (!result.result) {
         return rejectWithValue({ message: "Không tìm thấy dữ liệu bài viết", status: 500 });
       }
-
-      // console.log("✅ Update comment successfull:", result.result);
       return { comment: result.result, message: result.message };
     } catch (error: any) {
-      console.log("❌ Lỗi ngoại lệ:", error);
       return rejectWithValue({ message: error.message || "Lỗi máy chủ!", status: 500 });
     }
   },
@@ -174,7 +162,6 @@ export const getCommentWithId = createAsyncThunk(
       });
 
       const result = await response.json();
-      console.log("📢 API Response get post with id:", result);
 
       if (!response.ok || !result.succeeded) {
         const errorMessage = result.message || result.errors?.join(", ") || "Không thể lấy danh sách bài viết";
@@ -208,7 +195,6 @@ export const getCommentWithId = createAsyncThunk(
 export const commentDelete = createAsyncThunk("post/delete", async (commentId: string, { rejectWithValue }) => {
   try {
     const token = Cookies.get("sessionToken");
-    console.log("Token lấy từ cookie:", token);
 
     const response = await fetch(`http://localhost:5108/api/comments/${commentId}`, {
       method: "DELETE",
@@ -226,8 +212,6 @@ export const commentDelete = createAsyncThunk("post/delete", async (commentId: s
       data = await response.json();
     }
 
-    console.log("📢 API Response:", data);
-
     if (!response.ok || data?.succeeded === false) {
       const errorMessage = data?.message || data?.errors?.join(", ") || "Xóa bài viết thất bại";
       return rejectWithValue({
@@ -235,8 +219,6 @@ export const commentDelete = createAsyncThunk("post/delete", async (commentId: s
         status: response.status,
       });
     }
-
-    console.log("✅ Xóa bài viết thành công:", data);
     return { commentId, message: data?.message || "Xóa thành công" };
   } catch (error: any) {
     console.error("❌ Lỗi ngoại lệ:", error);

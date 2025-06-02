@@ -3,7 +3,7 @@ import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 
 import { getTimeAgo } from "@/utils/dateFormat";
-import Post from "@/app/(post)/components/Post";
+import PostComponent from "@/app/(post)/components/PostComponent";
 
 
 export default function SavedPosts() {
@@ -85,8 +85,8 @@ export default function SavedPosts() {
         <div className="p-4 space-y-4">
             {savedPosts.map((post) => (
                 <div key={post.p_id} className="border-b border-border pb-4">
-                    {/* <Postx post={post} /> */} 
-                    {/* <Post/>   */}
+                    {/* <PostComponentx post={post} /> */} 
+                    {/* <PostComponent/>   */}
 
                 </div>
             ))}

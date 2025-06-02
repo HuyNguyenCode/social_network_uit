@@ -176,6 +176,11 @@ export default function Header() {
                       <span>Settings</span>
                     </DropdownMenu.Item>
                   </Link>
+                  <Link href={"/blocked"}>
+                    <DropdownMenu.Item className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                      <span>Block list</span>
+                    </DropdownMenu.Item>
+                  </Link>
                   <DropdownMenu.Item className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer">
                     <button onClick={handleLogout}>Log out </button>
                   </DropdownMenu.Item>

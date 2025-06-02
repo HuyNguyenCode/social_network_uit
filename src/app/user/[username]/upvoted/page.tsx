@@ -1,11 +1,11 @@
 "use client";
-import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import Post from "@/app/(post)/components/Post";
+import PostComponent from "@/app/(post)/components/PostComponent";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { getUpVotePostById } from "@/redux/postSlice";
-import { useUserStore } from "@/store/useUserStore";
+import { useParams } from "next/navigation";
+import { fetchUserByUsername } from "@/redux/userSlice";
 
 // Define proper types to match your Postx component's expectations
 interface User {
@@ -32,7 +32,7 @@ export default function UpvotedPosts() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { userId, username } = useUserStore(); // Lấy thông tin từ store
+  const { username } = useParams();
 
   const dispatch = useDispatch<AppDispatch>();
   const { upvotedPosts } = useSelector((state: RootState) => state.post);
@@ -54,11 +54,25 @@ export default function UpvotedPosts() {
     }
   }, [username]);
 
+  const { userInforByUN } = useSelector((state: RootState) => state.user);
+  const [userId, setUserId] = useState<string | undefined>();
+  useEffect(() => {
+    if (typeof username === "string") {
+      dispatch(fetchUserByUsername(username));
+    } else if (Array.isArray(username) && username.length > 0) {
+      dispatch(fetchUserByUsername(username[0]));
+    }
+  }, [username]);
+
+  useEffect(() => {
+    setUserId(userInforByUN?.id);
+  }, [userInforByUN]);
+
   useEffect(() => {
     if (userId) {
       dispatch(getUpVotePostById(userId));
     }
-  }, [username, dispatch]);
+  }, [userId, dispatch]);
   console.log("upvotedPost:", upvotedPosts); // Debug log
 
   if (loading) {
@@ -81,7 +95,7 @@ export default function UpvotedPosts() {
     <div className="p-4 space-y-4">
       {upvotedPosts.map((post) => (
         <div key={post.p_id} className="border-b border-border pb-4">
-          <Post post={{ ...post }} />
+          <PostComponent post={{ ...post }} />
         </div>
       ))}
     </div>

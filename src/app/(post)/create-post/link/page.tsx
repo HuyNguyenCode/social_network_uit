@@ -57,8 +57,7 @@ export default function Page() {
       return;
     }
     // TODO: Xử lý logic đăng bài ở đây
-    console.log("Đăng bài với tiêu đề:", title);
-    console.log("Nội dung:", content);
+
   };
 
   return (

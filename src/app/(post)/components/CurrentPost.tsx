@@ -39,7 +39,6 @@ interface PostProps {
 }
 
 const CurrentPost = ({ post }: PostProps) => {
-  console.log(post);
   dayjs.extend(relativeTime);
 
   return (

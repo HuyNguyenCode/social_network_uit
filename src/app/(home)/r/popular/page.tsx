@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getPopularPost, resetPopularPosts, getPostWithId } from "@/redux/postSlice";
 import { RootState, AppDispatch } from "@/redux/store";
 import Sidebar from "@/app/(home)/sidebar";
-import Post from "@/app/(post)/components/Post";
+import PostComponent from "@/app/(post)/components/PostComponent";
 import classNames from "classnames/bind";
 import styles from "../../home.module.scss";
 import CurrentPost from "@/app/(post)/components/CurrentPost";
@@ -32,7 +32,6 @@ export default function PopularPage() {
   const handleObserver = useCallback(
     (node: HTMLDivElement | null) => {
       if (loading || !hasMore) {
-        console.log("⏳ Đang loading hoặc không còn bài viết, không tạo observer mới");
         return;
       }
 
@@ -77,12 +76,7 @@ export default function PopularPage() {
     }
   }, [popularPosts?.items.length, handleObserver]);
 
-  useEffect(() => {
-    console.log(
-      "🧠 popularPosts.items:",
-      popularPosts?.items.map((p) => p.id),
-    );
-  }, [popularPosts?.items]);
+ 
   const { userId } = useUserStore(); // Lấy thông tin từ store
   const { username } = useParams();
   useEffect(() => {
@@ -110,7 +104,7 @@ export default function PopularPage() {
                   const isLastPost = index === popularPosts.items.length - 1;
                   return (
                     <div key={post.id} ref={isLastPost ? lastPostRef : null} className="border-b border-border pb-4">
-                      <Post
+                      <PostComponent
                         post={{
                           ...post,
                           userAvatar: post.userAvatar ?? undefined,

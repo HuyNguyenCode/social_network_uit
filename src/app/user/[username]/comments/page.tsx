@@ -3,7 +3,7 @@ import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getCommentWithId } from "@/redux/commentSlice";
-import { useUserStore } from "@/store/useUserStore";
+import { fetchUserByUsername } from "@/redux/userSlice";
 import CommentWithReply from "@/app/(post)/components/CommentWithReply";
 import { AppDispatch, RootState } from "@/redux/store";
 import dayjs from "dayjs";
@@ -17,7 +17,20 @@ export default function UserComments() {
   const dispatch = useDispatch<AppDispatch>();
   const { comments } = useSelector((state: RootState) => state.comment);
 
-  const { userId } = useUserStore(); // Lấy thông tin từ store
+  const { userInforByUN } = useSelector((state: RootState) => state.user);
+  const [userId, setUserId] = useState<string | undefined>();
+  useEffect(() => {
+    if (typeof username === "string") {
+      dispatch(fetchUserByUsername(username));
+    } else if (Array.isArray(username) && username > 0) {
+      dispatch(fetchUserByUsername(username[0]));
+    }
+  }, [username]);
+
+  useEffect(() => {
+    setUserId(userInforByUN?.id);
+  }, [userInforByUN]);
+
   useEffect(() => {
     if (userId) {
       dispatch(
@@ -26,8 +39,7 @@ export default function UserComments() {
         }),
       );
     }
-  }, [username, dispatch]);
-
+  }, [userId, dispatch]);
   useEffect(() => {
     try {
       setUserComments(Array.isArray(comments) ? comments.filter(Boolean) : []);

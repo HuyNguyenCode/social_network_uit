@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { searchPosts, searchUsers, clearSearchResults } from "@/redux/postSlice";
 import { AppDispatch, RootState } from "@/redux/store";
-import Post from "@/app/(post)/components/Post";
+import PostComponent from "@/app/(post)/components/PostComponent";
 import Header from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
 import styles from "@/app/(home)/home.module.scss";
@@ -68,10 +68,10 @@ const UserCard = ({ user }: { user: any }) => {
         </div>
         <div className="flex items-center gap-2">
           {user.isFollowing ? (
-            <span className="text-sm text-primary">Đang theo dõi</span>
+            <span className="text-sm text-primary">Following</span>
           ) : (
             <Button variant="outline" size="sm">
-              Theo dõi
+              Follow
             </Button>
           )}
           {user.isBlocked && <span className="text-sm text-destructive">Đã chặn</span>}
@@ -243,7 +243,7 @@ export default function SearchResults() {
                       className="border-b border-border pb-4 opacity-0 animate-[fadeIn_0.5s_ease-in-out_forwards]"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
-                      <Post
+                      <PostComponent
                         post={{
                           id: post.id,
                           title: post.title || "Untitled Post",

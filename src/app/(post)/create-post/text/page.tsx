@@ -78,7 +78,6 @@ export default function Page() {
       toast.success("✅ Đã đăng bài viết thành công!");
       router.push(`/user/${userName}/posts`);
     } else {
-      console.log("❌ Đăng bài viết thất bại:", result);
       const errorMessage = (result.payload as { message: string })?.message || "Lỗi không xác định!";
       toast.error(`❌ ${errorMessage}`);
     }

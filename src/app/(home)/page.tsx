@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { useUserStore } from "@/store/useUserStore";
 import { getHomePost, resetHomePosts, getPostWithId } from "@/redux/postSlice";
-import Post from "@/app/(post)/components/Post";
+import PostComponent from "@/app/(post)/components/PostComponent";
 import CurrentPost from "@/app/(post)/components/CurrentPost";
 export default function HomePage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -32,7 +32,6 @@ export default function HomePage() {
   const handleObserver = useCallback(
     (node: HTMLDivElement | null) => {
       if (loading || !hasMore) {
-        console.log("⏳ Đang loading hoặc không còn bài viết, không tạo observer mới");
         return;
       }
 
@@ -77,13 +76,6 @@ export default function HomePage() {
     }
   }, [homePosts?.items.length, handleObserver]);
 
-  useEffect(() => {
-    console.log(
-      "🧠 homePosts.items:",
-      homePosts?.items.map((p) => p.id),
-    );
-  }, [homePosts?.items]);
-  console.log(posts);
 
   useEffect(() => {
     if (userId) {
@@ -110,7 +102,7 @@ export default function HomePage() {
                   const isLastPost = index === homePosts.items.length - 1;
                   return (
                     <div key={post.id} ref={isLastPost ? lastPostRef : null} className="border-b border-border pb-4">
-                      <Post
+                      <PostComponent
                         post={{
                           ...post,
                           userAvatar: post.userAvatar ?? undefined,

@@ -8,7 +8,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { getFollowingPost, resetFollowingPosts, getPostWithId } from "@/redux/postSlice";
-import Post from "@/app/(post)/components/Post";
+import PostComponent from "@/app/(post)/components/PostComponent";
 import CurrentPost from "@/app/(post)/components/CurrentPost";
 import { useUserStore } from "@/store/useUserStore";
 import { useParams } from "next/navigation";
@@ -32,7 +32,6 @@ export default function FollowingPage() {
   const handleObserver = useCallback(
     (node: HTMLDivElement | null) => {
       if (loading || !hasMore) {
-        console.log("⏳ Đang loading hoặc không còn bài viết, không tạo observer mới");
         return;
       }
 
@@ -77,12 +76,7 @@ export default function FollowingPage() {
     }
   }, [followingPosts?.items.length, handleObserver]);
 
-  useEffect(() => {
-    console.log(
-      "🧠 followingPosts.items:",
-      followingPosts?.items.map((p) => p.id),
-    );
-  }, [followingPosts?.items]);
+
   const { userId } = useUserStore(); // Lấy thông tin từ store
   const { username } = useParams();
   useEffect(() => {
@@ -110,7 +104,7 @@ export default function FollowingPage() {
                   const isLastPost = index === followingPosts.items.length - 1;
                   return (
                     <div key={post.id} ref={isLastPost ? lastPostRef : null} className="border-b border-border pb-4">
-                      <Post
+                      <PostComponent
                         post={{
                           ...post,
                           userAvatar: post.userAvatar ?? undefined,

@@ -73,18 +73,16 @@ export default function Page() {
       category: "text", // hoặc lấy từ state nếu có nhiều loại
       postImages: uploadedImages, // hoặc truyền mảng ảnh nếu có
     };
-    console.log(data);
+
     const result = await dispatch(postCreate(data));
         const userName = Cookies.get("userName");
     if (postCreate.fulfilled.match(result)) {
       toast.success("✅ Đã đăng bài viết thành công!");
       router.push(`/user/${userName}/posts`);
     } else {
-      console.log("❌ Đăng bài viết thất bại:", result);
       const errorMessage = (result.payload as { message: string })?.message || "Lỗi không xác định!";
       toast.error(`❌ ${errorMessage}`);
     }
-    console.log("data", data);
   };
 
   return (

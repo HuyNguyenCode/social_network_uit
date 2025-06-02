@@ -36,7 +36,7 @@ interface PostProps {
   };
 }
 
-const Post = ({ post }: PostProps) => {
+const PostComponent = ({ post }: PostProps) => {
   const [vote, setVote] = useState<null | 0 | 1>(null);
   const dispatch = useDispatch<AppDispatch>();
 
@@ -134,20 +134,22 @@ const Post = ({ post }: PostProps) => {
         <div className="relative group/profile">
           <div className="flex flex-row items-center gap-1 text-[#8BA2AD] text-xs font-semibold">
             <div className="flex flex-row items-center gap-[6px] text-gray-700 hover:text-[#90A9FD] cursor-pointer">
-              <div className="w-6 h-6 rounded-full position-relative" style={{ position: "relative" }}>
-                {post?.userAvatar ? (
-                  <OutputFile imageID={post?.userAvatar ?? ""} />
-                ) : (
-                  <Image
-                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZw4HYx8PHlE8ZniW1hqck5nZeKaYZSqG56g&s"
-                    alt="avatar"
-                    className="w-12 h-12 rounded-full"
-                    width={48}
-                    height={48}
-                    style={{ height: "100%" }}
-                  />
-                )}
-              </div>
+              <Link href={`http://localhost:3000/user/${post.username}`}>
+                <div className="w-6 h-6 rounded-full position-relative" style={{ position: "relative" }}>
+                  {post?.userAvatar ? (
+                    <OutputFile imageID={post?.userAvatar ?? ""} />
+                  ) : (
+                    <Image
+                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZw4HYx8PHlE8ZniW1hqck5nZeKaYZSqG56g&s"
+                      alt="avatar"
+                      className="w-12 h-12 rounded-full"
+                      width={48}
+                      height={48}
+                      style={{ height: "100%" }}
+                    />
+                  )}
+                </div>
+              </Link>
               <p className="text-gray-700"> {post?.username}</p>
             </div>
             <span>•</span>
@@ -284,4 +286,4 @@ const Post = ({ post }: PostProps) => {
   );
 };
 
-export default Post;
+export default PostComponent;
