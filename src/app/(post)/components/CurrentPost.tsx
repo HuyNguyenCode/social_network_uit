@@ -1,17 +1,8 @@
 "use client";
-import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { useEffect, useState } from "react";
 import OutputFile from "@/app/(post)/create-post/outputFile";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Image from "next/image";
-import OutputFiles from "@/app/(post)/create-post/outputFiles";
-import CountTotalComments from "@/app/(post)/components/CountTotalComments";
-import { votePost } from "@/redux/postSlice";
-import { useUserStore } from "@/store/useUserStore";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/redux/store";
 import styles from "../../(home)/home.module.scss";
 import classNames from "classnames/bind";
 const cx = classNames.bind(styles);

@@ -79,7 +79,7 @@ export default function Sidebar() {
         </div>
         {followers.map((item, index) => {
           return (
-            <Link href={`http://localhost:3000/user/${item.userName}`}>
+            <Link href={`http://localhost:3000/user/${item.userName}`} key={index}>
               <div className={cx("moderation-item")} key={index}>
                 {item.avatarUrl ? (
                   <div className="w-8 h-8 rounded-full border border-gray-300" style={{ position: "relative" }}>
@@ -118,7 +118,7 @@ export default function Sidebar() {
         </div>
         {following.map((item, index) => {
           return (
-            <Link href={`http://localhost:3000/user/${item.userName}`}>
+            <Link href={`http://localhost:3000/user/${item.userName}`} key={index}>
               <div className={cx("moderation-item")} key={index}>
                 {item.avatarUrl ? (
                   <div className="w-8 h-8 rounded-full border border-gray-300" style={{ position: "relative" }}>

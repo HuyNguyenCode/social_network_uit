@@ -113,11 +113,11 @@ const PopularTags = ({ userInfo }: PopularTagsProps) => {
               <div className="w-48 bg-white shadow-md rounded-lg">
                 {isMyProfile ? (
                   <Link href={`/blocked`} className="block w-full h-10 px-3 py-2 text-center hover:bg-gray-100 rounded-md">
-                    Xem người đã chặn
+                    Block list
                   </Link>
                 ) : (
                   <button onClick={handleBlockUser} className="w-full text-left py-2 px-3 hover:bg-gray-100 rounded-md">
-                    Chặn
+                    Block
                   </button>
                 )}
               </div>

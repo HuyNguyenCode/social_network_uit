@@ -93,8 +93,8 @@ export default function UpvotedPosts() {
 
   return (
     <div className="p-4 space-y-4">
-      {upvotedPosts.map((post) => (
-        <div key={post.p_id} className="border-b border-border pb-4">
+      {upvotedPosts.map((post, index) => (
+        <div key={index} className="border-b border-border pb-4">
           <PostComponent post={{ ...post }} />
         </div>
       ))}

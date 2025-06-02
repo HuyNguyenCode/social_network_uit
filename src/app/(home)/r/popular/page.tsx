@@ -76,7 +76,6 @@ export default function PopularPage() {
     }
   }, [popularPosts?.items.length, handleObserver]);
 
- 
   const { userId } = useUserStore(); // Lấy thông tin từ store
   const { username } = useParams();
   useEffect(() => {
@@ -129,7 +128,10 @@ export default function PopularPage() {
               <span className={cx("recent-post-header-text")}>Recent Posts</span>
               <span className={cx("recent-post-header-clear")}>Clear</span>
             </div>
-            {posts && posts.items.map((post) => <CurrentPost post={{ ...post, userAvatar: post.userAvatar ?? undefined }} />)}
+            {posts &&
+              posts.items.map((post, index) => (
+                <CurrentPost post={{ ...post, userAvatar: post.userAvatar ?? undefined }} key={index} />
+              ))}
           </div>
         </div>
       </div>

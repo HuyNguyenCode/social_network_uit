@@ -76,7 +76,6 @@ export default function HomePage() {
     }
   }, [homePosts?.items.length, handleObserver]);
 
-
   useEffect(() => {
     if (userId) {
       dispatch(
@@ -87,7 +86,10 @@ export default function HomePage() {
         }),
       );
     }
-  }, [username, dispatch]);
+  }, [userId]);
+  console.log("posts");
+  console.log(posts);
+
   return (
     <div className={cx("home-wrapper")}>
       <div className={cx("container")}>
@@ -127,7 +129,11 @@ export default function HomePage() {
               <span className={cx("recent-post-header-text")}>Recent Posts</span>
               <span className={cx("recent-post-header-clear")}>Clear</span>
             </div>
-            {posts && posts.items.map((post) => <CurrentPost post={{ ...post, userAvatar: post.userAvatar ?? undefined }} />)}
+
+            {posts &&
+              posts.items.map((post, index) => (
+                <CurrentPost post={{ ...post, userAvatar: post.userAvatar ?? undefined }} key={index} />
+              ))}
           </div>
         </div>
       </div>

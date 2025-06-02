@@ -6,9 +6,14 @@ const CHECK_INTERVAL = 1 * 60 * 1000; // 5 phút kiểm tra session
 const USER_ACTIVE_TIMEOUT = 5 * 60 * 1000; // Nếu user không hoạt động 15 phút thì không gọi API nữa
 
 export default function SessionProvider() {
-  const [lastActivity, setLastActivity] = useState(Date.now());
+  const [lastActivity, setLastActivity] = useState<number | null>(null);
+  useEffect(() => {
+    setLastActivity(Date.now());
+  }, []);
 
   useEffect(() => {
+    setLastActivity(Date.now());
+
     const checkSession = async () => {
       try {
         const response = await fetch("http://localhost:5108/api/Auth/status", { method: "GET" });
@@ -26,7 +31,7 @@ export default function SessionProvider() {
 
         console.log(`🕒 Session còn ${remainingMinutes} phút`);
 
-        if (remainingMinutes < 1 && timeNow - lastActivity < USER_ACTIVE_TIMEOUT) {
+        if (remainingMinutes < 1 && lastActivity !== null && timeNow - lastActivity < USER_ACTIVE_TIMEOUT) {
           console.log("🔄 Kéo dài session bằng cách gọi lại /api/Auth/status");
           await fetch("http://localhost:5108/api/Auth/status", { method: "GET" }); // Gián tiếp "gia hạn" session
         }
@@ -50,7 +55,7 @@ export default function SessionProvider() {
       window.removeEventListener("keydown", updateActivity);
       window.removeEventListener("scroll", updateActivity);
     };
-  }, [lastActivity]);
+  }, []);
 
   return null; // Không hiển thị UI component
 }
