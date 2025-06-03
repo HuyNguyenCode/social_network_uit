@@ -14,7 +14,7 @@ import Sidebar from "@/app/(home)/sidebar";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { toast } from "sonner";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 
 const cx = classNames.bind(styles);
@@ -58,7 +58,7 @@ export default function Page() {
       setError("");
     }
   };
-
+  const router = useRouter();
   const handleSubmit = async () => {
     if (!title.trim()) {
       setError("Vui lòng nhập tiêu đề bài viết");
@@ -73,12 +73,11 @@ export default function Page() {
       category: "text", // hoặc lấy từ state nếu có nhiều loại
       postImages: uploadedImages, // hoặc truyền mảng ảnh nếu có
     };
-
     const result = await dispatch(postCreate(data));
-        const userName = Cookies.get("userName");
+    const userName = Cookies.get("userName");
     if (postCreate.fulfilled.match(result)) {
       toast.success("✅ Đã đăng bài viết thành công!");
-      router.push(`/user/${userName}/posts`);
+      router.push(`/user/${userName}`);
     } else {
       const errorMessage = (result.payload as { message: string })?.message || "Lỗi không xác định!";
       toast.error(`❌ ${errorMessage}`);

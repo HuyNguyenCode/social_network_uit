@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { postCreate } from "@/redux/postSlice";
 import { toast } from "sonner";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 
 import Header from "@/components/ui/header";
 import styles from "@/app/(home)/home.module.scss";
@@ -60,7 +60,7 @@ export default function Page() {
       setError("");
     }
   };
-
+  const router = useRouter();
   const handleSubmit = async () => {
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = content;
@@ -76,12 +76,11 @@ export default function Page() {
     const userName = Cookies.get("userName");
     if (postCreate.fulfilled.match(result)) {
       toast.success("✅ Đã đăng bài viết thành công!");
-      router.push(`/user/${userName}/posts`);
+      router.push(`http://localhost:3000//user/${userName}`);
     } else {
       const errorMessage = (result.payload as { message: string })?.message || "Lỗi không xác định!";
       toast.error(`❌ ${errorMessage}`);
     }
-    console.log("data", data);
   };
 
   return (

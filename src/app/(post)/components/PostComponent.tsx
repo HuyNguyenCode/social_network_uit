@@ -127,6 +127,7 @@ const PostComponent = ({ post }: PostProps) => {
   }, [post]);
 
   dayjs.extend(relativeTime);
+  console.log("post", post);
 
   return (
     <div style={{ borderTop: "1px solid #cbd5e1" }}>
@@ -158,7 +159,7 @@ const PostComponent = ({ post }: PostProps) => {
         </div>
         <div className="font-semibold text-black text-2xl mb-4">{post.title}</div>
         <div className="text-sm text-black">{post.content}</div>
-        <OutputFiles imagesArr={post?.postImages ?? []} />
+        <OutputFiles imagesArr={post.postImages ?? []} />
         <div className="flex flex-row mt-4 gap-3">
           <div
             className={cn(

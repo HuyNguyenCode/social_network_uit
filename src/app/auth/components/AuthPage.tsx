@@ -73,7 +73,6 @@ const AuthPage = () => {
   // Xử lý đăng nhập
   const onLogin = async (data: any) => {
     const result = await dispatch(loginUser(data));
-    console.log("📢 Kết quả từ loginUser:", result);
 
     // Cập nhật thông tin người dùng vào Zustand
     const idPayload = result.payload as { user: { id: string } };
@@ -88,7 +87,6 @@ const AuthPage = () => {
       toast.success("✅ Login Successfully!");
       router.push("/");
     } else {
-      console.log("❌ Đăng nhập thất bại:", result);
       const errorMessage = (result.payload as { message: string })?.message || "Lỗi không xác định!";
       toast.error(`❌ ${errorMessage}`);
     }

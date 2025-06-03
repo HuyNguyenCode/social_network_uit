@@ -83,12 +83,17 @@ export default function UserPosts() {
   return (
     <div className="space-y-4">
       {/* Danh sách bài viết */}
+
       <div className="space-y-4">
-        {posts.items.map((post) => (
-          <div key={post.id} className="border-b border-border pb-4">
-            <PostComponent post={{ ...post, userAvatar: post.userAvatar ?? undefined }} />
-          </div>
-        ))}
+        {posts &&
+          posts.items.length > 0 &&
+          posts.items.map((post) => {
+            return (
+              <div key={post.id} className="border-b border-border pb-4">
+                <PostComponent post={{ ...post, userAvatar: post.userAvatar ?? undefined }} />
+              </div>
+            );
+          })}
       </div>
 
       {/* Phân trang */}

@@ -13,7 +13,6 @@ export default function LogoutButton() {
       });
 
       const data = await res.json();
-      console.log("API Response:", data);
       if (res.ok) {
         console.log("Đăng xuất thành công:", data);
         window.location.href = "/auth";

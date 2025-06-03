@@ -27,7 +27,6 @@ export default function Sidebar() {
   }, [username]);
 
   const pathname = usePathname();
-  console.log("followers", followers);
 
   const navItems = [
     { name: "Home", path: "/feed=home", icon: <HomeIcon /> },

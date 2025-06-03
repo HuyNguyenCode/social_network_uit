@@ -45,7 +45,6 @@ export const getFollowers = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API getFollowers Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.Errors?.join(", ") || "Không thể lấy danh sách Followers";
@@ -56,7 +55,6 @@ export const getFollowers = createAsyncThunk(
         });
       }
 
-      console.log("✅ Lấy danh sách Followers thành công:", data);
       return {
         items: data.items || data.result?.items || [],
         total: data.total || data.result?.total || 0,
@@ -95,7 +93,6 @@ export const getFollowing = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API getFollowing Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.Errors?.join(", ") || "Không thể lấy danh sách người Following";
@@ -105,7 +102,6 @@ export const getFollowing = createAsyncThunk(
         });
       }
 
-      console.log("✅ Lấy danh sách người Following thành công:", data);
       return {
         items: data.items || data.result?.items || [],
         total: data.total || data.result?.total || 0,
@@ -133,8 +129,6 @@ export const followUser = createAsyncThunk(
         });
       }
 
-      console.log("Đang follow người dùng:", targetUsername);
-
       const response = await fetch(`http://localhost:5108/api/follows`, {
         method: "POST",
         headers: {
@@ -145,7 +139,6 @@ export const followUser = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API followUser Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.Errors?.join(", ") || "Không thể Follow người dùng";
@@ -155,7 +148,6 @@ export const followUser = createAsyncThunk(
         });
       }
 
-      console.log("✅ Follow người dùng thành công:", data);
       return data;
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
@@ -189,7 +181,6 @@ export const removeFollowing = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API removeFollowing Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.Errors?.join(", ") || "Không thể hủy Follow người dùng";
@@ -231,7 +222,6 @@ export const removeFollower = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API removeFollower Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.Errors?.join(", ") || "Không thể xóa Followers";
@@ -241,7 +231,6 @@ export const removeFollower = createAsyncThunk(
         });
       }
 
-      console.log("✅ Xóa Followers thành công:", data);
       return { followerName };
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
@@ -276,7 +265,6 @@ export const blockUser = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API blockUser Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.Errors?.join(", ") || "Không thể chặn người dùng";
@@ -286,7 +274,6 @@ export const blockUser = createAsyncThunk(
         });
       }
 
-      console.log("✅ Chặn người dùng thành công:", data);
       return { data };
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
@@ -320,7 +307,6 @@ export const unblockUser = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API unblockUser Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.Errors?.join(", ") || "Không thể bỏ chặn người dùng";
@@ -330,7 +316,6 @@ export const unblockUser = createAsyncThunk(
         });
       }
 
-      console.log("✅ Bỏ chặn người dùng thành công:", data);
       return { userToUnblockName };
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
@@ -362,7 +347,6 @@ export const getBlockedUsers = createAsyncThunk("follow/getBlockedUsers", async 
     });
 
     const data = await response.json();
-    console.log("📢 API getBlockedUsers Response:", data);
 
     if (!response.ok) {
       const errorMessage = data.message || data.Errors?.join(", ") || "Không thể lấy danh sách người bị chặn";
@@ -372,7 +356,6 @@ export const getBlockedUsers = createAsyncThunk("follow/getBlockedUsers", async 
       });
     }
 
-    console.log("✅ Lấy danh sách người bị chặn thành công:", data);
     return {
       items: data.items || data.result?.items || [],
       total: data.total || data.result?.total || 0,
@@ -407,7 +390,6 @@ export const unfollowUser = createAsyncThunk(
       });
 
       const data = await response.json();
-      console.log("📢 API unfollowUser Response:", data);
 
       if (!response.ok) {
         const errorMessage = data.message || data.Errors?.join(", ") || "Không thể hủy Follow người dùng";
@@ -417,7 +399,6 @@ export const unfollowUser = createAsyncThunk(
         });
       }
 
-      console.log("✅ Hủy Follow người dùng thành công:", data);
       return data;
     } catch (error: any) {
       console.error("❌ Lỗi ngoại lệ:", error);
@@ -443,7 +424,6 @@ export const getMyFollowing = createAsyncThunk("follow/getMyFollowing", async (_
     });
 
     const data = await response.json();
-    console.log("📢 API getMyFollowing Response:", data);
 
     if (!response.ok) {
       const errorMessage = data.message || data.Errors?.join(", ") || "Không thể lấy danh sách Followers";
@@ -453,7 +433,6 @@ export const getMyFollowing = createAsyncThunk("follow/getMyFollowing", async (_
       });
     }
 
-    console.log("✅ Lấy danh sách Followers thành công:", data);
     return {
       items: data.items || data.result?.items || [],
       total: data.total || data.result?.total || 0,

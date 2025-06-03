@@ -87,8 +87,6 @@ export default function HomePage() {
       );
     }
   }, [userId]);
-  console.log("posts");
-  console.log(posts);
 
   return (
     <div className={cx("home-wrapper")}>
