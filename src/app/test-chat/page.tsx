@@ -2,7 +2,6 @@
 "use client";
 import { useState, useEffect } from "react";
 import { HubConnection, HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
-import Cookies from "js-cookie";
 import { useUserStore } from "@/store/useUserStore";
 const users = [
   { id: "08dd9b7f-4f73-4b87-834a-d884e89d2cc3", name: "admin" },
@@ -109,7 +108,34 @@ const ChatPage = () => {
     }
   };
 
-  const cookieUsername = Cookies.get("username");
+  const [conversations, setConversations] = useState();
+  useEffect(() => {
+    const fetchConversations = async () => {
+      if (conn && conn.state === "Connected") {
+        try {
+          await conn.invoke("GetConversations", userId);
+        } catch (err) {
+          console.error("Lỗi khi gọi GetConversations:", err);
+        }
+      }
+    };
+
+    fetchConversations();
+  }, [conn, userId]);
+  useEffect(() => {
+    if (!conn) return;
+
+    conn.on("ReceiveConversations", (conversations) => {
+      console.log("Danh sách hội thoại:", conversations);
+      setConversations(conversations);
+    });
+
+    return () => {
+      conn.off("ReceiveConversations");
+    };
+  }, [conn]);
+  console.log("conversations", conversations);
+
   return (
     <div>
       <h2>Chat Application</h2>

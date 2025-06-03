@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-const CHECK_INTERVAL = 1 * 60 * 1000; // 5 phút kiểm tra session
-const USER_ACTIVE_TIMEOUT = 5 * 60 * 1000; // Nếu user không hoạt động 15 phút thì không gọi API nữa
+const CHECK_INTERVAL = 1 * 600 * 1000; // 5 phút kiểm tra session
+const USER_ACTIVE_TIMEOUT = 5 * 600 * 1000; // Nếu user không hoạt động 15 phút thì không gọi API nữa
 
 export default function SessionProvider() {
   const [lastActivity, setLastActivity] = useState<number | null>(null);

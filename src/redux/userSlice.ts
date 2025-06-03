@@ -15,6 +15,7 @@ interface User {
 interface UserState {
   userInfor: User | null;
   userInforByUN: User | null;
+  allUsers: any[] | null;
   isUpdate: boolean;
   loading: boolean;
   error: string | null;
@@ -22,6 +23,7 @@ interface UserState {
 
 const initialState: UserState = {
   userInfor: null,
+  allUsers: null,
   userInforByUN: null,
   isUpdate: false,
   loading: false,
@@ -44,11 +46,25 @@ export const fetchUserById = createAsyncThunk("user/fetchUserById", async (userI
   }
 });
 
+// Async thunk để lấy thông tin all user
+export const fetchAllUsers = createAsyncThunk("user/fetchAllUsers", async (_, { rejectWithValue }) => {
+  try {
+    const response = await fetch("http://localhost:5108/api/user");
+    const data = await response.json();
+    if (!response.ok || !Array.isArray(data)) {
+      return rejectWithValue("Dữ liệu trả về không hợp lệ.");
+    }
+
+    return data as User[];
+  } catch (error: any) {
+    return rejectWithValue(error.message || "Lỗi hệ thống.");
+  }
+});
+
 export const fetchUserByUsername = createAsyncThunk("user/fetchUserByUsername", async (username: string, { rejectWithValue }) => {
   try {
     const response = await fetch(`http://localhost:5108/api/user/getUser/${username}`);
     const data = await response.json();
-
     if (!response.ok || !data.succeeded) {
       const errorMessage = data.message || "Không thể lấy thông tin người dùng.";
       return rejectWithValue(errorMessage);
@@ -113,6 +129,7 @@ const userSlice = createSlice({
   reducers: {
     clearUser: (state) => {
       state.userInfor = null;
+      state.allUsers = null;
       state.isUpdate = false;
       state.error = null;
     },
@@ -128,6 +145,18 @@ const userSlice = createSlice({
         state.userInfor = action.payload;
       })
       .addCase(fetchUserById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchAllUsers.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllUsers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.allUsers = action.payload;
+      })
+      .addCase(fetchAllUsers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
