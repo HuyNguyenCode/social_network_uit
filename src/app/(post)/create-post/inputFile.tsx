@@ -45,7 +45,7 @@ const InputFile = ({ onImagesChange }: InputFileProps) => {
         setImages((prev) => prev.filter((_, idx) => idx !== index));
         setCurrentIndex(0);
     };
-
+    
     return (
         <>
             {images.length === 0 && (

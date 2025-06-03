@@ -8,11 +8,10 @@ import { toast } from "sonner";
 import { useDispatch } from "react-redux";
 import Cookies from "js-cookie";
 import { AppDispatch } from "@/redux/store";
-
+import { FormEvent, useState, useEffect } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { logoutUser } from "@/redux/authSlice";
-import { Button } from "@/components/ui/button";
-
+import { searchPosts, clearSearchResults } from "@/redux/postSlice";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { useUserStore } from "@/store/useUserStore";
@@ -22,6 +21,17 @@ export default function Header() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector((state: RootState) => state.user);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  // Add debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // Wait for 500ms before updating debounced value
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   interface LogoutResult {
     payload?: { message: string };
@@ -40,9 +50,38 @@ export default function Header() {
       toast.error(`❌ ${errorMessage}`);
     }
   };
+
+  // Update search handler to use debounced value
+  const handleSearch = async (e: FormEvent) => {
+    e.preventDefault();
+
+    if (!searchTerm.trim()) {
+      return;
+    }
+
+    try {
+      // Clear previous search results before new search
+      dispatch(clearSearchResults());
+
+      // Dispatch search action
+      await dispatch(
+        searchPosts({
+          searchTerm,
+          page: 1,
+          pageSize: 10,
+        }),
+      );
+
+      // Navigate to search results page
+      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+    } catch (error) {
+      console.error("Search error:", error);
+      toast.error("Không thể thực hiện tìm kiếm. Vui lòng thử lại sau.");
+    }
+  };
+
   const { userId, username } = useUserStore(); // Lấy thông tin từ store
-  console.log("username: ", username);
-  console.log("userId: ", userId);
+
   return (
     <div className={cx("header-wrapper")}>
       <div className={cx("container")}>
@@ -53,22 +92,30 @@ export default function Header() {
             </Link>
             <p>UIT </p>
           </div>
-          <div className={cx("middle-content")}>
-            <input type="text" placeholder="Tìm kiếm" className={cx("search-input")} />
-            <svg
-              className={cx("search-icon")}
-              xmlns="http://www.w3.org/2000/svg"
-              width="21"
-              height="20"
-              viewBox="0 0 21 20"
-              fill="none"
-            >
-              <path
-                d="M18.8294 16.8367L15.1193 13.125C16.2317 11.6754 16.7511 9.85688 16.572 8.03841C16.393 6.21993 15.5289 4.53765 14.1551 3.33282C12.7813 2.12799 11.0007 1.49084 9.17436 1.55061C7.34807 1.61038 5.61289 2.3626 4.32081 3.65467C3.02873 4.94675 2.27652 6.68193 2.21675 8.50822C2.15698 10.3345 2.79413 12.1152 3.99896 13.489C5.20378 14.8628 6.88607 15.7268 8.70454 15.9059C10.523 16.0849 12.3415 15.5656 13.7912 14.4531L17.5044 18.1672C17.5916 18.2544 17.6952 18.3236 17.8091 18.3708C17.923 18.418 18.0452 18.4423 18.1685 18.4423C18.2918 18.4423 18.4139 18.418 18.5279 18.3708C18.6418 18.3236 18.7454 18.2544 18.8326 18.1672C18.9198 18.08 18.9889 17.9765 19.0361 17.8625C19.0833 17.7486 19.1076 17.6265 19.1076 17.5031C19.1076 17.3798 19.0833 17.2577 19.0361 17.1438C18.9889 17.0298 18.9198 16.9263 18.8326 16.8391L18.8294 16.8367ZM4.10365 8.75002C4.10365 7.6993 4.41523 6.67218 4.99897 5.79855C5.58272 4.92491 6.41241 4.244 7.38315 3.84191C8.35388 3.43981 9.42205 3.33461 10.4526 3.53959C11.4831 3.74458 12.4297 4.25054 13.1727 4.99351C13.9156 5.73648 14.4216 6.68307 14.6266 7.7136C14.8316 8.74412 14.7264 9.81229 14.3243 10.783C13.9222 11.7538 13.2413 12.5835 12.3676 13.1672C11.494 13.7509 10.4669 14.0625 9.41615 14.0625C8.00763 14.0611 6.65722 13.5009 5.66125 12.5049C4.66527 11.5089 4.1051 10.1585 4.10365 8.75002Z"
-                fill="#475569"
-              />
-            </svg>
-          </div>
+          <form onSubmit={handleSearch} className={cx("middle-content")}>
+            <input
+              type="text"
+              placeholder="Tìm kiếm"
+              className={cx("search-input")}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button type="submit" className={cx("search-button")}>
+              <svg
+                className={cx("search-icon")}
+                xmlns="http://www.w3.org/2000/svg"
+                width="21"
+                height="20"
+                viewBox="0 0 21 20"
+                fill="none"
+              >
+                <path
+                  d="M18.8294 16.8367L15.1193 13.125C16.2317 11.6754 16.7511 9.85688 16.572 8.03841C16.393 6.21993 15.5289 4.53765 14.1551 3.33282C12.7813 2.12799 11.0007 1.49084 9.17436 1.55061C7.34807 1.61038 5.61289 2.3626 4.32081 3.65467C3.02873 4.94675 2.27652 6.68193 2.21675 8.50822C2.15698 10.3345 2.79413 12.1152 3.99896 13.489C5.20378 14.8628 6.88607 15.7268 8.70454 15.9059C10.523 16.0849 12.3415 15.5656 13.7912 14.4531L17.5044 18.1672C17.5916 18.2544 17.6952 18.3236 17.8091 18.3708C17.923 18.418 18.0452 18.4423 18.1685 18.4423C18.2918 18.4423 18.4139 18.418 18.5279 18.3708C18.6418 18.3236 18.7454 18.2544 18.8326 18.1672C18.9198 18.08 18.9889 17.9765 19.0361 17.8625C19.0833 17.7486 19.1076 17.6265 19.1076 17.5031C19.1076 17.3798 19.0833 17.2577 19.0361 17.1438C18.9889 17.0298 18.9198 16.9263 18.8326 16.8391L18.8294 16.8367ZM4.10365 8.75002C4.10365 7.6993 4.41523 6.67218 4.99897 5.79855C5.58272 4.92491 6.41241 4.244 7.38315 3.84191C8.35388 3.43981 9.42205 3.33461 10.4526 3.53959C11.4831 3.74458 12.4297 4.25054 13.1727 4.99351C13.9156 5.73648 14.4216 6.68307 14.6266 7.7136C14.8316 8.74412 14.7264 9.81229 14.3243 10.783C13.9222 11.7538 13.2413 12.5835 12.3676 13.1672C11.494 13.7509 10.4669 14.0625 9.41615 14.0625C8.00763 14.0611 6.65722 13.5009 5.66125 12.5049C4.66527 11.5089 4.1051 10.1585 4.10365 8.75002Z"
+                  fill="#475569"
+                />
+              </svg>
+            </button>
+          </form>
           <div className={cx("right-content")}>
             <button className={cx("create-button")}>
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -77,7 +124,9 @@ export default function Header() {
                   fill="white"
                 />
               </svg>
-              <span>Create</span>
+              <Link href={"/create-post/text"}>
+                <span>Create</span>
+              </Link>
             </button>
             <button className={cx("cursor-button")}>
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -125,6 +174,11 @@ export default function Header() {
                   <Link href={"/settings/settings"}>
                     <DropdownMenu.Item className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer">
                       <span>Settings</span>
+                    </DropdownMenu.Item>
+                  </Link>
+                  <Link href={"/blocked"}>
+                    <DropdownMenu.Item className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                      <span>Block list</span>
                     </DropdownMenu.Item>
                   </Link>
                   <DropdownMenu.Item className="flex items-center px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer">

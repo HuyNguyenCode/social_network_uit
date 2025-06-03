@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
   const sessionToken = request.cookies.get("sessionToken")?.value;
   //Chưa đăng nhập thì không cho vào private path
   const userName = request.cookies.get("userName")?.value;
-  console.log("userName from cookie: ", userName);
+  // console.log("userName from cookie: ", userName);
 
   if (privatePath.some((path) => pathname.startsWith(path)) && !sessionToken) {
     return NextResponse.redirect(new URL("/auth", request.url));

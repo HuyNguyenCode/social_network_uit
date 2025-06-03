@@ -1,117 +1,103 @@
 "use client";
-import { useParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { mockUsers, mockPosts, mockVotes } from "../data/mockData";
-import Postx from "@/components/profile/Postx";
-import { getTimeAgo } from "@/utils/dateFormat";
-import Post from '@/app/(post)/components/post';
+import { useState, useEffect } from "react";
+import PostComponent from "@/app/(post)/components/PostComponent";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { getUpVotePostById } from "@/redux/postSlice";
+import { useParams } from "next/navigation";
+import { fetchUserByUsername } from "@/redux/userSlice";
 
 // Define proper types to match your Postx component's expectations
 interface User {
-    p_id: string;
-    username: string;
-    avatar_url: string;
-    // Add other user properties your component needs
+  p_id: string;
+  username: string;
+  avatar_url: string;
+  // Add other user properties your component needs
 }
 
 interface Post {
-    p_id: string;
-    title: string;
-    content: string;
-    user_id: string;
-    created_at: string;
-    vote_type?: number;
-    user?: User;
-    avatar_url?: string;
-    // Add other post properties your component needs
+  p_id: string;
+  title: string;
+  content: string;
+  user_id: string;
+  created_at: string;
+  vote_type?: number;
+  user?: User;
+  avatar_url?: string;
+  // Add other post properties your component needs
 }
 
 export default function UpvotedPosts() {
-    const params = useParams();
-    const username = params.username as string;
-    const [upvotedPosts, setUpvotedPosts] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const params = useParams();
 
-    useEffect(() => {
-        try {
-            // Find the current user (who is viewing their upvoted posts)
-            const currentUser = mockUsers.find((u) => u.username === username);
-            console.log("Current user:", currentUser); // Debug log
-            
-            if (!currentUser) {
-                setLoading(false);
-                return;
-            }
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { username } = useParams();
 
-            // Get all posts this user has upvoted
-            const posts = mockVotes
-                .filter((vote) => 
-                    vote.user_id === currentUser.p_id && 
-                    vote.vote_type === 1
-                )
-                .map((vote) => {
-                    // Find the original post
-                    const post = mockPosts.find((p) => p.p_id === vote.post_id);
-                    if (!post) return null;
+  const dispatch = useDispatch<AppDispatch>();
+  const { upvotedPosts } = useSelector((state: RootState) => state.post);
+  useEffect(() => {
+    try {
+      // Find the current user (who is viewing their upvoted posts)
 
-                    // Find the original post author
-                    const postAuthor = mockUsers.find((u) => u.p_id === post.user_id);
-                    console.log("Post author:", postAuthor); // Debug log
+      console.log("Current user:", username); // Debug log
 
-                    if (!postAuthor) return null;
-
-                    return {
-                        ...post,
-                        user: postAuthor, // Use the original post author
-                        vote_type: vote.vote_type,
-                        timeAgo: getTimeAgo(post.created_at)
-                    };
-                })
-                .filter(Boolean);
-
-            console.log("Processed posts:", posts); // Debug log
-            setUpvotedPosts(posts);
-        } catch (error) {
-            console.error("Error fetching upvoted posts:", error);
-            setError("An error occurred while fetching upvoted posts.");
-        } finally {
-            setLoading(false);
-        }
-    }, [username]);
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[200px] p-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-        );
+      if (!username) {
+        setLoading(false);
+        return;
+      }
+    } catch (error) {
+      console.error("Error fetching upvoted posts:", error);
+      setError("An error occurred while fetching upvoted posts.");
+    } finally {
+      setLoading(false);
     }
+  }, [username]);
 
-    if (error) {
-        return (
-            <div className="flex items-center justify-center min-h-[200px] p-4 text-red-500">
-                {error}
-            </div>
-        );
+  const { userInforByUN } = useSelector((state: RootState) => state.user);
+  const [userId, setUserId] = useState<string | undefined>();
+  useEffect(() => {
+    if (typeof username === "string") {
+      dispatch(fetchUserByUsername(username));
+    } else if (Array.isArray(username) && username.length > 0) {
+      dispatch(fetchUserByUsername(username[0]));
     }
+  }, [username]);
 
-    if (upvotedPosts.length === 0) {
-        return (
-            <div className="flex items-center justify-center min-h-[200px] p-4 text-muted-foreground">
-                No upvoted posts found
-            </div>
-        );
+  useEffect(() => {
+    setUserId(userInforByUN?.id);
+  }, [userInforByUN]);
+
+  useEffect(() => {
+    if (userId) {
+      dispatch(getUpVotePostById(userId));
     }
+  }, [userId, dispatch]);
+  console.log("upvotedPost:", upvotedPosts); // Debug log
 
+  if (loading) {
     return (
-        <div className="p-4 space-y-4">
-            {upvotedPosts.map((post) => (
-                <div key={post.p_id} className="border-b border-border pb-4">
-                    {/* <Postx post={post} /> */}
-                    <Post/>
-                </div>
-            ))}
-        </div>
+      <div className="flex items-center justify-center min-h-[200px] p-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
     );
+  }
+
+  if (error) {
+    return <div className="flex items-center justify-center min-h-[200px] p-4 text-red-500">{error}</div>;
+  }
+
+  if (!Array.isArray(upvotedPosts) || upvotedPosts.length === 0) {
+    return <div className="flex items-center justify-center min-h-[200px] p-4 text-muted-foreground">No upvoted posts found</div>;
+  }
+
+  return (
+    <div className="p-4 space-y-4">
+      {upvotedPosts.map((post, index) => (
+        <div key={index} className="border-b border-border pb-4">
+          <PostComponent post={{ ...post }} />
+        </div>
+      ))}
+    </div>
+  );
 }
