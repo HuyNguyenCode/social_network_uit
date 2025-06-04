@@ -57,7 +57,6 @@ export default function Page() {
       return;
     }
     // TODO: Xử lý logic đăng bài ở đây
-
   };
 
   return (
