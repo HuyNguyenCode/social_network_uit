@@ -165,12 +165,10 @@ const ChatPage = () => {
         await conn.invoke("JoinRoom", roomId, senderId, receiverId);
       } catch (error) {
         console.error("Lỗi khi tham gia trò chuyện:", error);
-        alert("Không thể tham gia trò chuyện. Vui lòng thử lại.");
         setSelectedUser(null);
         setMessages([]);
       }
     } else {
-      alert("Không thể kết nối tới server. Vui lòng thử lại sau.");
       setSelectedUser(null);
       setMessages([]);
     }
@@ -196,10 +194,8 @@ const ChatPage = () => {
         setMessageInput("");
       } catch (error) {
         console.error("Lỗi khi gửi tin nhắn:", error);
-        alert("Không thể gửi tin nhắn. Vui lòng thử lại.");
       }
     } else {
-      alert("Không thể kết nối tới server hoặc tin nhắn trống. Vui lòng thử lại.");
     }
   };
 
@@ -219,7 +215,6 @@ const ChatPage = () => {
         setMessages((prev) => prev.map((msg) => (msg.id === messageId ? { ...msg, readStatus: true } : msg)));
       } catch (err) {
         console.error("Lỗi khi cập nhật trạng thái tin nhắn:", err);
-        alert("Không thể đánh dấu tin nhắn đã đọc.");
       }
     }
   };
@@ -232,7 +227,6 @@ const ChatPage = () => {
         setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
       } catch (err) {
         console.error("Lỗi khi xóa tin nhắn:", err);
-        alert("Không thể xóa tin nhắn.");
       }
     }
   };
@@ -244,7 +238,6 @@ const ChatPage = () => {
         console.log("ArchiveConversation Invoked:", { senderId: currentUser.id, receiverId: selectedUser });
         setSelectedUser(null);
         setMessages([]);
-        alert("Hội thoại đã được lưu trữ.");
       } catch (err) {
         console.error("Lỗi khi lưu trữ hội thoại:", err);
         alert("Không thể lưu trữ hội thoại.");
@@ -259,7 +252,6 @@ const ChatPage = () => {
         console.log("SearchMessages Invoked:", { senderId: currentUser.id, receiverId: selectedUser, searchKeyword });
       } catch (err) {
         console.error("Lỗi khi tìm kiếm tin nhắn:", err);
-        alert("Không thể tìm kiếm tin nhắn.");
       }
     }
   };
@@ -275,7 +267,6 @@ const ChatPage = () => {
         alert("Người dùng đã bị chặn.");
       } catch (err) {
         console.error("Lỗi khi chặn người dùng:", err);
-        alert("Không thể chặn người dùng.");
       }
     }
   };
