@@ -42,7 +42,7 @@ const ChatPage = () => {
     if (!currentUser) return;
 
     const connection = new HubConnectionBuilder()
-      .withUrl(`https://localhost:44371/chathub?userId=${currentUser.id}`)
+      .withUrl(`http://103.82.194.197:8080/chathub?userId=${currentUser.id}`)
       .configureLogging(LogLevel.Information)
       .withAutomaticReconnect([0, 2000, 5000, 10000])
       .build();
